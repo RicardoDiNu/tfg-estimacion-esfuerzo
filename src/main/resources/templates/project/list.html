@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body class="app-page">
+
+<nav th:replace="fragments/nav :: nav"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1 th:text="#{project.list.title}">Proyectos de estimación</h1>
+        <p th:text="#{project.list.subtitle}">Listado de proyectos de estimación registrados en el sistema</p>
+
+        <div class="mb-3">
+            <a class="btn btn-primary" href="/projects/add" th:text="#{project.add.button}">Nuevo proyecto</a>
+        </div>
+
+        <div class="table-responsive" th:if="${projectsList != null and not #lists.isEmpty(projectsList)}">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th th:text="#{project.field.id}">Id</th>
+                    <th th:text="#{project.field.name}">Nombre</th>
+                    <th th:text="#{project.field.description}">Descripción</th>
+                    <th th:text="#{project.field.createdAt}">Fecha de creación</th>
+                    <th th:text="#{project.field.actions}">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="project : ${projectsList}">
+                    <td th:text="${project.id}">1</td>
+                    <td th:text="${project.name}">Proyecto ejemplo</td>
+                    <td th:text="${project.description}">Descripción</td>
+                    <td th:text="${#temporals.format(project.createdAt, 'dd/MM/yyyy HH:mm')}">16/04/2026 22:57</td>
+                    <td>
+                        <a th:href="@{/projects/{id}(id=${project.id})}"
+                           th:text="#{project.action.details}">Ver detalle</a>
+                        |
+                        <a th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='list')}"
+                           th:text="#{project.action.edit}">Editar</a>
+                        |
+                        <a th:href="@{/projects/delete/{id}(id=${project.id})}"
+                           th:text="#{project.action.delete}"
+                           onclick="return confirm('¿Seguro que quieres eliminar este proyecto?');">Eliminar</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${projectsList == null or #lists.isEmpty(projectsList)}" class="alert alert-light border">
+            <span th:text="#{project.list.empty}">Todavía no hay proyectos de estimación registrados.</span>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+</body>
+</html>
