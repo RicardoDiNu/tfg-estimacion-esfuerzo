@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body class="app-page">
+
+<nav th:replace="fragments/nav :: nav"></nav>
+
+<main class="app-content">
+    <div class="container text-center">
+        <h1 th:text="#{home.title}">Aplicación de estimación de esfuerzo</h1>
+        <p th:text="#{home.subtitle}">Página de inicio del proyecto</p>
+    </div>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+</body>
+</html>

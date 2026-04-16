@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments/head :: head"></head>
+<body class="app-page">
+
+<nav th:replace="fragments/nav :: nav"></nav>
+
+<main class="app-content">
+    <div class="container text-center">
+        <h1 th:text="#{home.private.title}">Zona privada</h1>
+        <p th:text="#{home.private.subtitle}">Has iniciado sesión correctamente</p>
+        <p>
+            <span th:text="#{home.private.user}">Usuario autenticado como</span>:
+            <strong sec:authentication="name">usuario</strong>
+        </p>
+    </div>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+</body>
+</html>

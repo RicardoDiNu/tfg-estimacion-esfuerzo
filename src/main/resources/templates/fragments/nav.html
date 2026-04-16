@@ -1,0 +1,49 @@
+<nav th:fragment="nav"
+     class="navbar navbar-expand-lg navbar-dark app-navbar"
+     xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+    <a class="navbar-brand" href="/">Estimación</a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar"
+            aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/" th:text="#{nav.home}">Inicio</a>
+            </li>
+
+            <li class="nav-item" sec:authorize="isAuthenticated()">
+                <a class="nav-link" href="/home" th:text="#{nav.private}">Zona privada</a>
+            </li>
+        </ul>
+
+        <ul class="navbar-nav">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="btnLanguage" role="button"
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span th:text="#{language.change}">Idioma</span>
+                </a>
+                <div id="languageDropdownMenuButton" class="dropdown-menu dropdown-menu-right"
+                     aria-labelledby="btnLanguage">
+                    <a class="dropdown-item" id="btnSpanish" value="es">
+                        <span th:text="#{language.es}">Español</span>
+                    </a>
+                    <a class="dropdown-item" id="btnEnglish" value="en">
+                        <span th:text="#{language.en}">Inglés</span>
+                    </a>
+                </div>
+            </li>
+
+            <li class="nav-item" sec:authorize="!isAuthenticated()">
+                <a class="nav-link" href="/login" th:text="#{nav.login}">Identifícate</a>
+            </li>
+
+            <li class="nav-item" sec:authorize="isAuthenticated()">
+                <a class="nav-link" href="/logout" th:text="#{nav.logout}">Desconectar</a>
+            </li>
+        </ul>
+    </div>
+</nav>

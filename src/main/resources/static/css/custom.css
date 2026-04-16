@@ -1,0 +1,47 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body.app-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f5f7fa;
+    color: #203247;
+}
+
+.app-navbar {
+    background-color: #203247;
+}
+
+.app-navbar .navbar-brand {
+    font-weight: 600;
+}
+
+.app-content {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 60px 0 40px 0;
+}
+
+.app-content h1 {
+    margin-bottom: 16px;
+}
+
+.app-content p {
+    font-size: 1.05rem;
+}
+
+.app-footer {
+    background-color: #203247;
+    color: #e8eef5;
+    padding: 18px 0;
+    text-align: center;
+}
+
+.app-footer p {
+    color: #e8eef5;
+}
