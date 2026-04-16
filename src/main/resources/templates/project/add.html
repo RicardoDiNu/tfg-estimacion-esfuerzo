@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body class="app-page">
+
+<nav th:replace="fragments/nav :: nav"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1 th:text="#{project.add.title}">Nuevo proyecto de estimación</h1>
+        <p th:text="#{project.add.subtitle}">Introduce los datos básicos del proyecto de estimación</p>
+
+        <form method="post" action="/projects/add">
+            <div class="form-group">
+                <label for="name" th:text="#{project.field.name}">Nombre</label>
+                <input type="text" class="form-control" id="name" name="name" required="required">
+            </div>
+
+            <div class="form-group">
+                <label for="description" th:text="#{project.field.description}">Descripción</label>
+                <textarea class="form-control" id="description" name="description" rows="4"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" th:text="#{project.add.submit}">Guardar</button>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+</body>
+</html>
