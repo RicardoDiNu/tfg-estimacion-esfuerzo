@@ -2,6 +2,7 @@ package com.uniovi.estimacion.services;
 
 import com.uniovi.estimacion.entities.EstimationProject;
 import com.uniovi.estimacion.repositories.EstimationProjectRepository;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.util.Optional;
 public class EstimationProjectService {
 
     private final EstimationProjectRepository estimationProjectRepository;
+    private final FunctionPointAnalysisService functionPointAnalysisService;
 
     public List<EstimationProject> getProjects() {
         List<EstimationProject> projects = new ArrayList<>();
@@ -30,6 +32,7 @@ public class EstimationProjectService {
     }
 
     public void deleteProject(Long id) {
+        functionPointAnalysisService.deleteByProjectId(id);
         estimationProjectRepository.deleteById(id);
     }
 }

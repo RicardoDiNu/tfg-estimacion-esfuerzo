@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1 th:text="#{fp.details.title}">Análisis de Puntos Función</h1>
+
+        <div class="card mb-3">
+            <div class="card-header" th:text="#{project.field.name}">Proyecto</div>
+            <div class="card-body">
+                <p class="card-text" th:text="${project.name}">Proyecto</p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header" th:text="#{fp.field.systemBoundary}">Límite del sistema</div>
+            <div class="card-body">
+                <p class="card-text" th:text="${analysis.systemBoundaryDescription}">Descripción del límite del sistema</p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Requisitos de Usuario</div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/requirements/add(projectId=${project.id})}">
+                        Añadir nuevo requisito
+                    </a>
+                </div>
+
+                <div class="table-responsive"
+                     th:if="${requirements != null and !requirements.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Identificador</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th th:text="#{project.field.actions}">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="requirement : ${requirements}">
+                            <td th:text="${requirement.identifier}">RU-01</td>
+                            <td th:text="${requirement.name}">Alta de cliente</td>
+                            <td th:text="${requirement.description}">Descripción</td>
+                            <td>
+                                <a th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}">
+                                    Ver detalle
+                                </a>
+                                |
+                                <a th:href="@{/projects/{projectId}/requirements/delete/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}"
+                                   th:text="#{project.action.delete}"
+                                   onclick="return confirm('¿Seguro que quieres eliminar este requisito?');">Eliminar</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${requirements == null or requirements.isEmpty()}"
+                     class="alert alert-light border mb-3">
+                    Todavía no hay requisitos de usuario registrados.
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header" th:text="#{fp.dataFunction.list.title}">Funciones de datos</div>
+            <div class="card-body">
+                <div class="table-responsive"
+                     th:if="${analysis.dataFunctions != null and !analysis.dataFunctions.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{fp.dataFunction.field.type}">Tipo</th>
+                            <th th:text="#{fp.dataFunction.field.name}">Nombre</th>
+                            <th th:text="#{fp.dataFunction.field.det}">DET</th>
+                            <th th:text="#{fp.dataFunction.field.ret}">RET</th>
+                            <th th:text="#{fp.dataFunction.field.complexity}">Complejidad</th>
+                            <th th:text="#{fp.dataFunction.field.weight}">Peso</th>
+                            <th th:text="#{fp.field.associatedRequirements}">RU asociados</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="dataFunction : ${analysis.dataFunctions}">
+                            <td th:text="${dataFunction.type}">ILF</td>
+                            <td th:text="${dataFunction.name}">Clientes</td>
+                            <td th:text="${dataFunction.detCount}">10</td>
+                            <td th:text="${dataFunction.retCount}">2</td>
+                            <td th:text="${dataFunction.complexity}">AVERAGE</td>
+                            <td th:text="${dataFunction.weight}">10</td>
+                            <td>
+                                <span th:if="${dataFunction.userRequirement == null}">-</span>
+                                <a th:if="${dataFunction.userRequirement != null}"
+                                   th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${dataFunction.userRequirement.id})}">
+                                    Ver detalle
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${analysis.dataFunctions == null or analysis.dataFunctions.isEmpty()}"
+                     class="alert alert-light border mb-0">
+                    <span th:text="#{fp.dataFunction.list.empty}">Todavía no hay funciones de datos registradas.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header" th:text="#{fp.transactionalFunction.list.title}">Funciones transaccionales</div>
+            <div class="card-body">
+                <div class="table-responsive"
+                     th:if="${analysis.transactionalFunctions != null and !analysis.transactionalFunctions.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{fp.transactionalFunction.field.type}">Tipo</th>
+                            <th th:text="#{fp.transactionalFunction.field.name}">Nombre</th>
+                            <th th:text="#{fp.transactionalFunction.field.det}">DET</th>
+                            <th th:text="#{fp.transactionalFunction.field.ftr}">FTR</th>
+                            <th th:text="#{fp.transactionalFunction.field.complexity}">Complejidad</th>
+                            <th th:text="#{fp.transactionalFunction.field.weight}">Peso</th>
+                            <th th:text="#{fp.field.associatedRequirements}">RU asociado</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="transactionalFunction : ${analysis.transactionalFunctions}">
+                            <td th:text="${transactionalFunction.type}">EI</td>
+                            <td th:text="${transactionalFunction.name}">Alta cliente</td>
+                            <td th:text="${transactionalFunction.detCount}">8</td>
+                            <td th:text="${transactionalFunction.ftrCount}">2</td>
+                            <td th:text="${transactionalFunction.complexity}">AVERAGE</td>
+                            <td th:text="${transactionalFunction.weight}">4</td>
+                            <td>
+                                <span th:if="${transactionalFunction.userRequirement == null}">-</span>
+                                <a th:if="${transactionalFunction.userRequirement != null}"
+                                   th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${transactionalFunction.userRequirement.id})}">
+                                    Ver detalle
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${analysis.transactionalFunctions == null or analysis.transactionalFunctions.isEmpty()}"
+                     class="alert alert-light border mb-0">
+                    <span th:text="#{fp.transactionalFunction.list.empty}">Todavía no hay funciones transaccionales registradas.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header" th:text="#{fp.gsc.list.title}">Características generales del sistema</div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/function-points/gsc/edit(projectId=${project.id})}">
+                        Editar GSC
+                    </a>
+                </div>
+
+                <div class="table-responsive"
+                     th:if="${analysis.generalSystemCharacteristicAssessments != null and !analysis.generalSystemCharacteristicAssessments.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{fp.gsc.field.name}">Característica</th>
+                            <th th:text="#{fp.gsc.field.degree}">Grado de influencia</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="assessment : ${analysis.generalSystemCharacteristicAssessments}">
+                            <td th:text="${assessment.characteristicType.label}">Performance</td>
+                            <td th:text="${assessment.degreeOfInfluence}">0</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${analysis.generalSystemCharacteristicAssessments == null or analysis.generalSystemCharacteristicAssessments.isEmpty()}"
+                     class="alert alert-light border mb-3">
+                    <span th:text="#{fp.gsc.list.empty}">No hay características generales del sistema registradas.</span>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header" th:text="#{fp.field.ufp}">Puntos Función No Ajustados</div>
+            <div class="card-body">
+                <p class="card-text" th:text="${analysis.unadjustedFunctionPoints}">0</p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header" th:text="#{fp.field.tdi}">Grado total de influencia</div>
+            <div class="card-body">
+                <p class="card-text" th:text="${analysis.totalDegreeOfInfluence}">0</p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header" th:text="#{fp.field.vaf}">Factor de ajuste del valor</div>
+            <div class="card-body">
+                <p class="card-text" th:text="${#numbers.formatDecimal(analysis.valueAdjustmentFactor, 1, 2)}">0.65</p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{fp.field.afp}">Puntos Función Ajustados</div>
+            <div class="card-body">
+                <p class="card-text" th:text="${#numbers.formatDecimal(analysis.adjustedFunctionPoints, 1, 2)}">0.00</p>
+            </div>
+        </div>
+
+        <a class="btn btn-secondary"
+           th:href="@{/projects/{id}(id=${project.id})}">
+            Volver al proyecto
+        </a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

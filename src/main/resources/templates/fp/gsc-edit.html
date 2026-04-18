@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body class="app-page">
+
+<nav th:replace="fragments/nav :: nav"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1 th:text="#{fp.gsc.edit.title}">Editar características generales del sistema</h1>
+        <p th:text="#{fp.gsc.edit.subtitle}">Asigna un valor de 0 a 5 a cada característica</p>
+
+        <form method="post"
+              th:action="@{/projects/{projectId}/function-points/gsc/edit(projectId=${project.id})}"
+              th:object="${analysis}">
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th th:text="#{fp.gsc.field.name}">Característica</th>
+                        <th th:text="#{fp.gsc.field.degree}">Grado de influencia</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="assessment, iterStat : *{generalSystemCharacteristicAssessments}">
+                        <td th:text="${assessment.characteristicType.label}">Performance</td>
+                        <td>
+                            <input type="hidden"
+                                   th:field="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].id}"/>
+
+                            <input type="number"
+                                   min="0"
+                                   max="5"
+                                   class="form-control"
+                                   th:field="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].degreeOfInfluence}"/>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="submit" class="btn btn-primary mr-2" th:text="#{fp.gsc.edit.submit}">Guardar GSC</button>
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
+               th:text="#{fp.gsc.edit.cancel}">Cancelar</a>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+</body>
+</html>

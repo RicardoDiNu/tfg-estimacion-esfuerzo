@@ -35,9 +35,6 @@
                         <a th:href="@{/projects/{id}(id=${project.id})}"
                            th:text="#{project.action.details}">Ver detalle</a>
                         |
-                        <a th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='list')}"
-                           th:text="#{project.action.edit}">Editar</a>
-                        |
                         <a th:href="@{/projects/delete/{id}(id=${project.id})}"
                            th:text="#{project.action.delete}"
                            onclick="return confirm('¿Seguro que quieres eliminar este proyecto?');">Eliminar</a>

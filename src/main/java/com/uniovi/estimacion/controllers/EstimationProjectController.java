@@ -2,6 +2,7 @@ package com.uniovi.estimacion.controllers;
 
 import com.uniovi.estimacion.entities.EstimationProject;
 import com.uniovi.estimacion.services.EstimationProjectService;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +15,7 @@ import java.util.Optional;
 public class EstimationProjectController {
 
     private final EstimationProjectService estimationProjectService;
+    private final FunctionPointAnalysisService functionPointAnalysisService;
 
     @GetMapping("/projects")
     public String getProjectList(Model model) {
@@ -28,9 +30,9 @@ public class EstimationProjectController {
     }
 
     @PostMapping("/projects/add")
-    public String saveProject(@ModelAttribute EstimationProject project) {
+    public String addProject(@ModelAttribute("project") EstimationProject project) {
         estimationProjectService.saveProject(project);
-        return "redirect:/projects";
+        return "redirect:/projects/" + project.getId();
     }
 
     @GetMapping("/projects/{id}")
@@ -42,6 +44,8 @@ public class EstimationProjectController {
         }
 
         model.addAttribute("project", optionalProject.get());
+        model.addAttribute("hasFunctionPointAnalysis", functionPointAnalysisService.getByProjectId(id).isPresent());
+
         return "project/details";
     }
 
@@ -82,4 +86,27 @@ public class EstimationProjectController {
 
         return "redirect:/projects";
     }
+
+    @GetMapping("/projects/delete/{id}")
+    public String deleteProject(@PathVariable Long id) {
+        estimationProjectService.deleteProject(id);
+        return "redirect:/projects";
+    }
+    @GetMapping("/projects/{projectId}/function-points/access")
+    public String accessFunctionPointAnalysis(@PathVariable Long projectId) {
+        Optional<EstimationProject> optionalProject = estimationProjectService.getProject(projectId);
+
+        if (optionalProject.isEmpty()) {
+            return "redirect:/projects";
+        }
+
+        boolean hasAnalysis = functionPointAnalysisService.getDetailedByProjectId(projectId).isPresent();
+
+        if (hasAnalysis) {
+            return "redirect:/projects/" + projectId + "/function-points";
+        }
+
+        return "redirect:/projects/" + projectId + "/function-points/add";
+    }
+
 }

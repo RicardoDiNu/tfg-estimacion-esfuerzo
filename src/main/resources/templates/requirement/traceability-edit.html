@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+  <div class="container">
+    <h1 th:text="#{requirement.traceability.title}">Editar trazabilidad del requisito</h1>
+    <p th:text="#{requirement.traceability.subtitle}">Asocia este requisito con las funciones PF que se derivan de él</p>
+
+    <div class="alert alert-light border">
+      <strong th:text="#{requirement.field.identifier}">Identificador</strong>:
+      <span th:text="${requirement.identifier}">RU-01</span>
+      <span th:if="${requirement.name != null and !requirement.name.isEmpty()}">
+                - <span th:text="${requirement.name}">Nombre</span>
+            </span>
+    </div>
+
+    <form method="post"
+          th:action="@{/projects/{projectId}/requirements/traceability/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}">
+
+      <div class="card mb-3">
+        <div class="card-header" th:text="#{requirement.traceability.dataFunctions}">Funciones de datos</div>
+        <div class="card-body">
+          <div th:if="${analysis.dataFunctions != null and !analysis.dataFunctions.isEmpty()}">
+            <div class="form-check mb-2" th:each="dataFunction : ${analysis.dataFunctions}">
+              <input class="form-check-input"
+                     type="checkbox"
+                     name="dataFunctionIds"
+                     th:id="'df-' + ${dataFunction.id}"
+                     th:value="${dataFunction.id}"
+                     th:checked="${selectedDataFunctionIds.contains(dataFunction.id)}">
+              <label class="form-check-label" th:for="'df-' + ${dataFunction.id}">
+                <span th:text="${dataFunction.type}">ILF</span>
+                -
+                <span th:text="${dataFunction.name}">Clientes</span>
+              </label>
+            </div>
+          </div>
+
+          <div th:if="${analysis.dataFunctions == null or analysis.dataFunctions.isEmpty()}"
+               class="alert alert-light border mb-0">
+            <span th:text="#{requirement.traceability.emptyDataFunctions}">No hay funciones de datos disponibles.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header" th:text="#{requirement.traceability.transactionalFunctions}">Funciones transaccionales</div>
+        <div class="card-body">
+          <div th:if="${analysis.transactionalFunctions != null and !analysis.transactionalFunctions.isEmpty()}">
+            <div class="form-check mb-2" th:each="transactionalFunction : ${analysis.transactionalFunctions}">
+              <input class="form-check-input"
+                     type="checkbox"
+                     name="transactionalFunctionIds"
+                     th:id="'tf-' + ${transactionalFunction.id}"
+                     th:value="${transactionalFunction.id}"
+                     th:checked="${selectedTransactionalFunctionIds.contains(transactionalFunction.id)}">
+              <label class="form-check-label" th:for="'tf-' + ${transactionalFunction.id}">
+                <span th:text="${transactionalFunction.type}">EI</span>
+                -
+                <span th:text="${transactionalFunction.name}">Alta cliente</span>
+              </label>
+            </div>
+          </div>
+
+          <div th:if="${analysis.transactionalFunctions == null or analysis.transactionalFunctions.isEmpty()}"
+               class="alert alert-light border mb-0">
+            <span th:text="#{requirement.traceability.emptyTransactionalFunctions}">No hay funciones transaccionales disponibles.</span>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary mr-2" th:text="#{requirement.traceability.submit}">Guardar trazabilidad</button>
+      <a class="btn btn-secondary"
+         th:href="@{/projects/{projectId}/requirements(projectId=${project.id})}"
+         th:text="#{requirement.traceability.cancel}">Cancelar</a>
+    </form>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

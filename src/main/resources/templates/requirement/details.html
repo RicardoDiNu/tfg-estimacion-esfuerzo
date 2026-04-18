@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1>Detalle del requisito</h1>
+
+        <div class="card mb-3">
+            <div class="card-header">Requisito</div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/requirements/edit/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}">
+                        Editar
+                    </a>
+                </div>
+
+                <p>
+                    <strong th:text="#{requirement.field.identifier}">Identificador</strong>:
+                    <span th:text="${requirement.identifier}">RU-01</span>
+                </p>
+                <p>
+                    <strong th:text="#{requirement.field.name}">Nombre</strong>:
+                    <span th:text="${requirement.name}">Nombre</span>
+                </p>
+                <p>
+                    <strong th:text="#{requirement.field.description}">Descripción</strong>:
+                    <span th:text="${requirement.description}">Descripción</span>
+                </p>
+
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Funciones de datos derivadas</div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/requirements/{requirementId}/data-functions/add(projectId=${project.id}, requirementId=${requirement.id})}">
+                        Añadir función de datos
+                    </a>
+                </div>
+
+                <div th:if="${requirement.dataFunctions != null and !requirement.dataFunctions.isEmpty()}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{fp.dataFunction.field.type}">Tipo</th>
+                            <th th:text="#{fp.dataFunction.field.name}">Nombre</th>
+                            <th th:text="#{fp.dataFunction.field.det}">DET</th>
+                            <th th:text="#{fp.dataFunction.field.ret}">RET</th>
+                            <th th:text="#{fp.dataFunction.field.complexity}">Complejidad</th>
+                            <th th:text="#{fp.dataFunction.field.weight}">Peso</th>
+                            <th th:text="#{project.field.actions}">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="dataFunction : ${requirement.dataFunctions}">
+                            <td th:text="${dataFunction.type}">ILF</td>
+                            <td th:text="${dataFunction.name}">Clientes</td>
+                            <td th:text="${dataFunction.detCount}">10</td>
+                            <td th:text="${dataFunction.retCount}">2</td>
+                            <td th:text="${dataFunction.complexity}">AVERAGE</td>
+                            <td th:text="${dataFunction.weight}">10</td>
+                            <td>
+                                <a th:href="@{/projects/{projectId}/requirements/{requirementId}/data-functions/edit/{dataFunctionId}(projectId=${project.id}, requirementId=${requirement.id}, dataFunctionId=${dataFunction.id})}"
+                                   th:text="#{project.action.edit}">Editar</a>
+                                |
+                                <a th:href="@{/projects/{projectId}/requirements/{requirementId}/data-functions/delete/{dataFunctionId}(projectId=${project.id}, requirementId=${requirement.id}, dataFunctionId=${dataFunction.id})}"
+                                   th:text="#{project.action.delete}"
+                                   onclick="return confirm('¿Seguro que quieres eliminar esta función de datos derivada?');">Eliminar</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${requirement.dataFunctions == null or requirement.dataFunctions.isEmpty()}"
+                     class="alert alert-light border mb-3">
+                    No hay funciones de datos derivadas todavía.
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">Funciones transaccionales derivadas</div>
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/requirements/{requirementId}/transactional-functions/add(projectId=${project.id}, requirementId=${requirement.id})}">
+                        Añadir función transaccional
+                    </a>
+                </div>
+
+                <div th:if="${requirement.transactionalFunctions != null and !requirement.transactionalFunctions.isEmpty()}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{fp.transactionalFunction.field.type}">Tipo</th>
+                            <th th:text="#{fp.transactionalFunction.field.name}">Nombre</th>
+                            <th th:text="#{fp.transactionalFunction.field.det}">DET</th>
+                            <th th:text="#{fp.transactionalFunction.field.ftr}">FTR</th>
+                            <th th:text="#{fp.transactionalFunction.field.complexity}">Complejidad</th>
+                            <th th:text="#{fp.transactionalFunction.field.weight}">Peso</th>
+                            <th th:text="#{project.field.actions}">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="transactionalFunction : ${requirement.transactionalFunctions}">
+                            <td th:text="${transactionalFunction.type}">EI</td>
+                            <td th:text="${transactionalFunction.name}">Alta cliente</td>
+                            <td th:text="${transactionalFunction.detCount}">8</td>
+                            <td th:text="${transactionalFunction.ftrCount}">2</td>
+                            <td th:text="${transactionalFunction.complexity}">AVERAGE</td>
+                            <td th:text="${transactionalFunction.weight}">4</td>
+                            <td>
+                                <a th:href="@{/projects/{projectId}/requirements/{requirementId}/transactional-functions/edit/{transactionalFunctionId}(projectId=${project.id}, requirementId=${requirement.id}, transactionalFunctionId=${transactionalFunction.id})}"
+                                   th:text="#{project.action.edit}">Editar</a>
+                                |
+                                <a th:href="@{/projects/{projectId}/requirements/{requirementId}/transactional-functions/delete/{transactionalFunctionId}(projectId=${project.id}, requirementId=${requirement.id}, transactionalFunctionId=${transactionalFunction.id})}"
+                                   th:text="#{project.action.delete}"
+                                   onclick="return confirm('¿Seguro que quieres eliminar esta función transaccional derivada?');">Eliminar</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${requirement.transactionalFunctions == null or requirement.transactionalFunctions.isEmpty()}"
+                     class="alert alert-light border mb-3">
+                    No hay funciones transaccionales derivadas todavía.
+                </div>
+
+            </div>
+        </div>
+
+        <a class="btn btn-secondary"
+           th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}">
+            Volver al análisis PF
+        </a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

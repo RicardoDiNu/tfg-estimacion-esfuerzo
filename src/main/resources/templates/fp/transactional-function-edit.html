@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/head :: head"></head>
+<body class="app-page">
+
+<nav th:replace="fragments/nav :: nav"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1 th:text="#{fp.transactionalFunction.edit.title}">Editar función transaccional</h1>
+        <p th:text="#{fp.transactionalFunction.edit.subtitle}">Modifica los datos necesarios para clasificar la función</p>
+
+        <form method="post"
+              th:action="@{/projects/{projectId}/requirements/{requirementId}/transactional-functions/edit/{transactionalFunctionId}(projectId=${project.id}, requirementId=${requirementId}, transactionalFunctionId=${transactionalFunction.id})}">
+            <div class="form-group">
+                <label for="type" th:text="#{fp.transactionalFunction.field.type}">Tipo</label>
+                <select class="form-control" id="type" name="type" required="required">
+                    <option th:each="type : ${transactionalFunctionTypes}"
+                            th:value="${type}"
+                            th:text="${type}"
+                            th:selected="${type == transactionalFunction.type}">
+                        EI
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="name" th:text="#{fp.transactionalFunction.field.name}">Nombre</label>
+                <input type="text" class="form-control" id="name" name="name"
+                       th:value="${transactionalFunction.name}" required="required">
+            </div>
+
+            <div class="form-group">
+                <label for="description" th:text="#{fp.transactionalFunction.field.description}">Descripción</label>
+                <textarea class="form-control" id="description" name="description" rows="4"
+                          th:text="${transactionalFunction.description}"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="detCount" th:text="#{fp.transactionalFunction.field.det}">DET</label>
+                <input type="number" min="1" class="form-control" id="detCount" name="detCount"
+                       th:value="${transactionalFunction.detCount}" required="required">
+            </div>
+
+            <div class="form-group">
+                <label for="ftrCount" th:text="#{fp.transactionalFunction.field.ftr}">FTR</label>
+                <input type="number" min="0" class="form-control" id="ftrCount" name="ftrCount"
+                       th:value="${transactionalFunction.ftrCount}" required="required">
+            </div>
+
+            <button type="submit" class="btn btn-primary mr-2" th:text="#{fp.transactionalFunction.edit.submit}">Guardar cambios</button>
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${requirementId})}">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+
+</body>
+</html>

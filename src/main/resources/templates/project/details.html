@@ -43,18 +43,27 @@
             </div>
         </div>
 
-        <a class="btn btn-primary mr-2"
-           th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='details')}"
-           th:text="#{project.action.edit}">Editar</a>
+        <div class="mb-4">
+            <a class="btn btn-outline-secondary mr-2"
+               th:href="@{/projects/{id}/function-points/access(id=${project.id})}"
+               th:text="#{project.functionPoints.view}">Análisis PF</a>
+        </div>
 
-        <a class="btn btn-danger mr-2"
-           th:href="@{/projects/delete/{id}(id=${project.id})}"
-           th:text="#{project.action.delete}"
-           onclick="return confirm('¿Seguro que quieres eliminar este proyecto?');">Eliminar</a>
+        <div class="mb-4">
+            <a class="btn btn-primary mr-2"
+               th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='details')}"
+               th:text="#{project.action.edit}">Editar</a>
 
-        <a class="btn btn-secondary"
-           href="/projects"
-           th:text="#{project.details.back}">Volver al listado</a>
+            <a class="btn btn-danger mr-2"
+               th:href="@{/projects/delete/{id}(id=${project.id})}"
+               th:text="#{project.action.delete}"
+               onclick="return confirm('¿Seguro que quieres eliminar este proyecto?');">Eliminar</a>
+
+            <a class="btn btn-secondary"
+               href="/projects"
+               th:text="#{project.details.back}">Volver al listado</a>
+        </div>
+
     </div>
 </main>
 
