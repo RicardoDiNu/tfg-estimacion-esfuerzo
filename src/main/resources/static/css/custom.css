@@ -45,3 +45,86 @@ body.app-page {
 .app-footer p {
     color: #e8eef5;
 }
+
+.fp-analysis-layout .card {
+    height: 100%;
+}
+
+.fp-analysis-layout .card-header {
+    font-weight: 600;
+}
+
+.fp-analysis-layout .table {
+    margin-bottom: 0;
+}
+
+.fp-result-item {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 12px 14px;
+    background: #f8f9fa;
+    height: 100%;
+}
+
+.fp-result-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 6px;
+}
+
+.fp-result-value {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #203247;
+}
+
+.fp-analysis-container {
+    max-width: 1680px;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.fp-analysis-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.fp-analysis-column .card {
+    width: 100%;
+}
+
+.fp-context-item h6 {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.fp-results-card {
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.fp-result-box {
+    text-align: center;
+}
+
+.fp-result-value {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #203247;
+}
+
+@media (max-width: 991.98px) {
+    .fp-analysis-container {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+}
+
+.text-truncate-cell {
+    max-width: 260px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

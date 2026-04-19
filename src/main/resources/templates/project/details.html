@@ -33,16 +33,6 @@
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header" th:text="#{project.field.updatedAt}">Fecha de actualización</div>
-            <div class="card-body">
-                <p class="card-text"
-                   th:text="${#temporals.format(project.updatedAt, 'dd/MM/yyyy HH:mm')}">
-                    16/04/2026 22:57
-                </p>
-            </div>
-        </div>
-
         <div class="mb-4">
             <a class="btn btn-outline-secondary mr-2"
                th:href="@{/projects/{id}/function-points/access(id=${project.id})}"

@@ -7,11 +7,9 @@
 
 <main class="app-content">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Proyectos</h1>
-            <a class="btn btn-primary" th:href="@{/projects/add}">
-                Nuevo proyecto
-            </a>
+        <div class="mb-4">
+            <h1 class="mb-3">Proyectos</h1>
+            <a class="btn btn-primary" th:href="@{/projects/add}">Nuevo proyecto</a>
         </div>
 
         <div id="projects-container" th:fragment="projectsSection">
@@ -24,26 +22,21 @@
                     <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>Descripción</th>
                         <th>Fecha de creación</th>
-                        <th>Última actualización</th>
-                        <th>Acciones</th>
+                        <th class="text-right"></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="project : ${projectsList}">
-                        <td th:text="${project.name}">Proyecto</td>
-
-                        <td th:text="${project.description != null and !#strings.isEmpty(project.description) ? project.description : '-'}">
-                            Descripción
+                        <td class="text-truncate-cell"
+                            th:text="${project.name}"
+                            th:title="${project.name}">
+                            Nombre del proyecto
                         </td>
+
 
                         <td th:text="${project.createdAt != null ? project.createdAt.format(T(java.time.format.DateTimeFormatter).ofPattern('dd/MM/yyyy HH:mm')) : '-'}">
                             19/04/2026 12:30
-                        </td>
-
-                        <td th:text="${project.updatedAt != null ? project.updatedAt.format(T(java.time.format.DateTimeFormatter).ofPattern('dd/MM/yyyy HH:mm')) : '-'}">
-                            19/04/2026 13:10
                         </td>
 
                         <td>

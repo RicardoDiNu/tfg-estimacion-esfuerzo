@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1>Editar análisis PF</h1>
+
+        <div class="alert alert-light border">
+            <strong>Proyecto:</strong>
+            <span th:text="${project.name}">Proyecto</span>
+        </div>
+
+        <div class="alert alert-danger"
+             th:if="${error != null}"
+             th:text="${error}">
+            El límite del sistema no puede estar vacío.
+        </div>
+
+        <form method="post"
+              th:action="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}">
+
+            <div class="form-group">
+                <label for="systemBoundaryDescription">Límite del sistema</label>
+                <textarea class="form-control"
+                          id="systemBoundaryDescription"
+                          name="systemBoundaryDescription"
+                          rows="6"
+                          maxlength="2000"
+                          required="required"
+                          th:text="${systemBoundaryDescription}">Texto del límite</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary mr-2">Guardar cambios</button>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

@@ -53,6 +53,30 @@ public class FunctionPointAnalysisService {
     }
 
     @Transactional
+    public boolean updateSystemBoundaryDescription(Long projectId, String systemBoundaryDescription) {
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisRepository.findByEstimationProjectId(projectId);
+
+        if (optionalAnalysis.isEmpty()) {
+            return false;
+        }
+
+        String normalizedBoundary = systemBoundaryDescription == null
+                ? ""
+                : systemBoundaryDescription.trim();
+
+        if (normalizedBoundary.isBlank()) {
+            return false;
+        }
+
+        FunctionPointAnalysis analysis = optionalAnalysis.get();
+        analysis.setSystemBoundaryDescription(normalizedBoundary);
+
+        recalculateAndSave(analysis);
+        return true;
+    }
+
+    @Transactional
     public boolean updateGeneralSystemCharacteristics(Long projectId, FunctionPointAnalysis formAnalysis) {
         Optional<FunctionPointAnalysis> optionalAnalysis =
                 functionPointAnalysisRepository.findByEstimationProjectId(projectId);

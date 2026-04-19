@@ -105,6 +105,55 @@ public class FunctionPointAnalysisController {
         return "fp/details";
     }
 
+    @GetMapping("/function-points/edit")
+    public String getEditForm(@PathVariable Long projectId, Model model) {
+        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis = functionPointAnalysisService.findByProjectId(projectId);
+
+        if (optionalProject.isEmpty()) {
+            return redirectToProjects();
+        }
+
+        if (optionalAnalysis.isEmpty()) {
+            return redirectToFunctionPointAdd(projectId);
+        }
+
+        model.addAttribute("project", optionalProject.get());
+        model.addAttribute("analysis", optionalAnalysis.get());
+        model.addAttribute("systemBoundaryDescription", optionalAnalysis.get().getSystemBoundaryDescription());
+
+        return "fp/edit";
+    }
+
+    @PostMapping("/function-points/edit")
+    public String updateAnalysis(@PathVariable Long projectId,
+                                 @RequestParam("systemBoundaryDescription") String systemBoundaryDescription,
+                                 Model model) {
+        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis = functionPointAnalysisService.findByProjectId(projectId);
+
+        if (optionalProject.isEmpty()) {
+            return redirectToProjects();
+        }
+
+        if (optionalAnalysis.isEmpty()) {
+            return redirectToFunctionPointAdd(projectId);
+        }
+
+        boolean updated = functionPointAnalysisService
+                .updateSystemBoundaryDescription(projectId, systemBoundaryDescription);
+
+        if (!updated) {
+            model.addAttribute("project", optionalProject.get());
+            model.addAttribute("analysis", optionalAnalysis.get());
+            model.addAttribute("systemBoundaryDescription", systemBoundaryDescription);
+            model.addAttribute("error", "El límite del sistema no puede estar vacío.");
+            return "fp/edit";
+        }
+
+        return redirectToFunctionPointDetails(projectId);
+    }
+
     @GetMapping("/function-points/requirements/update")
     public String updateRequirementsSection(@PathVariable Long projectId,
                                             @RequestParam(name = "requirementsPage", defaultValue = "0") int requirementsPage,
