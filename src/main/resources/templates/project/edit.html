@@ -1,46 +1,58 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body class="app-page">
 
-<nav th:replace="fragments/nav :: nav"></nav>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
 
 <main class="app-content">
     <div class="container">
-        <h1 th:text="#{project.edit.title}">Editar proyecto de estimación</h1>
-        <p th:text="#{project.edit.subtitle}">Modifica los datos básicos del proyecto de estimación</p>
+        <h1>Editar proyecto</h1>
 
-        <form method="post" th:action="@{/projects/edit/{id}(id=${project.id})}">
+        <form method="post"
+              th:action="@{/projects/edit/{projectId}(projectId=${project.id})}"
+              th:object="${project}">
+
+            <input type="hidden" name="returnTo" th:value="${returnTo}"/>
+            <input type="hidden" name="page" th:value="${page}"/>
+
             <div class="form-group">
-                <label for="name" th:text="#{project.field.name}">Nombre</label>
+                <label for="name">Nombre</label>
                 <input type="text"
                        class="form-control"
                        id="name"
-                       name="name"
-                       th:value="${project.name}"
-                       required="required">
+                       th:field="*{name}"
+                       required>
             </div>
 
             <div class="form-group">
-                <label for="description" th:text="#{project.field.description}">Descripción</label>
+                <label for="description">Descripción</label>
                 <textarea class="form-control"
                           id="description"
-                          name="description"
-                          rows="4"
-                          th:text="${project.description}"></textarea>
+                          th:field="*{description}"
+                          rows="4"></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary mr-2" th:text="#{project.edit.submit}">Guardar cambios</button>
-            <a class="btn btn-secondary"
-               th:href="${returnTo == 'details'} ? @{/projects/{id}(id=${project.id})} : @{/projects}"
-               th:text="#{project.edit.cancel}">Cancelar</a>
+            <button type="submit" class="btn btn-primary mr-2">
+                Guardar cambios
+            </button>
 
-            <input type="hidden" name="returnTo" th:value="${returnTo}">
+            <a class="btn btn-secondary"
+               th:if="${returnTo == 'details'}"
+               th:href="@{/projects/{projectId}(projectId=${project.id})}">
+                Cancelar
+            </a>
+
+            <a class="btn btn-secondary"
+               th:unless="${returnTo == 'details'}"
+               th:href="@{/projects(page=${page})}">
+                Cancelar
+            </a>
         </form>
     </div>
 </main>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>
 </html>

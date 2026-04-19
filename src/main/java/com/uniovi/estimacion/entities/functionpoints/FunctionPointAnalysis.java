@@ -1,6 +1,6 @@
 package com.uniovi.estimacion.entities.functionpoints;
 
-import com.uniovi.estimacion.entities.EstimationProject;
+import com.uniovi.estimacion.entities.projects.EstimationProject;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

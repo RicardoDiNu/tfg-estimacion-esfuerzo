@@ -1,4 +1,4 @@
-package com.uniovi.estimacion.repositories;
+package com.uniovi.estimacion.repositories.functionpoints;
 
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
 import org.springframework.data.repository.CrudRepository;

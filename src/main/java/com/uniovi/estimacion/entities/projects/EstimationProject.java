@@ -1,4 +1,4 @@
-package com.uniovi.estimacion.entities;
+package com.uniovi.estimacion.entities.projects;
 
 import jakarta.persistence.*;
 import lombok.Getter;

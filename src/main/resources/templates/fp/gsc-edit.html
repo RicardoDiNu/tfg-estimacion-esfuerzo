@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body class="app-page">
 
-<nav th:replace="fragments/nav :: nav"></nav>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
 
 <main class="app-content">
     <div class="container">
@@ -29,6 +29,12 @@
                             <input type="hidden"
                                    th:field="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].id}"/>
 
+                            <label class="sr-only"
+                                   th:for="|generalSystemCharacteristicAssessments${iterStat.index}.degreeOfInfluence|"
+                                   th:text="|Grado de influencia para ${assessment.characteristicType.label}|">
+                                Grado de influencia
+                            </label>
+
                             <input type="number"
                                    min="0"
                                    max="5"
@@ -40,7 +46,9 @@
                 </table>
             </div>
 
-            <button type="submit" class="btn btn-primary mr-2" th:text="#{fp.gsc.edit.submit}">Guardar GSC</button>
+            <button type="submit" class="btn btn-primary mr-2"
+                    th:text="#{fp.gsc.edit.submit}">Guardar GSC</button>
+
             <a class="btn btn-secondary"
                th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
                th:text="#{fp.gsc.edit.cancel}">Cancelar</a>
@@ -48,7 +56,7 @@
     </div>
 </main>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>
 </html>

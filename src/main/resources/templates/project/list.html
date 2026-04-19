@@ -1,56 +1,120 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body class="app-page">
 
-<nav th:replace="fragments/nav :: nav"></nav>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
 
 <main class="app-content">
     <div class="container">
-        <h1 th:text="#{project.list.title}">Proyectos de estimación</h1>
-        <p th:text="#{project.list.subtitle}">Listado de proyectos de estimación registrados en el sistema</p>
-
-        <div class="mb-3">
-            <a class="btn btn-primary" href="/projects/add" th:text="#{project.add.button}">Nuevo proyecto</a>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Proyectos</h1>
+            <a class="btn btn-primary" th:href="@{/projects/add}">
+                Nuevo proyecto
+            </a>
         </div>
 
-        <div class="table-responsive" th:if="${projectsList != null and not #lists.isEmpty(projectsList)}">
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th th:text="#{project.field.id}">Id</th>
-                    <th th:text="#{project.field.name}">Nombre</th>
-                    <th th:text="#{project.field.description}">Descripción</th>
-                    <th th:text="#{project.field.createdAt}">Fecha de creación</th>
-                    <th th:text="#{project.field.actions}">Acciones</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="project : ${projectsList}">
-                    <td th:text="${project.id}">1</td>
-                    <td th:text="${project.name}">Proyecto ejemplo</td>
-                    <td th:text="${project.description}">Descripción</td>
-                    <td th:text="${#temporals.format(project.createdAt, 'dd/MM/yyyy HH:mm')}">16/04/2026 22:57</td>
-                    <td>
-                        <a th:href="@{/projects/{id}(id=${project.id})}"
-                           th:text="#{project.action.details}">Ver detalle</a>
-                        |
-                        <a th:href="@{/projects/delete/{id}(id=${project.id})}"
-                           th:text="#{project.action.delete}"
-                           onclick="return confirm('¿Seguro que quieres eliminar este proyecto?');">Eliminar</a>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+        <div id="projects-container" th:fragment="projectsSection">
+            <div th:if="${projectsList == null or projectsList.isEmpty()}" class="alert alert-light border">
+                Todavía no hay proyectos registrados.
+            </div>
 
-        <div th:if="${projectsList == null or #lists.isEmpty(projectsList)}" class="alert alert-light border">
-            <span th:text="#{project.list.empty}">Todavía no hay proyectos de estimación registrados.</span>
+            <div class="table-responsive" th:if="${projectsList != null and !projectsList.isEmpty()}">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Fecha de creación</th>
+                        <th>Última actualización</th>
+                        <th>Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="project : ${projectsList}">
+                        <td th:text="${project.name}">Proyecto</td>
+
+                        <td th:text="${project.description != null and !#strings.isEmpty(project.description) ? project.description : '-'}">
+                            Descripción
+                        </td>
+
+                        <td th:text="${project.createdAt != null ? project.createdAt.format(T(java.time.format.DateTimeFormatter).ofPattern('dd/MM/yyyy HH:mm')) : '-'}">
+                            19/04/2026 12:30
+                        </td>
+
+                        <td th:text="${project.updatedAt != null ? project.updatedAt.format(T(java.time.format.DateTimeFormatter).ofPattern('dd/MM/yyyy HH:mm')) : '-'}">
+                            19/04/2026 13:10
+                        </td>
+
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary mr-2"
+                               th:href="@{/projects/{projectId}(projectId=${project.id})}">
+                                Ver detalle
+                            </a>
+
+                            <a class="btn btn-sm btn-outline-danger"
+                               th:href="@{/projects/delete/{projectId}(projectId=${project.id}, page=${projectsPage.number})}"
+                               onclick="return confirm('¿Seguro que deseas eliminar este proyecto?');">
+                                Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center mt-4" th:if="${projectsPage.totalPages > 1}">
+                <ul class="pagination justify-content-center mb-0">
+
+                    <li class="page-item" th:classappend="${projectsPage.number == 0} ? 'disabled'">
+                        <a class="page-link projects-page-link"
+                           th:href="@{/projects/update(page=0)}"
+                           th:attr="data-browser-url=@{/projects(page=0)}">
+                            Primera
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:if="${projectsPage.number - 1 >= 0}">
+                        <a class="page-link projects-page-link"
+                           th:href="@{/projects/update(page=${projectsPage.number - 1})}"
+                           th:attr="data-browser-url=@{/projects(page=${projectsPage.number - 1})}"
+                           th:text="${projectsPage.number}">
+                            1
+                        </a>
+                    </li>
+
+                    <li class="page-item active">
+                        <a class="page-link projects-page-link"
+                           th:href="@{/projects/update(page=${projectsPage.number})}"
+                           th:attr="data-browser-url=@{/projects(page=${projectsPage.number})}"
+                           th:text="${projectsPage.number + 1}">
+                            2
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:if="${projectsPage.number + 1 <= projectsPage.totalPages - 1}">
+                        <a class="page-link projects-page-link"
+                           th:href="@{/projects/update(page=${projectsPage.number + 1})}"
+                           th:attr="data-browser-url=@{/projects(page=${projectsPage.number + 1})}"
+                           th:text="${projectsPage.number + 2}">
+                            3
+                        </a>
+                    </li>
+
+                    <li class="page-item" th:classappend="${projectsPage.number == projectsPage.totalPages - 1} ? 'disabled'">
+                        <a class="page-link projects-page-link"
+                           th:href="@{/projects/update(page=${projectsPage.totalPages - 1})}"
+                           th:attr="data-browser-url=@{/projects(page=${projectsPage.totalPages - 1})}">
+                            Última
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </main>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>
 </html>

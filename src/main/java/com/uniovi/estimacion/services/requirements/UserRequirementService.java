@@ -1,32 +1,38 @@
 package com.uniovi.estimacion.services.requirements;
 
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.requirements.UserRequirement;
-import com.uniovi.estimacion.repositories.FunctionPointAnalysisRepository;
-import com.uniovi.estimacion.repositories.UserRequirementRepository;
+import com.uniovi.estimacion.repositories.functionpoints.FunctionPointAnalysisRepository;
+import com.uniovi.estimacion.repositories.requirements.UserRequirementRepository;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserRequirementService {
 
     private final UserRequirementRepository userRequirementRepository;
     private final FunctionPointAnalysisRepository functionPointAnalysisRepository;
     private final FunctionPointCalculationService functionPointCalculationService;
 
-    public List<UserRequirement> getByProjectId(Long projectId) {
+    public List<UserRequirement> findAllByProjectId(Long projectId) {
         return userRequirementRepository.findByEstimationProjectIdOrderByIdAsc(projectId);
     }
 
     @Transactional(readOnly = true)
-    public List<UserRequirement> getDetailedByProjectId(Long projectId) {
+    public List<UserRequirement> findDetailedAllByProjectId(Long projectId) {
         List<UserRequirement> requirements = userRequirementRepository.findByEstimationProjectIdOrderByIdAsc(projectId);
 
         requirements.forEach(requirement -> {
@@ -37,18 +43,23 @@ public class UserRequirementService {
         return requirements;
     }
 
-    public Optional<UserRequirement> getById(Long id) {
-        return userRequirementRepository.findById(id);
+    public Optional<UserRequirement> findById(Long requirementId) {
+        return userRequirementRepository.findById(requirementId);
     }
 
-    public Optional<UserRequirement> getByIdAndProjectId(Long id, Long projectId) {
-        return userRequirementRepository.findByIdAndEstimationProjectId(id, projectId);
+    public Optional<UserRequirement> findByIdAndProjectId(Long requirementId, Long projectId) {
+        return userRequirementRepository.findByIdAndEstimationProjectId(requirementId, projectId);
     }
 
     @Transactional(readOnly = true)
-    public Optional<UserRequirement> getDetailedByIdAndProjectId(Long id, Long projectId) {
+    public Page<UserRequirement> findPageByProjectId(Long projectId, Pageable pageable) {
+        return userRequirementRepository.findByEstimationProjectIdOrderByIdAsc(projectId, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserRequirement> findDetailedByIdAndProjectId(Long requirementId, Long projectId) {
         Optional<UserRequirement> optionalRequirement =
-                userRequirementRepository.findByIdAndEstimationProjectId(id, projectId);
+                userRequirementRepository.findByIdAndEstimationProjectId(requirementId, projectId);
 
         optionalRequirement.ifPresent(requirement -> {
             Hibernate.initialize(requirement.getDataFunctions());
@@ -58,12 +69,36 @@ public class UserRequirementService {
         return optionalRequirement;
     }
 
-    public void save(UserRequirement userRequirement) {
-        userRequirementRepository.save(userRequirement);
+    public boolean hasBasicData(UserRequirement requirement) {
+        return StringUtils.hasText(requirement.getIdentifier()) || StringUtils.hasText(requirement.getName());
     }
 
     @Transactional
-    public boolean deleteRequirementAndDerivedFunctions(Long projectId, Long requirementId) {
+    public UserRequirement createForProject(EstimationProject project, UserRequirement requirement) {
+        requirement.setEstimationProject(project);
+        return userRequirementRepository.save(requirement);
+    }
+
+    @Transactional
+    public boolean updateBasicData(Long projectId, Long requirementId, UserRequirement formRequirement) {
+        Optional<UserRequirement> optionalRequirement =
+                userRequirementRepository.findByIdAndEstimationProjectId(requirementId, projectId);
+
+        if (optionalRequirement.isEmpty()) {
+            return false;
+        }
+
+        UserRequirement existingRequirement = optionalRequirement.get();
+        existingRequirement.setIdentifier(formRequirement.getIdentifier());
+        existingRequirement.setName(formRequirement.getName());
+        existingRequirement.setDescription(formRequirement.getDescription());
+
+        userRequirementRepository.save(existingRequirement);
+        return true;
+    }
+
+    @Transactional
+    public boolean deleteByIdWithDerivedFunctions(Long projectId, Long requirementId) {
         Optional<UserRequirement> optionalRequirement =
                 userRequirementRepository.findByIdAndEstimationProjectId(requirementId, projectId);
         Optional<FunctionPointAnalysis> optionalAnalysis =
@@ -83,11 +118,13 @@ public class UserRequirementService {
             Hibernate.initialize(analysis.getDataFunctions());
             Hibernate.initialize(analysis.getTransactionalFunctions());
 
-            analysis.getDataFunctions().removeIf(df ->
-                    df.getUserRequirement() != null && df.getUserRequirement().getId().equals(requirementId));
+            analysis.getDataFunctions().removeIf(dataFunction ->
+                    dataFunction.getUserRequirement() != null
+                            && dataFunction.getUserRequirement().getId().equals(requirementId));
 
-            analysis.getTransactionalFunctions().removeIf(tf ->
-                    tf.getUserRequirement() != null && tf.getUserRequirement().getId().equals(requirementId));
+            analysis.getTransactionalFunctions().removeIf(transactionalFunction ->
+                    transactionalFunction.getUserRequirement() != null
+                            && transactionalFunction.getUserRequirement().getId().equals(requirementId));
 
             functionPointCalculationService.recalculateAnalysis(analysis);
             functionPointAnalysisRepository.save(analysis);
@@ -95,9 +132,5 @@ public class UserRequirementService {
 
         userRequirementRepository.delete(requirement);
         return true;
-    }
-
-    public UserRequirement saveRequirement(UserRequirement requirement) {
-        return userRequirementRepository.save(requirement);
     }
 }

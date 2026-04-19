@@ -7,161 +7,491 @@
 
 <main class="app-content">
     <div class="container">
-        <h1 th:text="#{fp.details.title}">Análisis de Puntos Función</h1>
+        <h1>Análisis PF</h1>
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{project.field.name}">Proyecto</div>
-            <div class="card-body">
-                <p class="card-text" th:text="${project.name}">Proyecto</p>
-            </div>
+        <div class="alert alert-light border mb-4">
+            Las funciones PF se derivan a partir de los requisitos de usuario del proyecto.
         </div>
 
         <div class="card mb-3">
-            <div class="card-header" th:text="#{fp.field.systemBoundary}">Límite del sistema</div>
+            <div class="card-header">Proyecto</div>
             <div class="card-body">
-                <p class="card-text" th:text="${analysis.systemBoundaryDescription}">Descripción del límite del sistema</p>
+                <p class="card-text mb-1" th:text="${project.name}">Proyecto</p>
+                <p class="card-text text-muted mb-0"
+                   th:if="${project.description != null and !#strings.isEmpty(project.description)}"
+                   th:text="${project.description}">
+                    Descripción del proyecto
+                </p>
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header">Requisitos de Usuario</div>
+        <div class="card mb-4">
+            <div class="card-header">Límite del sistema</div>
+            <div class="card-body">
+                <p class="card-text"
+                   th:text="${analysis.systemBoundaryDescription != null and !#strings.isEmpty(analysis.systemBoundaryDescription) ? analysis.systemBoundaryDescription : '-'}">
+                    Descripción del límite del sistema
+                </p>
+            </div>
+        </div>
+
+        <!-- REQUISITOS -->
+        <div class="card mb-4" id="requirements-container" th:fragment="requirementsSection">
+            <div class="card-header">Requisitos de usuario</div>
             <div class="card-body">
 
-                <div class="mb-3">
-                    <a class="btn btn-outline-primary"
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="mb-0 text-muted">
+                        Desde aquí solo se consultan y se accede al detalle del requisito.
+                    </p>
+                    <a class="btn btn-primary"
                        th:href="@{/projects/{projectId}/requirements/add(projectId=${project.id})}">
-                        Añadir nuevo requisito
+                        Añadir requisito
                     </a>
                 </div>
 
+                <div th:if="${requirementsList == null or requirementsList.isEmpty()}"
+                     class="alert alert-light border mb-0">
+                    Todavía no hay requisitos de usuario registrados.
+                </div>
+
                 <div class="table-responsive"
-                     th:if="${requirements != null and !requirements.isEmpty()}">
+                     th:if="${requirementsList != null and !requirementsList.isEmpty()}">
                     <table class="table table-hover">
                         <thead>
                         <tr>
                             <th>Identificador</th>
                             <th>Nombre</th>
                             <th>Descripción</th>
-                            <th th:text="#{project.field.actions}">Acciones</th>
+                            <th>Acciones</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="requirement : ${requirements}">
-                            <td th:text="${requirement.identifier}">RU-01</td>
-                            <td th:text="${requirement.name}">Alta de cliente</td>
-                            <td th:text="${requirement.description}">Descripción</td>
+                        <tr th:each="requirement : ${requirementsList}">
+                            <td th:text="${requirement.identifier != null and !#strings.isEmpty(requirement.identifier) ? requirement.identifier : '-'}">RU-01</td>
+                            <td th:text="${requirement.name != null and !#strings.isEmpty(requirement.name) ? requirement.name : '-'}">Alta de cliente</td>
+                            <td th:text="${requirement.description != null and !#strings.isEmpty(requirement.description) ? requirement.description : '-'}">Descripción</td>
                             <td>
-                                <a th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}">
+                                <a class="btn btn-sm btn-outline-primary mr-2"
+                                   th:href="@{/projects/{projectId}/requirements/{requirementId}(
+                               projectId=${project.id},
+                               requirementId=${requirement.id},
+                               requirementsPage=${requirementsPage.number},
+                               dataFunctionsPage=${dataFunctionsCurrentPage},
+                               transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}">
                                     Ver detalle
                                 </a>
-                                |
-                                <a th:href="@{/projects/{projectId}/requirements/delete/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}"
-                                   th:text="#{project.action.delete}"
-                                   onclick="return confirm('¿Seguro que quieres eliminar este requisito?');">Eliminar</a>
+
+                                <a class="btn btn-sm btn-outline-danger"
+                                   th:href="@{/projects/{projectId}/requirements/delete/{requirementId}(
+                               projectId=${project.id},
+                               requirementId=${requirement.id},
+                               requirementsPage=${requirementsPage.number},
+                               dataFunctionsPage=${dataFunctionsCurrentPage},
+                               transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                   onclick="return confirm('¿Seguro que deseas eliminar este requisito de usuario?');">
+                                    Eliminar
+                                </a>
                             </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div th:if="${requirements == null or requirements.isEmpty()}"
-                     class="alert alert-light border mb-3">
-                    Todavía no hay requisitos de usuario registrados.
+                <div class="text-center mt-4" th:if="${requirementsPage.totalPages > 1}">
+                    <ul class="pagination justify-content-center mb-0">
+
+                        <li class="page-item" th:classappend="${requirementsPage.number == 0} ? 'disabled'">
+                            <a class="page-link requirements-page-link"
+                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                           projectId=${project.id},
+                           requirementsPage=0,
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=0,
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}">
+                                Primera
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${requirementsPage.number - 1 >= 0}">
+                            <a class="page-link requirements-page-link"
+                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsPage.number - 1},
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsPage.number - 1},
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:text="${requirementsPage.number}">
+                                1
+                            </a>
+                        </li>
+
+                        <li class="page-item active">
+                            <a class="page-link requirements-page-link"
+                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:text="${requirementsPage.number + 1}">
+                                2
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${requirementsPage.number + 1 <= requirementsPage.totalPages - 1}">
+                            <a class="page-link requirements-page-link"
+                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsPage.number + 1},
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsPage.number + 1},
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:text="${requirementsPage.number + 2}">
+                                3
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${requirementsPage.number == requirementsPage.totalPages - 1} ? 'disabled'">
+                            <a class="page-link requirements-page-link"
+                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsPage.totalPages - 1},
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsPage.totalPages - 1},
+                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}">
+                                Última
+                            </a>
+                        </li>
+                    </ul>
                 </div>
 
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{fp.dataFunction.list.title}">Funciones de datos</div>
+        <!-- FUNCIONES DE DATOS -->
+        <div class="card mb-4" id="data-functions-container" th:fragment="dataFunctionsSection">
+            <div class="card-header">Funciones de datos derivadas</div>
             <div class="card-body">
+
+                <p class="text-muted mb-3">
+                    Estas funciones se gestionan desde el detalle del requisito de usuario asociado.
+                </p>
+
+                <div th:if="${dataFunctionsList == null or dataFunctionsList.isEmpty()}"
+                     class="alert alert-light border mb-0">
+                    Todavía no hay funciones de datos registradas.
+                </div>
+
                 <div class="table-responsive"
-                     th:if="${analysis.dataFunctions != null and !analysis.dataFunctions.isEmpty()}">
+                     th:if="${dataFunctionsList != null and !dataFunctionsList.isEmpty()}">
                     <table class="table table-hover">
                         <thead>
                         <tr>
-                            <th th:text="#{fp.dataFunction.field.type}">Tipo</th>
-                            <th th:text="#{fp.dataFunction.field.name}">Nombre</th>
-                            <th th:text="#{fp.dataFunction.field.det}">DET</th>
-                            <th th:text="#{fp.dataFunction.field.ret}">RET</th>
-                            <th th:text="#{fp.dataFunction.field.complexity}">Complejidad</th>
-                            <th th:text="#{fp.dataFunction.field.weight}">Peso</th>
-                            <th th:text="#{fp.field.associatedRequirements}">RU asociados</th>
+                            <th>Tipo</th>
+                            <th>Nombre</th>
+                            <th>Requisito asociado</th>
+                            <th>DET</th>
+                            <th>RET</th>
+                            <th>Complejidad</th>
+                            <th>Peso</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="dataFunction : ${analysis.dataFunctions}">
+                        <tr th:each="dataFunction : ${dataFunctionsList}">
                             <td th:text="${dataFunction.type}">ILF</td>
                             <td th:text="${dataFunction.name}">Clientes</td>
+                            <td>
+                                <span th:if="${dataFunction.userRequirement == null}">-</span>
+
+                                <a th:if="${dataFunction.userRequirement != null}"
+                                   th:href="@{/projects/{projectId}/requirements/{requirementId}(
+                               projectId=${project.id},
+                               requirementId=${dataFunction.userRequirement.id},
+                               requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                               dataFunctionsPage=${dataFunctionsPage.number},
+                               transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                                   th:text="${dataFunction.userRequirement.name != null and !#strings.isEmpty(dataFunction.userRequirement.name)
+                                    ? dataFunction.userRequirement.name
+                                    : (dataFunction.userRequirement.identifier != null and !#strings.isEmpty(dataFunction.userRequirement.identifier)
+                                        ? dataFunction.userRequirement.identifier
+                                        : 'Ver requisito')}">
+                                    Ver requisito
+                                </a>
+                            </td>
                             <td th:text="${dataFunction.detCount}">10</td>
                             <td th:text="${dataFunction.retCount}">2</td>
                             <td th:text="${dataFunction.complexity}">AVERAGE</td>
                             <td th:text="${dataFunction.weight}">10</td>
-                            <td>
-                                <span th:if="${dataFunction.userRequirement == null}">-</span>
-                                <a th:if="${dataFunction.userRequirement != null}"
-                                   th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${dataFunction.userRequirement.id})}">
-                                    Ver detalle
-                                </a>
-                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div th:if="${analysis.dataFunctions == null or analysis.dataFunctions.isEmpty()}"
-                     class="alert alert-light border mb-0">
-                    <span th:text="#{fp.dataFunction.list.empty}">Todavía no hay funciones de datos registradas.</span>
+                <div class="text-center mt-4" th:if="${dataFunctionsPage.totalPages > 1}">
+                    <ul class="pagination justify-content-center mb-0">
+
+                        <li class="page-item" th:classappend="${dataFunctionsPage.number == 0} ? 'disabled'">
+                            <a class="page-link data-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/data-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=0,
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=0,
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}">
+                                Primera
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${dataFunctionsPage.number - 1 >= 0}">
+                            <a class="page-link data-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/data-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsPage.number - 1},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsPage.number - 1},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                               th:text="${dataFunctionsPage.number}">
+                                1
+                            </a>
+                        </li>
+
+                        <li class="page-item active">
+                            <a class="page-link data-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/data-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                               th:text="${dataFunctionsPage.number + 1}">
+                                2
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${dataFunctionsPage.number + 1 <= dataFunctionsPage.totalPages - 1}">
+                            <a class="page-link data-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/data-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsPage.number + 1},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsPage.number + 1},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                               th:text="${dataFunctionsPage.number + 2}">
+                                3
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${dataFunctionsPage.number == dataFunctionsPage.totalPages - 1} ? 'disabled'">
+                            <a class="page-link data-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/data-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsPage.totalPages - 1},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsPage.totalPages - 1},
+                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}">
+                                Última
+                            </a>
+                        </li>
+                    </ul>
                 </div>
+
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{fp.transactionalFunction.list.title}">Funciones transaccionales</div>
+        <!-- FUNCIONES TRANSACCIONALES -->
+        <div class="card mb-4" id="transactional-functions-container" th:fragment="transactionalFunctionsSection">
+            <div class="card-header">Funciones transaccionales derivadas</div>
             <div class="card-body">
+
+                <p class="text-muted mb-3">
+                    Estas funciones se gestionan desde el detalle del requisito de usuario asociado.
+                </p>
+
+                <div th:if="${transactionalFunctionsList == null or transactionalFunctionsList.isEmpty()}"
+                     class="alert alert-light border mb-0">
+                    Todavía no hay funciones transaccionales registradas.
+                </div>
+
                 <div class="table-responsive"
-                     th:if="${analysis.transactionalFunctions != null and !analysis.transactionalFunctions.isEmpty()}">
+                     th:if="${transactionalFunctionsList != null and !transactionalFunctionsList.isEmpty()}">
                     <table class="table table-hover">
                         <thead>
                         <tr>
-                            <th th:text="#{fp.transactionalFunction.field.type}">Tipo</th>
-                            <th th:text="#{fp.transactionalFunction.field.name}">Nombre</th>
-                            <th th:text="#{fp.transactionalFunction.field.det}">DET</th>
-                            <th th:text="#{fp.transactionalFunction.field.ftr}">FTR</th>
-                            <th th:text="#{fp.transactionalFunction.field.complexity}">Complejidad</th>
-                            <th th:text="#{fp.transactionalFunction.field.weight}">Peso</th>
-                            <th th:text="#{fp.field.associatedRequirements}">RU asociado</th>
+                            <th>Tipo</th>
+                            <th>Nombre</th>
+                            <th>Requisito asociado</th>
+                            <th>DET</th>
+                            <th>FTR</th>
+                            <th>Complejidad</th>
+                            <th>Peso</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="transactionalFunction : ${analysis.transactionalFunctions}">
+                        <tr th:each="transactionalFunction : ${transactionalFunctionsList}">
                             <td th:text="${transactionalFunction.type}">EI</td>
                             <td th:text="${transactionalFunction.name}">Alta cliente</td>
+                            <td>
+                                <span th:if="${transactionalFunction.userRequirement == null}">-</span>
+
+                                <a th:if="${transactionalFunction.userRequirement != null}"
+                                   th:href="@{/projects/{projectId}/requirements/{requirementId}(
+                               projectId=${project.id},
+                               requirementId=${transactionalFunction.userRequirement.id},
+                               requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                               dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                               transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
+                                   th:text="${transactionalFunction.userRequirement.name != null and !#strings.isEmpty(transactionalFunction.userRequirement.name)
+                                    ? transactionalFunction.userRequirement.name
+                                    : (transactionalFunction.userRequirement.identifier != null and !#strings.isEmpty(transactionalFunction.userRequirement.identifier)
+                                        ? transactionalFunction.userRequirement.identifier
+                                        : 'Ver requisito')}">
+                                    Ver requisito
+                                </a>
+                            </td>
                             <td th:text="${transactionalFunction.detCount}">8</td>
                             <td th:text="${transactionalFunction.ftrCount}">2</td>
                             <td th:text="${transactionalFunction.complexity}">AVERAGE</td>
                             <td th:text="${transactionalFunction.weight}">4</td>
-                            <td>
-                                <span th:if="${transactionalFunction.userRequirement == null}">-</span>
-                                <a th:if="${transactionalFunction.userRequirement != null}"
-                                   th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${transactionalFunction.userRequirement.id})}">
-                                    Ver detalle
-                                </a>
-                            </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div th:if="${analysis.transactionalFunctions == null or analysis.transactionalFunctions.isEmpty()}"
-                     class="alert alert-light border mb-0">
-                    <span th:text="#{fp.transactionalFunction.list.empty}">Todavía no hay funciones transaccionales registradas.</span>
+                <div class="text-center mt-4" th:if="${transactionalFunctionsPage.totalPages > 1}">
+                    <ul class="pagination justify-content-center mb-0">
+
+                        <li class="page-item" th:classappend="${transactionalFunctionsPage.number == 0} ? 'disabled'">
+                            <a class="page-link transactional-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=0)}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=0)}">
+                                Primera
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${transactionalFunctionsPage.number - 1 >= 0}">
+                            <a class="page-link transactional-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsPage.number - 1})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsPage.number - 1})}"
+                               th:text="${transactionalFunctionsPage.number}">
+                                1
+                            </a>
+                        </li>
+
+                        <li class="page-item active">
+                            <a class="page-link transactional-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
+                               th:text="${transactionalFunctionsPage.number + 1}">
+                                2
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${transactionalFunctionsPage.number + 1 <= transactionalFunctionsPage.totalPages - 1}">
+                            <a class="page-link transactional-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsPage.number + 1})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsPage.number + 1})}"
+                               th:text="${transactionalFunctionsPage.number + 2}">
+                                3
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${transactionalFunctionsPage.number == transactionalFunctionsPage.totalPages - 1} ? 'disabled'">
+                            <a class="page-link transactional-functions-page-link"
+                               th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/function-points(
+                           projectId=${project.id},
+                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
+                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
+                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}">
+                                Última
+                            </a>
+                        </li>
+                    </ul>
                 </div>
+
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{fp.gsc.list.title}">Características generales del sistema</div>
+        <!-- GSC -->
+        <div class="card mb-4">
+            <div class="card-header">Características generales del sistema</div>
             <div class="card-body">
 
                 <div class="mb-3">
@@ -171,13 +501,18 @@
                     </a>
                 </div>
 
+                <div th:if="${analysis.generalSystemCharacteristicAssessments == null or analysis.generalSystemCharacteristicAssessments.isEmpty()}"
+                     class="alert alert-light border mb-0">
+                    No hay características generales del sistema registradas.
+                </div>
+
                 <div class="table-responsive"
                      th:if="${analysis.generalSystemCharacteristicAssessments != null and !analysis.generalSystemCharacteristicAssessments.isEmpty()}">
                     <table class="table table-hover">
                         <thead>
                         <tr>
-                            <th th:text="#{fp.gsc.field.name}">Característica</th>
-                            <th th:text="#{fp.gsc.field.degree}">Grado de influencia</th>
+                            <th>Característica</th>
+                            <th>Grado de influencia</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -189,39 +524,37 @@
                     </table>
                 </div>
 
-                <div th:if="${analysis.generalSystemCharacteristicAssessments == null or analysis.generalSystemCharacteristicAssessments.isEmpty()}"
-                     class="alert alert-light border mb-3">
-                    <span th:text="#{fp.gsc.list.empty}">No hay características generales del sistema registradas.</span>
-                </div>
-
             </div>
         </div>
 
+        <!-- RESULTADOS -->
         <div class="card mb-3">
-            <div class="card-header" th:text="#{fp.field.ufp}">Puntos Función No Ajustados</div>
+            <div class="card-header">Puntos Función No Ajustados</div>
             <div class="card-body">
                 <p class="card-text" th:text="${analysis.unadjustedFunctionPoints}">0</p>
             </div>
         </div>
 
         <div class="card mb-3">
-            <div class="card-header" th:text="#{fp.field.tdi}">Grado total de influencia</div>
+            <div class="card-header">Grado total de influencia</div>
             <div class="card-body">
                 <p class="card-text" th:text="${analysis.totalDegreeOfInfluence}">0</p>
             </div>
         </div>
 
         <div class="card mb-3">
-            <div class="card-header" th:text="#{fp.field.vaf}">Factor de ajuste del valor</div>
+            <div class="card-header">Factor de ajuste del valor</div>
             <div class="card-body">
-                <p class="card-text" th:text="${#numbers.formatDecimal(analysis.valueAdjustmentFactor, 1, 2)}">0.65</p>
+                <p class="card-text"
+                   th:text="${#numbers.formatDecimal(analysis.valueAdjustmentFactor, 1, 2)}">0.65</p>
             </div>
         </div>
 
         <div class="card mb-4">
-            <div class="card-header" th:text="#{fp.field.afp}">Puntos Función Ajustados</div>
+            <div class="card-header">Puntos Función Ajustados</div>
             <div class="card-body">
-                <p class="card-text" th:text="${#numbers.formatDecimal(analysis.adjustedFunctionPoints, 1, 2)}">0.00</p>
+                <p class="card-text"
+                   th:text="${#numbers.formatDecimal(analysis.adjustedFunctionPoints, 1, 2)}">0.00</p>
             </div>
         </div>
 

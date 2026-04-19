@@ -33,7 +33,7 @@
 
             <button type="submit" class="btn btn-primary mr-2" th:text="#{requirement.add.submit}">Guardar</button>
             <a class="btn btn-secondary"
-               th:href="@{/projects/{projectId}/requirements(projectId=${project.id})}"
+               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
                th:text="#{requirement.add.cancel}">Cancelar</a>
         </form>
     </div>

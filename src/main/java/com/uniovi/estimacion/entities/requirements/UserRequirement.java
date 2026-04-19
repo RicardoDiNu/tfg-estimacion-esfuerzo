@@ -1,6 +1,6 @@
 package com.uniovi.estimacion.entities.requirements;
 
-import com.uniovi.estimacion.entities.EstimationProject;
+import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.functionpoints.DataFunction;
 import com.uniovi.estimacion.entities.functionpoints.TransactionalFunction;
 import jakarta.persistence.*;

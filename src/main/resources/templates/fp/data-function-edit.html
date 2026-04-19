@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body class="app-page">
 
-<nav th:replace="fragments/nav :: nav"></nav>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
 
 <main class="app-content">
     <div class="container">
@@ -14,7 +14,7 @@
               th:action="@{/projects/{projectId}/requirements/{requirementId}/data-functions/edit/{dataFunctionId}(projectId=${project.id}, requirementId=${requirementId}, dataFunctionId=${dataFunction.id})}">
             <div class="form-group">
                 <label for="type" th:text="#{fp.dataFunction.field.type}">Tipo</label>
-                <select class="form-control" id="type" name="type" required="required">
+                <select class="form-control" id="type" name="type" required>
                     <option th:each="type : ${dataFunctionTypes}"
                             th:value="${type}"
                             th:text="${type}"
@@ -26,32 +26,57 @@
 
             <div class="form-group">
                 <label for="name" th:text="#{fp.dataFunction.field.name}">Nombre</label>
-                <input type="text" class="form-control" id="name" name="name" th:value="${dataFunction.name}" required="required">
+                <input type="text"
+                       class="form-control"
+                       id="name"
+                       name="name"
+                       th:value="${dataFunction.name}"
+                       required>
             </div>
 
             <div class="form-group">
                 <label for="description" th:text="#{fp.dataFunction.field.description}">Descripción</label>
-                <textarea class="form-control" id="description" name="description" rows="4" th:text="${dataFunction.description}"></textarea>
+                <textarea class="form-control"
+                          id="description"
+                          name="description"
+                          rows="4"
+                          th:text="${dataFunction.description}"></textarea>
             </div>
 
             <div class="form-group">
                 <label for="detCount" th:text="#{fp.dataFunction.field.det}">DET</label>
-                <input type="number" min="1" class="form-control" id="detCount" name="detCount" th:value="${dataFunction.detCount}" required="required">
+                <input type="number"
+                       min="1"
+                       class="form-control"
+                       id="detCount"
+                       name="detCount"
+                       th:value="${dataFunction.detCount}"
+                       required>
             </div>
 
             <div class="form-group">
                 <label for="retCount" th:text="#{fp.dataFunction.field.ret}">RET</label>
-                <input type="number" min="1" class="form-control" id="retCount" name="retCount" th:value="${dataFunction.retCount}" required="required">
+                <input type="number"
+                       min="1"
+                       class="form-control"
+                       id="retCount"
+                       name="retCount"
+                       th:value="${dataFunction.retCount}"
+                       required>
             </div>
 
-            <button type="submit" class="btn btn-primary mr-2" th:text="#{fp.dataFunction.edit.submit}">Guardar cambios</button>
-            <form method="post"
-                  th:action="@{/projects/{projectId}/requirements/{requirementId}/data-functions/edit/{dataFunctionId}(projectId=${project.id}, requirementId=${requirementId}, dataFunctionId=${dataFunction.id})}">
+            <button type="submit" class="btn btn-primary mr-2"
+                    th:text="#{fp.dataFunction.edit.submit}">Guardar cambios</button>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${requirementId})}">
+                Cancelar
+            </a>
         </form>
     </div>
 </main>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>
 </html>

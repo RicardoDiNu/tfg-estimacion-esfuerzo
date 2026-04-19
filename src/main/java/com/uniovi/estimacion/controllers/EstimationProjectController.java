@@ -1,9 +1,12 @@
 package com.uniovi.estimacion.controllers;
 
-import com.uniovi.estimacion.entities.EstimationProject;
-import com.uniovi.estimacion.services.EstimationProjectService;
+import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
+import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -11,96 +14,113 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @Controller
+@RequestMapping("/projects")
 @RequiredArgsConstructor
 public class EstimationProjectController {
 
     private final EstimationProjectService estimationProjectService;
     private final FunctionPointAnalysisService functionPointAnalysisService;
 
-    @GetMapping("/projects")
-    public String getProjectList(Model model) {
-        model.addAttribute("projectsList", estimationProjectService.getProjects());
+    @GetMapping
+    public String listProjects(Model model, Pageable pageable) {
+        Page<EstimationProject> projectsPage = estimationProjectService.findPage(pageable);
+
+        model.addAttribute("projectsList", projectsPage.getContent());
+        model.addAttribute("projectsPage", projectsPage);
+
         return "project/list";
     }
+    @GetMapping("/update")
+    public String updateProjectsSection(@RequestParam(name = "page", defaultValue = "0") int page,
+                                        Pageable pageable,
+                                        Model model) {
+        Page<EstimationProject> projectsPage = estimationProjectService.findPage(PageRequest.of(page, pageable.getPageSize()));
 
-    @GetMapping("/projects/add")
-    public String getAddProjectForm(Model model) {
-        model.addAttribute("project", new EstimationProject());
-        return "project/add";
+        model.addAttribute("projectsList", projectsPage.getContent());
+        model.addAttribute("projectsPage", projectsPage);
+
+        return "project/list :: projectsSection";
     }
 
-    @PostMapping("/projects/add")
-    public String addProject(@ModelAttribute("project") EstimationProject project) {
-        estimationProjectService.saveProject(project);
-        return "redirect:/projects/" + project.getId();
-    }
-
-    @GetMapping("/projects/{id}")
-    public String getProjectDetails(@PathVariable Long id, Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.getProject(id);
+    @GetMapping("/{projectId}")
+    public String getProjectDetails(@PathVariable Long projectId, Model model) {
+        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
 
         if (optionalProject.isEmpty()) {
-            return "redirect:/projects";
+            return redirectToList();
         }
 
         model.addAttribute("project", optionalProject.get());
-        model.addAttribute("hasFunctionPointAnalysis", functionPointAnalysisService.getByProjectId(id).isPresent());
+        model.addAttribute("hasFunctionPointAnalysis",
+                functionPointAnalysisService.findByProjectId(projectId).isPresent());
 
         return "project/details";
     }
 
-    @GetMapping("/projects/edit/{id}")
-    public String getEditProjectForm(@PathVariable Long id,
-                                     @RequestParam(name = "returnTo", defaultValue = "list") String returnTo,
-                                     Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.getProject(id);
+    @GetMapping("/add")
+    public String getAddForm(Model model) {
+        model.addAttribute("project", new EstimationProject());
+        return "project/add";
+    }
+
+    @PostMapping("/add")
+    public String addProject(@ModelAttribute("project") EstimationProject project) {
+        EstimationProject savedProject = estimationProjectService.create(project);
+        return redirectToDetails(savedProject.getId());
+    }
+
+    @GetMapping("/edit/{projectId}")
+    public String getEditForm(@PathVariable Long projectId,
+                              @RequestParam(name = "returnTo", defaultValue = "list") String returnTo,
+                              @RequestParam(name = "page", required = false) Integer page,
+                              Model model) {
+        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
 
         if (optionalProject.isEmpty()) {
-            return "redirect:/projects";
+            return redirectToList();
         }
 
         model.addAttribute("project", optionalProject.get());
         model.addAttribute("returnTo", returnTo);
+        model.addAttribute("page", page);
+
         return "project/edit";
     }
 
-    @PostMapping("/projects/edit/{id}")
-    public String updateProject(@PathVariable Long id,
-                                @RequestParam(name = "returnTo", defaultValue = "list") String returnTo,
-                                @ModelAttribute EstimationProject project) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.getProject(id);
+    @PostMapping("/edit/{projectId}")
+    public String editProject(@PathVariable Long projectId,
+                              @RequestParam(name = "returnTo", defaultValue = "list") String returnTo,
+                              @RequestParam(name = "page", required = false) Integer page,
+                              @ModelAttribute("project") EstimationProject formProject) {
+        boolean updated = estimationProjectService.updateBasicData(projectId, formProject);
 
-        if (optionalProject.isEmpty()) {
-            return "redirect:/projects";
+        if (!updated) {
+            return redirectToList();
         }
-
-        EstimationProject originalProject = optionalProject.get();
-        originalProject.setName(project.getName());
-        originalProject.setDescription(project.getDescription());
-
-        estimationProjectService.saveProject(originalProject);
 
         if ("details".equals(returnTo)) {
-            return "redirect:/projects/" + id;
+            return redirectToDetails(projectId);
         }
 
-        return "redirect:/projects";
+        return redirectToList(page);
     }
 
-    @GetMapping("/projects/delete/{id}")
-    public String deleteProject(@PathVariable Long id) {
-        estimationProjectService.deleteProject(id);
-        return "redirect:/projects";
+    @GetMapping("/delete/{projectId}")
+    public String deleteProject(@PathVariable Long projectId,
+                                @RequestParam(name = "page", required = false) Integer page) {
+        estimationProjectService.deleteById(projectId);
+        return redirectToList(page);
     }
-    @GetMapping("/projects/{projectId}/function-points/access")
+
+    @GetMapping("/{projectId}/function-points/access")
     public String accessFunctionPointAnalysis(@PathVariable Long projectId) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.getProject(projectId);
+        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
 
         if (optionalProject.isEmpty()) {
-            return "redirect:/projects";
+            return redirectToList();
         }
 
-        boolean hasAnalysis = functionPointAnalysisService.getDetailedByProjectId(projectId).isPresent();
+        boolean hasAnalysis = functionPointAnalysisService.findDetailedByProjectId(projectId).isPresent();
 
         if (hasAnalysis) {
             return "redirect:/projects/" + projectId + "/function-points";
@@ -109,4 +129,19 @@ public class EstimationProjectController {
         return "redirect:/projects/" + projectId + "/function-points/add";
     }
 
+    private String redirectToList() {
+        return "redirect:/projects";
+    }
+
+    private String redirectToList(Integer page) {
+        if (page == null || page < 0) {
+            return "redirect:/projects";
+        }
+
+        return "redirect:/projects?page=" + page;
+    }
+
+    private String redirectToDetails(Long projectId) {
+        return "redirect:/projects/" + projectId;
+    }
 }
