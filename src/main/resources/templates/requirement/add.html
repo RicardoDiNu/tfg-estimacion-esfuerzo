@@ -10,7 +10,9 @@
         <h1 th:text="#{requirement.add.title}">Nuevo requisito de usuario</h1>
 
         <div th:if="${validationError}" class="alert alert-danger">
-            <span th:text="#{requirement.validation.identifierOrName}">Debes indicar al menos identificador o nombre.</span>
+            <span th:text="#{requirement.validation.identifierAndStatement}">
+                Debes indicar identificador y texto del requisito.
+            </span>
         </div>
 
         <form method="post"
@@ -18,17 +20,12 @@
               th:object="${requirement}">
             <div class="form-group">
                 <label for="identifier" th:text="#{requirement.field.identifier}">Identificador</label>
-                <input type="text" class="form-control" id="identifier" th:field="*{identifier}">
+                <input type="text" class="form-control" id="identifier" th:field="*{identifier}" maxlength="50">
             </div>
 
             <div class="form-group">
-                <label for="name" th:text="#{requirement.field.name}">Nombre</label>
-                <input type="text" class="form-control" id="name" th:field="*{name}">
-            </div>
-
-            <div class="form-group">
-                <label for="description" th:text="#{requirement.field.description}">Descripción</label>
-                <textarea class="form-control" id="description" rows="5" th:field="*{description}"></textarea>
+                <label for="statement" th:text="#{requirement.field.statement}">Requisito</label>
+                <textarea class="form-control" id="statement" rows="5" th:field="*{statement}" maxlength="2000"></textarea>
             </div>
 
             <button type="submit" class="btn btn-primary mr-2" th:text="#{requirement.add.submit}">Guardar</button>

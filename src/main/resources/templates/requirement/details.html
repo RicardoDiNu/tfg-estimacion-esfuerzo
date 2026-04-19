@@ -28,17 +28,10 @@
                     </span>
                 </p>
 
-                <p>
-                    <strong>Nombre:</strong>
-                    <span th:text="${requirement.name != null and !#strings.isEmpty(requirement.name) ? requirement.name : '-'}">
-                        Nombre del requisito
-                    </span>
-                </p>
-
                 <p class="mb-0">
-                    <strong>Descripción:</strong>
-                    <span th:text="${requirement.description != null and !#strings.isEmpty(requirement.description) ? requirement.description : '-'}">
-                        Descripción del requisito
+                    <strong>Requisito:</strong>
+                    <span th:text="${requirement.statement != null and !#strings.isEmpty(requirement.statement) ? requirement.statement : '-'}">
+                        Texto del requisito
                     </span>
                 </p>
 

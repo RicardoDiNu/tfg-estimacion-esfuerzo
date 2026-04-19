@@ -161,7 +161,7 @@ public class UserRequirementController {
             return redirectToProjects();
         }
 
-        if (!userRequirementService.hasBasicData(requirement)) {
+        if (!userRequirementService.hasRequiredData(requirement)) {
             model.addAttribute("project", optionalProject.get());
             model.addAttribute("validationError", true);
             model.addAttribute("requirement", requirement);
@@ -207,7 +207,7 @@ public class UserRequirementController {
             return redirectToProjects();
         }
 
-        if (!userRequirementService.hasBasicData(formRequirement)) {
+        if (!userRequirementService.hasRequiredData(formRequirement)) {
             model.addAttribute("project", optionalProject.get());
             model.addAttribute("validationError", true);
             formRequirement.setId(requirementId);

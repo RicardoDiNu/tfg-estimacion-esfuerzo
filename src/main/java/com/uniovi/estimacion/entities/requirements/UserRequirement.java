@@ -27,14 +27,11 @@ public class UserRequirement {
     @JoinColumn(name = "estimation_project_id", nullable = false)
     private EstimationProject estimationProject;
 
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String identifier;
 
-    @Column(length = 200)
-    private String name;
-
-    @Column(length = 2000)
-    private String description;
+    @Column(name = "statement", length = 2000, nullable = false)
+    private String statement;
 
     @OneToMany(mappedBy = "userRequirement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DataFunction> dataFunctions = new ArrayList<>();

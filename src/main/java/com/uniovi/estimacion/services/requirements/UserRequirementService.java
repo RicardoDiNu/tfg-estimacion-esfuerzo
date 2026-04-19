@@ -69,13 +69,20 @@ public class UserRequirementService {
         return optionalRequirement;
     }
 
-    public boolean hasBasicData(UserRequirement requirement) {
-        return StringUtils.hasText(requirement.getIdentifier()) || StringUtils.hasText(requirement.getName());
+    public boolean hasRequiredData(UserRequirement requirement) {
+        return StringUtils.hasText(requirement.getIdentifier())
+                && StringUtils.hasText(requirement.getStatement());
+    }
+
+    private String normalize(String value) {
+        return value == null ? null : value.trim();
     }
 
     @Transactional
     public UserRequirement createForProject(EstimationProject project, UserRequirement requirement) {
         requirement.setEstimationProject(project);
+        requirement.setIdentifier(normalize(requirement.getIdentifier()));
+        requirement.setStatement(normalize(requirement.getStatement()));
         return userRequirementRepository.save(requirement);
     }
 
@@ -89,9 +96,8 @@ public class UserRequirementService {
         }
 
         UserRequirement existingRequirement = optionalRequirement.get();
-        existingRequirement.setIdentifier(formRequirement.getIdentifier());
-        existingRequirement.setName(formRequirement.getName());
-        existingRequirement.setDescription(formRequirement.getDescription());
+        existingRequirement.setIdentifier(normalize(formRequirement.getIdentifier()));
+        existingRequirement.setStatement(normalize(formRequirement.getStatement()));
 
         userRequirementRepository.save(existingRequirement);
         return true;
