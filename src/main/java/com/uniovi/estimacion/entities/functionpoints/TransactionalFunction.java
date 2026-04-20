@@ -35,12 +35,6 @@ public class TransactionalFunction {
     @Column(length = 1000)
     private String description;
 
-    @Column(nullable = false)
-    private Integer detCount;
-
-    @Column(nullable = false)
-    private Integer ftrCount;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private FunctionPointComplexity complexity;

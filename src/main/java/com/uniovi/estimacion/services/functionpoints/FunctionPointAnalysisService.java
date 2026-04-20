@@ -46,7 +46,9 @@ public class FunctionPointAnalysisService {
 
     @Transactional
     public void createInitialAnalysis(EstimationProject estimationProject, String systemBoundaryDescription) {
-        FunctionPointAnalysis analysis = new FunctionPointAnalysis(estimationProject, systemBoundaryDescription);
+        FunctionPointAnalysis analysis =
+                new FunctionPointAnalysis(estimationProject, normalizeText(systemBoundaryDescription));
+
         initializeGeneralSystemCharacteristics(analysis);
         functionPointCalculationService.recalculateAnalysis(analysis);
         functionPointAnalysisRepository.save(analysis);
@@ -61,18 +63,16 @@ public class FunctionPointAnalysisService {
             return false;
         }
 
-        String normalizedBoundary = systemBoundaryDescription == null
-                ? ""
-                : systemBoundaryDescription.trim();
+        String normalizedBoundary = normalizeText(systemBoundaryDescription);
 
-        if (normalizedBoundary.isBlank()) {
+        if (normalizedBoundary == null || normalizedBoundary.isBlank()) {
             return false;
         }
 
         FunctionPointAnalysis analysis = optionalAnalysis.get();
         analysis.setSystemBoundaryDescription(normalizedBoundary);
 
-        recalculateAndSave(analysis);
+        recalculateManagedAnalysis(analysis);
         return true;
     }
 
@@ -96,7 +96,7 @@ public class FunctionPointAnalysisService {
             }
         }
 
-        recalculateAndSave(analysis);
+        recalculateManagedAnalysis(analysis);
         return true;
     }
 
@@ -138,13 +138,14 @@ public class FunctionPointAnalysisService {
         FunctionPointAnalysis analysis = optionalAnalysis.get();
         UserRequirement requirement = optionalRequirement.get();
 
+        dataFunction.setName(normalizeText(dataFunction.getName()));
+        dataFunction.setDescription(normalizeText(dataFunction.getDescription()));
         dataFunction.setFunctionPointAnalysis(analysis);
         dataFunction.setUserRequirement(requirement);
 
         analysis.getDataFunctions().add(dataFunction);
-        requirement.getDataFunctions().add(dataFunction);
 
-        recalculateAndSave(analysis);
+        recalculateManagedAnalysis(analysis);
         return true;
     }
 
@@ -164,13 +165,14 @@ public class FunctionPointAnalysisService {
         FunctionPointAnalysis analysis = optionalAnalysis.get();
         UserRequirement requirement = optionalRequirement.get();
 
+        transactionalFunction.setName(normalizeText(transactionalFunction.getName()));
+        transactionalFunction.setDescription(normalizeText(transactionalFunction.getDescription()));
         transactionalFunction.setFunctionPointAnalysis(analysis);
         transactionalFunction.setUserRequirement(requirement);
 
         analysis.getTransactionalFunctions().add(transactionalFunction);
-        requirement.getTransactionalFunctions().add(transactionalFunction);
 
-        recalculateAndSave(analysis);
+        recalculateManagedAnalysis(analysis);
         return true;
     }
 
@@ -186,10 +188,11 @@ public class FunctionPointAnalysisService {
         FunctionPointAnalysis analysis = optionalAnalysis.get();
         Hibernate.initialize(analysis.getDataFunctions());
 
-        boolean removed = analysis.getDataFunctions().removeIf(dataFunction -> dataFunction.getId().equals(dataFunctionId));
+        boolean removed = analysis.getDataFunctions()
+                .removeIf(dataFunction -> dataFunction.getId().equals(dataFunctionId));
 
         if (removed) {
-            recalculateAndSave(analysis);
+            recalculateManagedAnalysis(analysis);
         }
 
         return removed;
@@ -211,7 +214,7 @@ public class FunctionPointAnalysisService {
                 .removeIf(transactionalFunction -> transactionalFunction.getId().equals(transactionalFunctionId));
 
         if (removed) {
-            recalculateAndSave(analysis);
+            recalculateManagedAnalysis(analysis);
         }
 
         return removed;
@@ -273,12 +276,11 @@ public class FunctionPointAnalysisService {
 
         DataFunction existingDataFunction = optionalDataFunction.get();
         existingDataFunction.setType(formDataFunction.getType());
-        existingDataFunction.setName(formDataFunction.getName());
-        existingDataFunction.setDescription(formDataFunction.getDescription());
-        existingDataFunction.setDetCount(formDataFunction.getDetCount());
-        existingDataFunction.setRetCount(formDataFunction.getRetCount());
+        existingDataFunction.setName(normalizeText(formDataFunction.getName()));
+        existingDataFunction.setDescription(normalizeText(formDataFunction.getDescription()));
+        existingDataFunction.setComplexity(formDataFunction.getComplexity());
 
-        recalculateAndSave(analysis);
+        recalculateManagedAnalysis(analysis);
         return true;
     }
 
@@ -307,12 +309,11 @@ public class FunctionPointAnalysisService {
 
         TransactionalFunction existingTransactionalFunction = optionalTransactionalFunction.get();
         existingTransactionalFunction.setType(formTransactionalFunction.getType());
-        existingTransactionalFunction.setName(formTransactionalFunction.getName());
-        existingTransactionalFunction.setDescription(formTransactionalFunction.getDescription());
-        existingTransactionalFunction.setDetCount(formTransactionalFunction.getDetCount());
-        existingTransactionalFunction.setFtrCount(formTransactionalFunction.getFtrCount());
+        existingTransactionalFunction.setName(normalizeText(formTransactionalFunction.getName()));
+        existingTransactionalFunction.setDescription(normalizeText(formTransactionalFunction.getDescription()));
+        existingTransactionalFunction.setComplexity(formTransactionalFunction.getComplexity());
 
-        recalculateAndSave(analysis);
+        recalculateManagedAnalysis(analysis);
         return true;
     }
 
@@ -320,6 +321,8 @@ public class FunctionPointAnalysisService {
         Hibernate.initialize(analysis.getDataFunctions());
         Hibernate.initialize(analysis.getTransactionalFunctions());
         Hibernate.initialize(analysis.getGeneralSystemCharacteristicAssessments());
+        analysis.getGeneralSystemCharacteristicAssessments()
+                .sort(java.util.Comparator.comparingInt(a -> a.getCharacteristicType().getOrder()));
 
         analysis.getDataFunctions().forEach(dataFunction -> {
             if (dataFunction.getUserRequirement() != null) {
@@ -352,8 +355,11 @@ public class FunctionPointAnalysisService {
         return Math.min(value, 5);
     }
 
-    private void recalculateAndSave(FunctionPointAnalysis analysis) {
+    private String normalizeText(String value) {
+        return value == null ? null : value.trim();
+    }
+
+    private void recalculateManagedAnalysis(FunctionPointAnalysis analysis) {
         functionPointCalculationService.recalculateAnalysis(analysis);
-        functionPointAnalysisRepository.save(analysis);
     }
 }

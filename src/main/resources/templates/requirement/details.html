@@ -67,8 +67,6 @@
                                 <tr>
                                     <th>Tipo</th>
                                     <th>Nombre</th>
-                                    <th>DET</th>
-                                    <th>RET</th>
                                     <th>Complejidad</th>
                                     <th>Peso</th>
                                     <th class="text-right"></th>
@@ -78,8 +76,6 @@
                                 <tr th:each="dataFunction : ${dataFunctionsList}">
                                     <td th:text="${dataFunction.type}">ILF</td>
                                     <td th:text="${dataFunction.name}">Clientes</td>
-                                    <td th:text="${dataFunction.detCount}">10</td>
-                                    <td th:text="${dataFunction.retCount}">2</td>
                                     <td th:text="${dataFunction.complexity}">AVERAGE</td>
                                     <td th:text="${dataFunction.weight}">10</td>
                                     <td>
@@ -234,8 +230,6 @@
                                 <tr>
                                     <th>Tipo</th>
                                     <th>Nombre</th>
-                                    <th>DET</th>
-                                    <th>FTR</th>
                                     <th>Complejidad</th>
                                     <th>Peso</th>
                                     <th class="text-right"></th>
@@ -245,8 +239,6 @@
                                 <tr th:each="transactionalFunction : ${transactionalFunctionsList}">
                                     <td th:text="${transactionalFunction.type}">EI</td>
                                     <td th:text="${transactionalFunction.name}">Alta cliente</td>
-                                    <td th:text="${transactionalFunction.detCount}">8</td>
-                                    <td th:text="${transactionalFunction.ftrCount}">2</td>
                                     <td th:text="${transactionalFunction.complexity}">AVERAGE</td>
                                     <td th:text="${transactionalFunction.weight}">4</td>
                                     <td>

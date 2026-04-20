@@ -24,14 +24,17 @@
                     </thead>
                     <tbody>
                     <tr th:each="assessment, iterStat : *{generalSystemCharacteristicAssessments}">
-                        <td th:text="${assessment.characteristicType.label}">Performance</td>
+                        <td th:text="${#messages.msg(assessment.characteristicType.messageKey)}">Característica</td>
                         <td>
                             <input type="hidden"
                                    th:field="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].id}"/>
 
+                            <input type="hidden"
+                                   th:field="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].characteristicType}"/>
+
                             <label class="sr-only"
                                    th:for="|generalSystemCharacteristicAssessments${iterStat.index}.degreeOfInfluence|"
-                                   th:text="|Grado de influencia para ${assessment.characteristicType.label}|">
+                                   th:text="|Grado de influencia para ${#messages.msg(assessment.characteristicType.messageKey)}|">
                                 Grado de influencia
                             </label>
 

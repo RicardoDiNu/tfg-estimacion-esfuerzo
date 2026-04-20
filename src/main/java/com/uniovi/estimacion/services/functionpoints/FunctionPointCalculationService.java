@@ -1,6 +1,12 @@
 package com.uniovi.estimacion.services.functionpoints;
 
-import com.uniovi.estimacion.entities.functionpoints.*;
+import com.uniovi.estimacion.entities.functionpoints.DataFunction;
+import com.uniovi.estimacion.entities.functionpoints.DataFunctionType;
+import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.functionpoints.FunctionPointComplexity;
+import com.uniovi.estimacion.entities.functionpoints.GeneralSystemCharacteristicAssessment;
+import com.uniovi.estimacion.entities.functionpoints.TransactionalFunction;
+import com.uniovi.estimacion.entities.functionpoints.TransactionalFunctionType;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -10,28 +16,22 @@ public class FunctionPointCalculationService {
         int unadjustedFunctionPoints = 0;
 
         for (DataFunction dataFunction : analysis.getDataFunctions()) {
-            FunctionPointComplexity complexity =
-                    calculateDataFunctionComplexity(dataFunction.getDetCount(), dataFunction.getRetCount());
-            int weight = calculateDataFunctionWeight(dataFunction.getType(), complexity);
+            int weight = calculateDataFunctionWeight(
+                    dataFunction.getType(),
+                    dataFunction.getComplexity()
+            );
 
-            dataFunction.setComplexity(complexity);
             dataFunction.setWeight(weight);
-
             unadjustedFunctionPoints += weight;
         }
 
         for (TransactionalFunction transactionalFunction : analysis.getTransactionalFunctions()) {
-            FunctionPointComplexity complexity =
-                    calculateTransactionalFunctionComplexity(
-                            transactionalFunction.getType(),
-                            transactionalFunction.getDetCount(),
-                            transactionalFunction.getFtrCount()
-                    );
-            int weight = calculateTransactionalFunctionWeight(transactionalFunction.getType(), complexity);
+            int weight = calculateTransactionalFunctionWeight(
+                    transactionalFunction.getType(),
+                    transactionalFunction.getComplexity()
+            );
 
-            transactionalFunction.setComplexity(complexity);
             transactionalFunction.setWeight(weight);
-
             unadjustedFunctionPoints += weight;
         }
 
@@ -49,31 +49,11 @@ public class FunctionPointCalculationService {
         analysis.setAdjustedFunctionPoints(adjustedFunctionPoints);
     }
 
-    public FunctionPointComplexity calculateDataFunctionComplexity(int detCount, int retCount) {
-        if (retCount <= 1) {
-            if (detCount <= 50) {
-                return FunctionPointComplexity.LOW;
-            }
-            return FunctionPointComplexity.AVERAGE;
-        }
-
-        if (retCount <= 5) {
-            if (detCount <= 19) {
-                return FunctionPointComplexity.LOW;
-            }
-            if (detCount <= 50) {
-                return FunctionPointComplexity.AVERAGE;
-            }
-            return FunctionPointComplexity.HIGH;
-        }
-
-        if (detCount <= 19) {
-            return FunctionPointComplexity.AVERAGE;
-        }
-        return FunctionPointComplexity.HIGH;
-    }
-
     public int calculateDataFunctionWeight(DataFunctionType type, FunctionPointComplexity complexity) {
+        if (type == null || complexity == null) {
+            return 0;
+        }
+
         return switch (type) {
             case ILF -> switch (complexity) {
                 case LOW -> 7;
@@ -88,72 +68,14 @@ public class FunctionPointCalculationService {
         };
     }
 
-    public FunctionPointComplexity calculateTransactionalFunctionComplexity(
-            TransactionalFunctionType type,
-            int detCount,
-            int ftrCount
-    ) {
-        return switch (type) {
-            case EI -> calculateEiComplexity(detCount, ftrCount);
-            case EO, EQ -> calculateEoEqComplexity(detCount, ftrCount);
-        };
-    }
-
-    private FunctionPointComplexity calculateEiComplexity(int detCount, int ftrCount) {
-        if (ftrCount <= 1) {
-            if (detCount <= 15) {
-                return FunctionPointComplexity.LOW;
-            }
-            return FunctionPointComplexity.AVERAGE;
-        }
-
-        if (ftrCount == 2) {
-            if (detCount <= 4) {
-                return FunctionPointComplexity.LOW;
-            }
-            if (detCount <= 15) {
-                return FunctionPointComplexity.AVERAGE;
-            }
-            return FunctionPointComplexity.HIGH;
-        }
-
-        if (detCount <= 4) {
-            return FunctionPointComplexity.AVERAGE;
-        }
-        return FunctionPointComplexity.HIGH;
-    }
-
-    private FunctionPointComplexity calculateEoEqComplexity(int detCount, int ftrCount) {
-        if (ftrCount <= 1) {
-            if (detCount <= 5) {
-                return FunctionPointComplexity.LOW;
-            }
-            if (detCount <= 19) {
-                return FunctionPointComplexity.LOW;
-            }
-            return FunctionPointComplexity.AVERAGE;
-        }
-
-        if (ftrCount <= 3) {
-            if (detCount <= 5) {
-                return FunctionPointComplexity.LOW;
-            }
-            if (detCount <= 19) {
-                return FunctionPointComplexity.AVERAGE;
-            }
-            return FunctionPointComplexity.HIGH;
-        }
-
-        if (detCount <= 5) {
-            return FunctionPointComplexity.AVERAGE;
-        }
-        return FunctionPointComplexity.HIGH;
-    }
-
     public int calculateTransactionalFunctionWeight(
             TransactionalFunctionType type,
             FunctionPointComplexity complexity
     ) {
+        if (type == null || complexity == null) {
+            return 0;
+        }
+
         return switch (type) {
             case EI -> switch (complexity) {
                 case LOW -> 3;

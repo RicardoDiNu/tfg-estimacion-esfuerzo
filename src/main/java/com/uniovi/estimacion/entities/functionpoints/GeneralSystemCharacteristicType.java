@@ -4,23 +4,28 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@RequiredArgsConstructor
 public enum GeneralSystemCharacteristicType {
+    DATA_COMMUNICATIONS(2, "fp.gsc.characteristic.2"),
+    DISTRIBUTED_DATA_PROCESSING(3, "fp.gsc.characteristic.3"),
+    PERFORMANCE(4, "fp.gsc.characteristic.4"),
+    HEAVILY_USED_CONFIGURATION(5, "fp.gsc.characteristic.5"),
+    TRANSACTION_RATE(9, "fp.gsc.characteristic.9"),
+    ON_LINE_DATA_ENTRY(6, "fp.gsc.characteristic.6"),
+    END_USER_EFFICIENCY(14, "fp.gsc.characteristic.14"),
+    ON_LINE_UPDATE(8, "fp.gsc.characteristic.8"),
+    COMPLEX_PROCESSING(10, "fp.gsc.characteristic.10"),
+    REUSABILITY(11, "fp.gsc.characteristic.11"),
+    INSTALLATION_EASE(12, "fp.gsc.characteristic.12"),
+    OPERATIONAL_EASE(1, "fp.gsc.characteristic.1"),
+    MULTIPLE_SITES(13, "fp.gsc.characteristic.13"),
+    FACILITATE_CHANGE(7, "fp.gsc.characteristic.7");
 
-    DATA_COMMUNICATIONS("Data Communications"),
-    DISTRIBUTED_DATA_PROCESSING("Distributed Data Processing"),
-    PERFORMANCE("Performance"),
-    HEAVILY_USED_CONFIGURATION("Heavily Used Configuration"),
-    TRANSACTION_RATE("Transaction Rate"),
-    ON_LINE_DATA_ENTRY("On-line Data Entry"),
-    END_USER_EFFICIENCY("End-user Efficiency"),
-    ON_LINE_UPDATE("On-line Update"),
-    COMPLEX_PROCESSING("Complex Processing"),
-    REUSABILITY("Reusability"),
-    INSTALLATION_EASE("Installation Ease"),
-    OPERATIONAL_EASE("Operational Ease"),
-    MULTIPLE_SITES("Multiple Sites"),
-    FACILITATE_CHANGE("Facilitate Change");
+    private final int order;
+    private final String messageKey;
 
-    private final String label;
+    GeneralSystemCharacteristicType(int order, String messageKey) {
+        this.order = order;
+        this.messageKey = messageKey;
+    }
+
 }

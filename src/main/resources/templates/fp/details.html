@@ -218,8 +218,6 @@
                                     <th>Tipo</th>
                                     <th>Nombre</th>
                                     <th>Requisito asociado</th>
-                                    <th>DET</th>
-                                    <th>RET</th>
                                     <th>Complejidad</th>
                                     <th>Peso</th>
                                 </tr>
@@ -244,8 +242,6 @@
                                             Ver requisito
                                         </a>
                                     </td>
-                                    <td th:text="${dataFunction.detCount}">10</td>
-                                    <td th:text="${dataFunction.retCount}">2</td>
                                     <td th:text="${dataFunction.complexity}">AVERAGE</td>
                                     <td th:text="${dataFunction.weight}">10</td>
                                 </tr>
@@ -364,8 +360,6 @@
                                     <th>Tipo</th>
                                     <th>Nombre</th>
                                     <th>Requisito asociado</th>
-                                    <th>DET</th>
-                                    <th>FTR</th>
                                     <th>Complejidad</th>
                                     <th>Peso</th>
                                 </tr>
@@ -390,8 +384,6 @@
                                             Ver requisito
                                         </a>
                                     </td>
-                                    <td th:text="${transactionalFunction.detCount}">8</td>
-                                    <td th:text="${transactionalFunction.ftrCount}">2</td>
                                     <td th:text="${transactionalFunction.complexity}">AVERAGE</td>
                                     <td th:text="${transactionalFunction.weight}">4</td>
                                 </tr>
@@ -522,7 +514,7 @@
                                 </thead>
                                 <tbody>
                                 <tr th:each="assessment : ${analysis.generalSystemCharacteristicAssessments}">
-                                    <td th:text="${assessment.characteristicType.label}">Performance</td>
+                                    <td th:text="${#messages.msg(assessment.characteristicType.messageKey)}">Característica</td>
                                     <td th:text="${assessment.degreeOfInfluence}">0</td>
                                 </tr>
                                 </tbody>
