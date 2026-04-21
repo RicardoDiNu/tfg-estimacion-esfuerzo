@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1 th:text="#{fp.dataFunction.edit.title}">Editar función de datos</h1>
+        <p th:text="#{fp.dataFunction.edit.subtitle}">Modifica los datos necesarios para clasificar la función</p>
+
+        <form method="post"
+              th:action="@{/projects/{projectId}/requirements/{requirementId}/data-functions/edit/{dataFunctionId}(projectId=${project.id}, requirementId=${requirementId}, dataFunctionId=${dataFunction.id})}"
+              th:object="${dataFunction}">
+
+            <div class="form-group">
+                <label for="type" th:text="#{fp.dataFunction.field.type}">Tipo</label>
+                <select class="form-control"
+                        id="type"
+                        th:field="*{type}"
+                        required>
+                    <option value="">Selecciona un tipo</option>
+                    <option th:each="type : ${dataFunctionTypes}"
+                            th:value="${type}"
+                            th:text="${type}">
+                        ILF
+                    </option>
+                </select>
+
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('type')}"
+                      th:errors="*{type}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="complexity">Complejidad</label>
+                <select class="form-control"
+                        id="complexity"
+                        th:field="*{complexity}"
+                        required>
+                    <option value="">Selecciona una complejidad</option>
+                    <option value="LOW">Simple</option>
+                    <option value="AVERAGE">Media</option>
+                    <option value="HIGH">Compleja</option>
+                </select>
+
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('complexity')}"
+                      th:errors="*{complexity}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="name" th:text="#{fp.dataFunction.field.name}">Nombre</label>
+                <input type="text"
+                       class="form-control"
+                       id="name"
+                       th:field="*{name}"
+                       maxlength="100"
+                       required>
+
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('name')}"
+                      th:errors="*{name}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="description" th:text="#{fp.dataFunction.field.description}">Descripción</label>
+                <textarea class="form-control"
+                          id="description"
+                          th:field="*{description}"
+                          rows="4"
+                          maxlength="1000"></textarea>
+
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('description')}"
+                      th:errors="*{description}"></span>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary mr-2"
+                    th:text="#{fp.dataFunction.edit.submit}">
+                Guardar cambios
+            </button>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${requirementId})}">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

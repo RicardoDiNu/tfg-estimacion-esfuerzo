@@ -2,7 +2,7 @@ $(document).ready(function () {
     $("#languageDropdownMenuButton a").click(function (e) {
         e.preventDefault();
 
-        const selectedLanguage = $(this).attr("value");
+        const selectedLanguage = $(this).data("lang");
         const url = new URL(window.location.href);
 
         url.searchParams.set("lang", selectedLanguage);

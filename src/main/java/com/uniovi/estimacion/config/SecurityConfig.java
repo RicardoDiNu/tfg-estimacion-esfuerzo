@@ -1,25 +1,57 @@
 package com.uniovi.estimacion.config;
 
+import com.uniovi.estimacion.services.users.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
+@RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
+
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**").permitAll()
+                        // 1. Recursos públicos y autenticación
+                        .requestMatchers(
+                                "/",
+                                "/login",
+                                "/signup",
+                                "/logout",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**"
+                        ).permitAll()
+
+                        // 2. Flujo público de estimación temporal / anónima
+                        .requestMatchers(
+                                "/estimate/**"
+                        ).permitAll()
+
+                        // 3. Rutas solo para admin
+                        .requestMatchers(
+                                "/admin/**",
+                                "/users/**"
+                        ).hasAuthority("ROLE_ADMIN")
+
+                        // 4. Zona autenticada normal
+                        .requestMatchers(
+                                "/home",
+                                "/projects/**"
+                        ).authenticated()
+
+                        // 5. Lo demás, autenticado por defecto
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -38,17 +70,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails user = User.withUsername("ricardo")
-                .password(passwordEncoder.encode("1234"))
-                .roles("USER")
-                .build();
+    public org.springframework.security.authentication.AuthenticationManager authenticationManager(
+            HttpSecurity http,
+            PasswordEncoder passwordEncoder
+    ) throws Exception {
+        AuthenticationManagerBuilder authBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
 
-        return new InMemoryUserDetailsManager(user);
+        authBuilder
+                .userDetailsService(customUserDetailsService)
+                .passwordEncoder(passwordEncoder);
+
+        return authBuilder.build();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
 }

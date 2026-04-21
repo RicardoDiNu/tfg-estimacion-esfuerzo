@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="pagination(page)" class="text-center mt-4" th:if="${page.totalPages > 1}">
+    <ul class="pagination justify-content-center mb-0">
+
+        <li class="page-item" th:classappend="${page.number == 0} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{'?page=0&size=' + ${page.size}}">
+                Primera
+            </a>
+        </li>
+
+        <li class="page-item" th:if="${page.number - 1 >= 0}">
+            <a class="page-link"
+               th:href="@{'?page=' + ${page.number - 1} + '&size=' + ${page.size}}"
+               th:text="${page.number}">
+                1
+            </a>
+        </li>
+
+        <li class="page-item active">
+            <a class="page-link"
+               th:href="@{'?page=' + ${page.number} + '&size=' + ${page.size}}"
+               th:text="${page.number + 1}">
+                2
+            </a>
+        </li>
+
+        <li class="page-item" th:if="${page.number + 1 <= page.totalPages - 1}">
+            <a class="page-link"
+               th:href="@{'?page=' + ${page.number + 1} + '&size=' + ${page.size}}"
+               th:text="${page.number + 2}">
+                3
+            </a>
+        </li>
+
+        <li class="page-item" th:classappend="${page.number == page.totalPages - 1} ? 'disabled'">
+            <a class="page-link"
+               th:href="@{'?page=' + ${page.totalPages - 1} + '&size=' + ${page.size}}">
+                Última
+            </a>
+        </li>
+    </ul>
+</div>
+
+</body>
+</html>
