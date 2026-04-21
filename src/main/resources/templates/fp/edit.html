@@ -7,34 +7,40 @@
 
 <main class="app-content">
     <div class="container">
-        <h1>Editar análisis PF</h1>
+        <h1 th:text="#{fp.edit.title}">Editar análisis PF</h1>
 
         <div class="alert alert-light border">
-            <strong>Proyecto:</strong>
+            <strong th:text="#{project.field.name}">Proyecto</strong>:
             <span th:text="${project.name}">Proyecto</span>
         </div>
 
-        <div class="alert alert-danger"
-             th:if="${error != null}"
-             th:text="${error}">
-            El límite del sistema no puede estar vacío.
-        </div>
-
         <form method="post"
-              th:action="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}">
+              th:action="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}"
+              th:object="${analysis}">
 
             <div class="form-group">
-                <label for="systemBoundaryDescription">Límite del sistema</label>
+                <label for="systemBoundaryDescription"
+                       th:text="#{fp.field.systemBoundary}">
+                    Límite del sistema
+                </label>
+
                 <textarea class="form-control"
                           id="systemBoundaryDescription"
-                          name="systemBoundaryDescription"
+                          th:field="*{systemBoundaryDescription}"
                           rows="6"
                           maxlength="2000"
-                          required="required"
-                          th:text="${systemBoundaryDescription}">Texto del límite</textarea>
+                          required></textarea>
+
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('systemBoundaryDescription')}"
+                      th:errors="*{systemBoundaryDescription}"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary mr-2">Guardar cambios</button>
+            <button type="submit"
+                    class="btn btn-primary mr-2"
+                    th:text="#{fp.edit.submit}">
+                Guardar cambios
+            </button>
 
             <a class="btn btn-secondary"
                th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}">

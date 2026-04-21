@@ -9,6 +9,10 @@
     <div class="container">
         <h2 th:text="#{login.title}">Identifícate</h2>
 
+        <div class="alert alert-success" th:if="${param.signupSuccess}">
+            Cuenta creada correctamente. Ya puedes iniciar sesión.
+        </div>
+
         <form class="form-horizontal" method="post" action="/login">
             <div class="form-group">
                 <label class="control-label col-sm-2" for="username" th:text="#{login.username}">Usuario</label>

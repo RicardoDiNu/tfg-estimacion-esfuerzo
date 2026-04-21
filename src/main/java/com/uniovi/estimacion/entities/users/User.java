@@ -1,6 +1,5 @@
-package com.uniovi.estimacion.entities.projects;
+package com.uniovi.estimacion.entities.users;
 
-import com.uniovi.estimacion.entities.users.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,21 +8,31 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "estimation_projects")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
-public class EstimationProject {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 150)
-    private String name;
+    @Column(nullable = false, unique = true, length = 50)
+    private String username;
 
-    @Column(length = 1000)
-    private String description;
+    @Column(nullable = false, unique = true, length = 100)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserRole role;
+
+    @Column(nullable = false)
+    private Boolean enabled = true;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -31,20 +40,17 @@ public class EstimationProject {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    private User owner;
-
-    public EstimationProject(String name, String description) {
-        this.name = name;
-        this.description = description;
-    }
-
     @PrePersist
     public void onCreate() {
         LocalDateTime now = LocalDateTime.now();
         this.createdAt = now;
         this.updatedAt = now;
+        if (this.enabled == null) {
+            this.enabled = true;
+        }
+        if (this.role == null) {
+            this.role = UserRole.ROLE_USER;
+        }
     }
 
     @PreUpdate

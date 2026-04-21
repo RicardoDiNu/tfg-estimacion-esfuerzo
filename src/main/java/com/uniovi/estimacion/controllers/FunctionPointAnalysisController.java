@@ -10,11 +10,16 @@ import com.uniovi.estimacion.entities.requirements.UserRequirement;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.requirements.UserRequirementService;
+import com.uniovi.estimacion.validators.functionpoints.DataFunctionValidator;
+import com.uniovi.estimacion.validators.functionpoints.FunctionPointAnalysisValidator;
+import com.uniovi.estimacion.validators.functionpoints.GeneralSystemCharacteristicsValidator;
+import com.uniovi.estimacion.validators.functionpoints.TransactionalFunctionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -27,10 +32,13 @@ public class FunctionPointAnalysisController {
     private final EstimationProjectService estimationProjectService;
     private final FunctionPointAnalysisService functionPointAnalysisService;
     private final UserRequirementService userRequirementService;
+    private final FunctionPointAnalysisValidator functionPointAnalysisValidator;
+    private final GeneralSystemCharacteristicsValidator generalSystemCharacteristicsValidator;
 
     @GetMapping("/function-points/add")
     public String getCreateForm(@PathVariable Long projectId, Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -41,13 +49,17 @@ public class FunctionPointAnalysisController {
         }
 
         model.addAttribute("project", optionalProject.get());
+        model.addAttribute("analysis", new FunctionPointAnalysis());
         return "fp/add";
     }
 
     @PostMapping("/function-points/add")
     public String createAnalysis(@PathVariable Long projectId,
-                                 @RequestParam("systemBoundaryDescription") String systemBoundaryDescription) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
+                                 @ModelAttribute("analysis") FunctionPointAnalysis analysis,
+                                 BindingResult result,
+                                 Model model) {
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -57,7 +69,19 @@ public class FunctionPointAnalysisController {
             return redirectToFunctionPointDetails(projectId);
         }
 
-        functionPointAnalysisService.createInitialAnalysis(optionalProject.get(), systemBoundaryDescription);
+        functionPointAnalysisValidator.validate(analysis, result);
+
+        if (result.hasErrors()) {
+            model.addAttribute("project", optionalProject.get());
+            model.addAttribute("analysis", analysis);
+            return "fp/add";
+        }
+
+        functionPointAnalysisService.createInitialAnalysis(
+                optionalProject.get(),
+                analysis.getSystemBoundaryDescription()
+        );
+
         return redirectToFunctionPointDetails(projectId);
     }
 
@@ -67,8 +91,10 @@ public class FunctionPointAnalysisController {
                                                   @RequestParam(name = "dataFunctionsPage", defaultValue = "0") int dataFunctionsPage,
                                                   @RequestParam(name = "transactionalFunctionsPage", defaultValue = "0") int transactionalFunctionsPage,
                                                   Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis = functionPointAnalysisService.findDetailedByProjectId(projectId);
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisService.findDetailedByProjectId(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -107,8 +133,10 @@ public class FunctionPointAnalysisController {
 
     @GetMapping("/function-points/edit")
     public String getEditForm(@PathVariable Long projectId, Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis = functionPointAnalysisService.findByProjectId(projectId);
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisService.findByProjectId(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -127,10 +155,13 @@ public class FunctionPointAnalysisController {
 
     @PostMapping("/function-points/edit")
     public String updateAnalysis(@PathVariable Long projectId,
-                                 @RequestParam("systemBoundaryDescription") String systemBoundaryDescription,
+                                 @ModelAttribute("analysis") FunctionPointAnalysis formAnalysis,
+                                 BindingResult result,
                                  Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis = functionPointAnalysisService.findByProjectId(projectId);
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisService.findByProjectId(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -140,13 +171,20 @@ public class FunctionPointAnalysisController {
             return redirectToFunctionPointAdd(projectId);
         }
 
+        functionPointAnalysisValidator.validate(formAnalysis, result);
+
+        if (result.hasErrors()) {
+            model.addAttribute("project", optionalProject.get());
+            model.addAttribute("analysis", formAnalysis);
+            return "fp/edit";
+        }
+
         boolean updated = functionPointAnalysisService
-                .updateSystemBoundaryDescription(projectId, systemBoundaryDescription);
+                .updateSystemBoundaryDescription(projectId, formAnalysis.getSystemBoundaryDescription());
 
         if (!updated) {
             model.addAttribute("project", optionalProject.get());
-            model.addAttribute("analysis", optionalAnalysis.get());
-            model.addAttribute("systemBoundaryDescription", systemBoundaryDescription);
+            model.addAttribute("analysis", formAnalysis);
             model.addAttribute("error", "El límite del sistema no puede estar vacío.");
             return "fp/edit";
         }
@@ -160,8 +198,10 @@ public class FunctionPointAnalysisController {
                                             @RequestParam(name = "dataFunctionsPage", defaultValue = "0") int dataFunctionsPage,
                                             @RequestParam(name = "transactionalFunctionsPage", defaultValue = "0") int transactionalFunctionsPage,
                                             Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis = functionPointAnalysisService.findDetailedByProjectId(projectId);
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisService.findDetailedByProjectId(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -189,8 +229,10 @@ public class FunctionPointAnalysisController {
                                              @RequestParam(name = "dataFunctionsPage", defaultValue = "0") int dataFunctionsPage,
                                              @RequestParam(name = "transactionalFunctionsPage", defaultValue = "0") int transactionalFunctionsPage,
                                              Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis = functionPointAnalysisService.findDetailedByProjectId(projectId);
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisService.findDetailedByProjectId(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -218,8 +260,10 @@ public class FunctionPointAnalysisController {
                                                       @RequestParam(name = "dataFunctionsPage", defaultValue = "0") int dataFunctionsPage,
                                                       @RequestParam(name = "transactionalFunctionsPage", defaultValue = "0") int transactionalFunctionsPage,
                                                       Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis = functionPointAnalysisService.findDetailedByProjectId(projectId);
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisService.findDetailedByProjectId(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -243,8 +287,10 @@ public class FunctionPointAnalysisController {
 
     @GetMapping("/function-points/gsc/edit")
     public String getEditGscForm(@PathVariable Long projectId, Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis = functionPointAnalysisService.findDetailedByProjectId(projectId);
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisService.findDetailedByProjectId(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -262,7 +308,30 @@ public class FunctionPointAnalysisController {
 
     @PostMapping("/function-points/gsc/edit")
     public String updateGsc(@PathVariable Long projectId,
-                            @ModelAttribute("analysis") FunctionPointAnalysis formAnalysis) {
+                            @ModelAttribute("analysis") FunctionPointAnalysis formAnalysis,
+                            BindingResult result,
+                            Model model) {
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisService.findDetailedByProjectId(projectId);
+
+        if (optionalProject.isEmpty()) {
+            return redirectToProjects();
+        }
+
+        if (optionalAnalysis.isEmpty()) {
+            return redirectToFunctionPointAdd(projectId);
+        }
+
+        generalSystemCharacteristicsValidator.validate(formAnalysis, result);
+
+        if (result.hasErrors()) {
+            model.addAttribute("project", optionalProject.get());
+            model.addAttribute("analysis", formAnalysis);
+            return "fp/gsc-edit";
+        }
+
         boolean updated = functionPointAnalysisService.updateGeneralSystemCharacteristics(projectId, formAnalysis);
 
         if (!updated) {
@@ -270,65 +339,6 @@ public class FunctionPointAnalysisController {
         }
 
         return redirectToFunctionPointDetails(projectId);
-    }
-
-    @GetMapping("/requirements/{requirementId}/data-functions/edit/{dataFunctionId}")
-    public String getEditDataFunctionFromRequirementForm(@PathVariable Long projectId,
-                                                         @PathVariable Long requirementId,
-                                                         @PathVariable Long dataFunctionId,
-                                                         Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
-        Optional<DataFunction> optionalDataFunction = functionPointAnalysisService.findDataFunction(projectId, dataFunctionId);
-
-        if (optionalProject.isEmpty() || optionalDataFunction.isEmpty()) {
-            return redirectToFunctionPointDetails(projectId);
-        }
-
-        model.addAttribute("project", optionalProject.get());
-        model.addAttribute("requirementId", requirementId);
-        model.addAttribute("dataFunction", optionalDataFunction.get());
-        model.addAttribute("dataFunctionTypes", DataFunctionType.values());
-
-        return "fp/data-function-edit";
-    }
-
-    @PostMapping("/requirements/{requirementId}/data-functions/edit/{dataFunctionId}")
-    public String updateDataFunctionFromRequirement(@PathVariable Long projectId,
-                                                    @PathVariable Long requirementId,
-                                                    @PathVariable Long dataFunctionId,
-                                                    @ModelAttribute DataFunction formDataFunction) {
-        functionPointAnalysisService.updateDataFunction(projectId, dataFunctionId, formDataFunction);
-        return redirectToRequirementDetails(projectId, requirementId);
-    }
-
-    @GetMapping("/requirements/{requirementId}/transactional-functions/edit/{transactionalFunctionId}")
-    public String getEditTransactionalFunctionFromRequirementForm(@PathVariable Long projectId,
-                                                                  @PathVariable Long requirementId,
-                                                                  @PathVariable Long transactionalFunctionId,
-                                                                  Model model) {
-        Optional<EstimationProject> optionalProject = estimationProjectService.findById(projectId);
-        Optional<TransactionalFunction> optionalTransactionalFunction =
-                functionPointAnalysisService.findTransactionalFunction(projectId, transactionalFunctionId);
-
-        if (optionalProject.isEmpty() || optionalTransactionalFunction.isEmpty()) {
-            return redirectToFunctionPointDetails(projectId);
-        }
-
-        model.addAttribute("project", optionalProject.get());
-        model.addAttribute("requirementId", requirementId);
-        model.addAttribute("transactionalFunction", optionalTransactionalFunction.get());
-        model.addAttribute("transactionalFunctionTypes", TransactionalFunctionType.values());
-
-        return "fp/transactional-function-edit";
-    }
-
-    @PostMapping("/requirements/{requirementId}/transactional-functions/edit/{transactionalFunctionId}")
-    public String updateTransactionalFunctionFromRequirement(@PathVariable Long projectId,
-                                                             @PathVariable Long requirementId,
-                                                             @PathVariable Long transactionalFunctionId,
-                                                             @ModelAttribute TransactionalFunction formTransactionalFunction) {
-        functionPointAnalysisService.updateTransactionalFunction(projectId, transactionalFunctionId, formTransactionalFunction);
-        return redirectToRequirementDetails(projectId, requirementId);
     }
 
     private String redirectToProjects() {

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body class="app-page">
 
-<nav th:replace="fragments/nav :: nav"></nav>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
 
 <main class="app-content">
     <div class="container">
@@ -15,23 +15,44 @@
             <span th:text="${project.name}">Proyecto</span>
         </div>
 
-        <form method="post" th:action="@{/projects/{projectId}/function-points/add(projectId=${project.id})}">
+        <form method="post"
+              th:action="@{/projects/{projectId}/function-points/add(projectId=${project.id})}"
+              th:object="${analysis}">
+
             <div class="form-group">
-                <label for="systemBoundaryDescription" th:text="#{fp.field.systemBoundary}">Límite del sistema</label>
+                <label for="systemBoundaryDescription"
+                       th:text="#{fp.field.systemBoundary}">
+                    Límite del sistema
+                </label>
+
                 <textarea class="form-control"
                           id="systemBoundaryDescription"
-                          name="systemBoundaryDescription"
+                          th:field="*{systemBoundaryDescription}"
                           rows="6"
-                          required="required"></textarea>
+                          maxlength="2000"
+                          required></textarea>
+
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('systemBoundaryDescription')}"
+                      th:errors="*{systemBoundaryDescription}"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary mr-2" th:text="#{fp.add.submit}">Crear análisis</button>
-            <a class="btn btn-secondary" th:href="@{/projects/{id}(id=${project.id})}" th:text="#{fp.add.cancel}">Cancelar</a>
+            <button type="submit"
+                    class="btn btn-primary mr-2"
+                    th:text="#{fp.add.submit}">
+                Crear análisis
+            </button>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{id}(id=${project.id})}"
+               th:text="#{fp.add.cancel}">
+                Cancelar
+            </a>
         </form>
     </div>
 </main>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>
 </html>
