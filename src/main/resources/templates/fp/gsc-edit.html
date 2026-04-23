@@ -42,7 +42,7 @@
 
                             <label class="sr-only"
                                    th:for="|generalSystemCharacteristicAssessments${iterStat.index}.degreeOfInfluence|"
-                                   th:text="|Grado de influencia para ${#messages.msg(assessment.characteristicType.messageKey)}|">
+                                   th:text="#{fp.gsc.edit.degreeLabel(${#messages.msg(assessment.characteristicType.messageKey)})}">
                                 Grado de influencia
                             </label>
 

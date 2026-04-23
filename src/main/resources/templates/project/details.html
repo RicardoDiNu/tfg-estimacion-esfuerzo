@@ -47,7 +47,7 @@
             <a class="btn btn-danger mr-2"
                th:href="@{/projects/delete/{id}(id=${project.id})}"
                th:text="#{project.action.delete}"
-               onclick="return confirm('¿Seguro que quieres eliminar este proyecto?');">Eliminar</a>
+               th:onclick="|return confirm('#{project.confirm.delete}');|">Eliminar</a>
 
             <a class="btn btn-secondary"
                href="/projects"

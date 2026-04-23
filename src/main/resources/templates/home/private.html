@@ -12,7 +12,7 @@
         <h1 th:text="#{home.private.title}">Zona privada</h1>
         <p th:text="#{home.private.subtitle}">Has iniciado sesión correctamente</p>
         <p sec:authorize="isAuthenticated()">
-            Usuario autenticado:
+            <span th:text="#{home.private.user}">Usuario autenticado como</span>
             <strong sec:authentication="name">usuario</strong>
         </p>
     </div>

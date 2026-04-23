@@ -7,21 +7,20 @@
 
 <main class="app-content">
     <div class="container-fluid fp-analysis-container">
-        <h1 class="mb-4">Análisis PF</h1>
+        <h1 class="mb-4" th:text="#{fp.details.title}">Análisis PF</h1>
 
         <!-- CONTEXTO DEL ANÁLISIS -->
         <div class="card mb-4">
-            <div class="card-header">Contexto del análisis</div>
+            <div class="card-header" th:text="#{fp.details.context}">Contexto del análisis</div>
             <div class="card-body">
                 <div class="mb-3">
                     <a class="btn btn-outline-primary"
-                       th:href="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}">
-                        Editar análisis
-                    </a>
+                       th:href="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}"
+                       th:text="#{fp.details.editAnalysis}">Editar análisis</a>
                 </div>
 
                 <div class="fp-context-item mb-3">
-                    <h6 class="text-muted">Proyecto</h6>
+                    <h6 class="text-muted" th:text="#{fp.details.project}">Proyecto</h6>
                     <p class="card-text mb-1" th:text="${project.name}">Proyecto</p>
                     <p class="card-text text-muted mb-0"
                        th:if="${project.description != null and !#strings.isEmpty(project.description)}"
@@ -31,7 +30,7 @@
                 </div>
 
                 <div class="fp-context-item pt-3 border-top">
-                    <h6 class="text-muted">Límite del sistema</h6>
+                    <h6 class="text-muted" th:text="#{fp.field.systemBoundary}">Límite del sistema</h6>
                     <p class="card-text mb-0"
                        th:text="${analysis.systemBoundaryDescription != null and !#strings.isEmpty(analysis.systemBoundaryDescription) ? analysis.systemBoundaryDescription : '-'}">
                         Descripción del límite del sistema
@@ -42,18 +41,18 @@
 
         <!-- REQUISITOS A ANCHO COMPLETO -->
         <div class="card mb-4" id="requirements-container" th:fragment="requirementsSection">
-            <div class="card-header">Requisitos de usuario</div>
+            <div class="card-header" th:text="#{requirement.list.title}">Requisitos de usuario</div>
             <div class="card-body">
 
                 <div class="mb-3">
                     <a class="btn btn-outline-primary"
-                       th:href="@{/projects/{projectId}/requirements/add(projectId=${project.id})}">
-                        Añadir requisito
-                    </a>
+                       th:href="@{/projects/{projectId}/requirements/add(projectId=${project.id})}"
+                       th:text="#{fp.details.addRequirement}">Añadir requisito</a>
                 </div>
 
                 <div th:if="${requirementsList == null or requirementsList.isEmpty()}"
-                     class="alert alert-light border mb-0">
+                     class="alert alert-light border mb-0"
+                     th:text="#{fp.details.requirementsEmpty}">
                     Todavía no hay requisitos de usuario registrados.
                 </div>
 
@@ -62,8 +61,8 @@
                     <table class="table table-hover">
                         <thead>
                         <tr>
-                            <th>Identificador</th>
-                            <th>Requisito</th>
+                            <th th:text="#{requirement.field.identifier}">Identificador</th>
+                            <th th:text="#{requirement.field.statement}">Requisito</th>
                             <th class="text-right"></th>
                         </tr>
                         </thead>
@@ -85,9 +84,8 @@
                                            requirementId=${requirement.id},
                                            requirementsPage=${requirementsPage.number},
                                            dataFunctionsPage=${dataFunctionsCurrentPage},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}">
-                                        Ver detalle
-                                    </a>
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:text="#{project.action.details}">Ver detalle</a>
 
                                     <a class="btn btn-sm btn-outline-danger mb-2"
                                        th:href="@{/projects/{projectId}/requirements/delete/{requirementId}(
@@ -96,9 +94,8 @@
                                            requirementsPage=${requirementsPage.number},
                                            dataFunctionsPage=${dataFunctionsCurrentPage},
                                            transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
-                                       onclick="return confirm('¿Seguro que deseas eliminar este requisito de usuario?');">
-                                        Eliminar
-                                    </a>
+                                       th:onclick="|return confirm('#{fp.confirm.deleteRequirement}');|"
+                                       th:text="#{project.action.delete}">Eliminar</a>
                                 </div>
                             </td>
                         </tr>
@@ -120,8 +117,8 @@
                                    projectId=${project.id},
                                    requirementsPage=0,
                                    dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}">
-                                Primera
+                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:text="#{pagination.first}">Primera
                             </a>
                         </li>
 
@@ -187,8 +184,8 @@
                                    projectId=${project.id},
                                    requirementsPage=${requirementsPage.totalPages - 1},
                                    dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}">
-                                Última
+                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                               th:text="#{pagination.last}">Última
                             </a>
                         </li>
                     </ul>
@@ -202,11 +199,12 @@
             <!-- FUNCIONES DE DATOS -->
             <div class="col-12 col-lg-6 fp-analysis-column">
                 <div class="card mb-4" id="data-functions-container" th:fragment="dataFunctionsSection">
-                    <div class="card-header">Funciones de datos derivadas</div>
+                    <div class="card-header" th:text="#{requirement.decompose.dataFunctions}">Funciones de datos derivadas</div>
                     <div class="card-body">
 
                         <div th:if="${dataFunctionsList == null or dataFunctionsList.isEmpty()}"
-                             class="alert alert-light border mb-0">
+                             class="alert alert-light border mb-0"
+                             th:text="#{fp.dataFunction.list.empty}">
                             Todavía no hay funciones de datos registradas.
                         </div>
 
@@ -215,11 +213,11 @@
                             <table class="table table-hover">
                                 <thead>
                                 <tr>
-                                    <th>Tipo</th>
-                                    <th>Nombre</th>
-                                    <th>Requisito asociado</th>
-                                    <th>Complejidad</th>
-                                    <th>Peso</th>
+                                    <th th:text="#{fp.dataFunction.field.type}">Tipo</th>
+                                    <th th:text="#{fp.dataFunction.field.name}">Nombre</th>
+                                    <th th:text="#{fp.field.associatedRequirements}">Requisito asociado</th>
+                                    <th th:text="#{fp.dataFunction.field.complexity}">Complejidad</th>
+                                    <th th:text="#{fp.dataFunction.field.weight}">Peso</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -238,7 +236,7 @@
                                                transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
                                            th:text="${dataFunction.userRequirement.identifier != null and !#strings.isEmpty(dataFunction.userRequirement.identifier)
                                                ? dataFunction.userRequirement.identifier
-                                               : 'Ver requisito'}">
+                                               : #messages.msg('fp.details.viewRequirement')}">
                                             Ver requisito
                                         </a>
                                     </td>
@@ -263,8 +261,8 @@
                                            projectId=${project.id},
                                            requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
                                            dataFunctionsPage=0,
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}">
-                                        Primera
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                                       th:text="#{pagination.first}">Primera
                                     </a>
                                 </li>
 
@@ -330,8 +328,8 @@
                                            projectId=${project.id},
                                            requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
                                            dataFunctionsPage=${dataFunctionsPage.totalPages - 1},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}">
-                                        Última
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                                       th:text="#{pagination.last}">Última
                                     </a>
                                 </li>
                             </ul>
@@ -344,11 +342,12 @@
             <!-- FUNCIONES TRANSACCIONALES -->
             <div class="col-12 col-lg-6 fp-analysis-column">
                 <div class="card mb-4" id="transactional-functions-container" th:fragment="transactionalFunctionsSection">
-                    <div class="card-header">Funciones transaccionales derivadas</div>
+                    <div class="card-header" th:text="#{requirement.decompose.transactionalFunctions}">Funciones transaccionales derivadas</div>
                     <div class="card-body">
 
                         <div th:if="${transactionalFunctionsList == null or transactionalFunctionsList.isEmpty()}"
-                             class="alert alert-light border mb-0">
+                             class="alert alert-light border mb-0"
+                             th:text="#{fp.transactionalFunction.list.empty}">
                             Todavía no hay funciones transaccionales registradas.
                         </div>
 
@@ -357,11 +356,11 @@
                             <table class="table table-hover">
                                 <thead>
                                 <tr>
-                                    <th>Tipo</th>
-                                    <th>Nombre</th>
-                                    <th>Requisito asociado</th>
-                                    <th>Complejidad</th>
-                                    <th>Peso</th>
+                                    <th th:text="#{fp.transactionalFunction.field.type}">Tipo</th>
+                                    <th th:text="#{fp.transactionalFunction.field.name}">Nombre</th>
+                                    <th th:text="#{fp.field.associatedRequirements}">Requisito asociado</th>
+                                    <th th:text="#{fp.transactionalFunction.field.complexity}">Complejidad</th>
+                                    <th th:text="#{fp.transactionalFunction.field.weight}">Peso</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -380,7 +379,7 @@
                                                transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
                                            th:text="${transactionalFunction.userRequirement.identifier != null and !#strings.isEmpty(transactionalFunction.userRequirement.identifier)
                                                ? transactionalFunction.userRequirement.identifier
-                                               : 'Ver requisito'}">
+                                               : #messages.msg('fp.details.viewRequirement')}">
                                             Ver requisito
                                         </a>
                                     </td>
@@ -405,8 +404,8 @@
                                            projectId=${project.id},
                                            requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
                                            dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=0)}">
-                                        Primera
+                                           transactionalFunctionsPage=0)}"
+                                       th:text="#{pagination.first}">Primera
                                     </a>
                                 </li>
 
@@ -472,8 +471,8 @@
                                            projectId=${project.id},
                                            requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
                                            dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}">
-                                        Última
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}"
+                                       th:text="#{pagination.last}">Última
                                     </a>
                                 </li>
                             </ul>
@@ -488,18 +487,19 @@
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4 fp-centered-narrow-card">
-                    <div class="card-header">Características generales del sistema</div>
+                    <div class="card-header" th:text="#{fp.gsc.list.title}">Características generales del sistema</div>
                     <div class="card-body">
 
                         <div class="mb-3">
                             <a class="btn btn-outline-primary"
-                               th:href="@{/projects/{projectId}/function-points/gsc/edit(projectId=${project.id})}">
-                                Editar GSC
+                               th:href="@{/projects/{projectId}/function-points/gsc/edit(projectId=${project.id})}"
+                               th:text="#{fp.gsc.edit.button}">Editar GSC
                             </a>
                         </div>
 
                         <div th:if="${analysis.generalSystemCharacteristicAssessments == null or analysis.generalSystemCharacteristicAssessments.isEmpty()}"
-                             class="alert alert-light border mb-0">
+                             class="alert alert-light border mb-0"
+                             th:text="#{fp.gsc.list.empty}">
                             No hay características generales del sistema registradas.
                         </div>
 
@@ -508,8 +508,8 @@
                             <table class="table table-hover">
                                 <thead>
                                 <tr>
-                                    <th>Característica</th>
-                                    <th>Grado de influencia</th>
+                                    <th th:text="#{fp.gsc.field.name}">Característica</th>
+                                    <th th:text="#{fp.gsc.field.degree}">Grado de influencia</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -530,26 +530,26 @@
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4 fp-centered-narrow-card">
-                    <div class="card-header">Resultados</div>
+                    <div class="card-header" th:text="#{fp.results.title}">Resultados</div>
                     <div class="card-body">
                         <div class="row">
                             <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2">Puntos Función No Ajustados</h6>
+                                    <h6 class="text-muted mb-2" th:text="#{fp.field.ufp}">Puntos Función No Ajustados</h6>
                                     <p class="card-text mb-0 fp-result-value" th:text="${analysis.unadjustedFunctionPoints}">0</p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2">Grado total de influencia</h6>
+                                    <h6 class="text-muted mb-2" th:text="#{fp.field.tdi}">Grado total de influencia</h6>
                                     <p class="card-text mb-0 fp-result-value" th:text="${analysis.totalDegreeOfInfluence}">0</p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2">Factor de ajuste del valor</h6>
+                                    <h6 class="text-muted mb-2" th:text="#{fp.field.vaf}">Factor de ajuste del valor</h6>
                                     <p class="card-text mb-0 fp-result-value"
                                        th:text="${#numbers.formatDecimal(analysis.valueAdjustmentFactor, 1, 2)}">0.65</p>
                                 </div>
@@ -557,7 +557,7 @@
 
                             <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2">Puntos Función Ajustados</h6>
+                                    <h6 class="text-muted mb-2" th:text="#{fp.field.afp}">Puntos Función Ajustados</h6>
                                     <p class="card-text mb-0 fp-result-value"
                                        th:text="${#numbers.formatDecimal(analysis.adjustedFunctionPoints, 1, 2)}">0.00</p>
                                 </div>
@@ -569,8 +569,8 @@
         </div>
 
         <a class="btn btn-secondary"
-           th:href="@{/projects/{id}(id=${project.id})}">
-            Volver al proyecto
+           th:href="@{/projects/{id}(id=${project.id})}"
+           th:text="#{fp.details.back}">Volver al proyecto
         </a>
     </div>
 </main>

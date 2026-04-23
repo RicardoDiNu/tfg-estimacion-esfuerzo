@@ -43,9 +43,8 @@
             </button>
 
             <a class="btn btn-secondary"
-               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}">
-                Cancelar
-            </a>
+               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
+               th:text="#{fp.edit.cancel}">Cancelar</a>
         </form>
     </div>
 </main>

@@ -7,29 +7,28 @@
 
 <main class="app-content">
     <div class="container-fluid fp-analysis-container">
-        <h1 class="mb-4">Detalle del requisito de usuario</h1>
+        <h1 class="mb-4" th:text="#{requirement.details.title}">Detalle del requisito de usuario</h1>
 
         <!-- DATOS DEL REQUISITO -->
         <div class="card mb-4">
-            <div class="card-header">Datos del requisito</div>
+            <div class="card-header" th:text="#{requirement.details.data}">Datos del requisito</div>
             <div class="card-body">
 
                 <div class="mb-3">
                     <a class="btn btn-outline-primary"
-                       th:href="@{/projects/{projectId}/requirements/edit/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}">
-                        Editar requisito
-                    </a>
+                       th:href="@{/projects/{projectId}/requirements/edit/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}"
+                       th:text="#{requirement.action.edit}">Editar requisito</a>
                 </div>
 
                 <p>
-                    <strong>Identificador:</strong>
+                    <strong th:text="#{requirement.field.identifier}">Identificador</strong>:
                     <span th:text="${requirement.identifier != null and !#strings.isEmpty(requirement.identifier) ? requirement.identifier : '-'}">
                         RU-01
                     </span>
                 </p>
 
                 <p class="mb-0">
-                    <strong>Requisito:</strong>
+                    <strong th:text="#{requirement.field.statement}">Requisito</strong>:
                     <span th:text="${requirement.statement != null and !#strings.isEmpty(requirement.statement) ? requirement.statement : '-'}">
                         Texto del requisito
                     </span>
@@ -43,20 +42,20 @@
             <!-- FUNCIONES DE DATOS -->
             <div class="col-12 col-lg-6 fp-analysis-column">
                 <div class="card mb-4" id="requirement-data-functions-container" th:fragment="dataFunctionsSection">
-                    <div class="card-header">Funciones de datos derivadas</div>
+                    <div class="card-header" th:text="#{requirement.decompose.dataFunctions}">Funciones de datos derivadas</div>
                     <div class="card-body">
 
                         <div class="mb-3">
                             <a class="btn btn-outline-primary"
                                th:href="@{/projects/{projectId}/requirements/{requirementId}/data-functions/add(
                                    projectId=${project.id},
-                                   requirementId=${requirement.id})}">
-                                Añadir función de datos
-                            </a>
+                                   requirementId=${requirement.id})}"
+                               th:text="#{requirement.decompose.addDataFunction}">Añadir función de datos</a>
                         </div>
 
                         <div th:if="${dataFunctionsList == null or dataFunctionsList.isEmpty()}"
-                             class="alert alert-light border mb-0">
+                             class="alert alert-light border mb-0"
+                             th:text="#{requirement.decompose.emptyDataFunctions}">
                             No hay funciones de datos derivadas todavía.
                         </div>
 
@@ -65,10 +64,10 @@
                             <table class="table table-hover">
                                 <thead>
                                 <tr>
-                                    <th>Tipo</th>
-                                    <th>Nombre</th>
-                                    <th>Complejidad</th>
-                                    <th>Peso</th>
+                                    <th th:text="#{fp.dataFunction.field.type}">Tipo</th>
+                                    <th th:text="#{fp.dataFunction.field.name}">Nombre</th>
+                                    <th th:text="#{fp.dataFunction.field.complexity}">Complejidad</th>
+                                    <th th:text="#{fp.dataFunction.field.weight}">Peso</th>
                                     <th class="text-right"></th>
                                 </tr>
                                 </thead>
@@ -83,18 +82,16 @@
                                            th:href="@{/projects/{projectId}/requirements/{requirementId}/data-functions/edit/{dataFunctionId}(
                                                projectId=${project.id},
                                                requirementId=${requirement.id},
-                                               dataFunctionId=${dataFunction.id})}">
-                                            Editar
-                                        </a>
+                                               dataFunctionId=${dataFunction.id})}"
+                                           th:text="#{project.action.edit}">Editar</a>
 
                                         <a class="btn btn-sm btn-outline-danger"
                                            th:href="@{/projects/{projectId}/requirements/{requirementId}/data-functions/delete/{dataFunctionId}(
                                                projectId=${project.id},
                                                requirementId=${requirement.id},
                                                dataFunctionId=${dataFunction.id})}"
-                                           onclick="return confirm('¿Seguro que deseas eliminar esta función de datos?');">
-                                            Eliminar
-                                        </a>
+                                           th:onclick="|return confirm('#{requirement.confirm.deleteDataFunction}');|"
+                                           th:text="#{project.action.delete}">Eliminar</a>
                                     </td>
                                 </tr>
                                 </tbody>
@@ -117,9 +114,8 @@
                                            requirementId=${requirement.id},
                                            requirementsPage=${requirementsPage},
                                            dataFunctionsPage=0,
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}">
-                                        Primera
-                                    </a>
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                                       th:text="#{pagination.first}">Primera</a>
                                 </li>
 
                                 <li class="page-item" th:if="${dataFunctionsPage.number - 1 >= 0}">
@@ -192,9 +188,8 @@
                                            requirementId=${requirement.id},
                                            requirementsPage=${requirementsPage},
                                            dataFunctionsPage=${dataFunctionsPage.totalPages - 1},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}">
-                                        Última
-                                    </a>
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
+                                       th:text="#{pagination.last}">Última</a>
                                 </li>
                             </ul>
                         </div>
@@ -206,20 +201,20 @@
             <!-- FUNCIONES TRANSACCIONALES -->
             <div class="col-12 col-lg-6 fp-analysis-column">
                 <div class="card mb-4" id="requirement-transactional-functions-container" th:fragment="transactionalFunctionsSection">
-                    <div class="card-header">Funciones transaccionales derivadas</div>
+                    <div class="card-header" th:text="#{requirement.decompose.transactionalFunctions}">Funciones transaccionales derivadas</div>
                     <div class="card-body">
 
                         <div class="mb-3">
                             <a class="btn btn-outline-primary"
                                th:href="@{/projects/{projectId}/requirements/{requirementId}/transactional-functions/add(
                                    projectId=${project.id},
-                                   requirementId=${requirement.id})}">
-                                Añadir función transaccional
-                            </a>
+                                   requirementId=${requirement.id})}"
+                               th:text="#{requirement.decompose.addTransactionalFunction}">Añadir función transaccional</a>
                         </div>
 
                         <div th:if="${transactionalFunctionsList == null or transactionalFunctionsList.isEmpty()}"
-                             class="alert alert-light border mb-0">
+                             class="alert alert-light border mb-0"
+                             th:text="#{requirement.decompose.emptyTransactionalFunctions}">
                             No hay funciones transaccionales derivadas todavía.
                         </div>
 
@@ -228,10 +223,10 @@
                             <table class="table table-hover">
                                 <thead>
                                 <tr>
-                                    <th>Tipo</th>
-                                    <th>Nombre</th>
-                                    <th>Complejidad</th>
-                                    <th>Peso</th>
+                                    <th th:text="#{fp.transactionalFunction.field.type}">Tipo</th>
+                                    <th th:text="#{fp.transactionalFunction.field.name}">Nombre</th>
+                                    <th th:text="#{fp.transactionalFunction.field.complexity}">Complejidad</th>
+                                    <th th:text="#{fp.transactionalFunction.field.weight}">Peso</th>
                                     <th class="text-right"></th>
                                 </tr>
                                 </thead>
@@ -246,18 +241,16 @@
                                            th:href="@{/projects/{projectId}/requirements/{requirementId}/transactional-functions/edit/{transactionalFunctionId}(
                                                projectId=${project.id},
                                                requirementId=${requirement.id},
-                                               transactionalFunctionId=${transactionalFunction.id})}">
-                                            Editar
-                                        </a>
+                                               transactionalFunctionId=${transactionalFunction.id})}"
+                                           th:text="#{project.action.edit}">Editar</a>
 
                                         <a class="btn btn-sm btn-outline-danger"
                                            th:href="@{/projects/{projectId}/requirements/{requirementId}/transactional-functions/delete/{transactionalFunctionId}(
                                                projectId=${project.id},
                                                requirementId=${requirement.id},
                                                transactionalFunctionId=${transactionalFunction.id})}"
-                                           onclick="return confirm('¿Seguro que deseas eliminar esta función transaccional?');">
-                                            Eliminar
-                                        </a>
+                                           th:onclick="|return confirm('#{requirement.confirm.deleteTransactionalFunction}');|"
+                                           th:text="#{project.action.delete}">Eliminar</a>
                                     </td>
                                 </tr>
                                 </tbody>
@@ -280,9 +273,8 @@
                                            requirementId=${requirement.id},
                                            requirementsPage=${requirementsPage},
                                            dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=0)}">
-                                        Primera
-                                    </a>
+                                           transactionalFunctionsPage=0)}"
+                                       th:text="#{pagination.first}">Primera</a>
                                 </li>
 
                                 <li class="page-item" th:if="${transactionalFunctionsPage.number - 1 >= 0}">
@@ -355,9 +347,8 @@
                                            requirementId=${requirement.id},
                                            requirementsPage=${requirementsPage},
                                            dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}">
-                                        Última
-                                    </a>
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}"
+                                       th:text="#{pagination.last}">Última</a>
                                 </li>
                             </ul>
                         </div>
@@ -372,9 +363,8 @@
                projectId=${project.id},
                requirementsPage=${requirementsPage},
                dataFunctionsPage=${dataFunctionsPage.number},
-               transactionalFunctionsPage=${transactionalFunctionsPage.number})}">
-            Volver al análisis PF
-        </a>
+               transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
+           th:text="#{requirement.details.backToFp}">Volver al análisis PF</a>
 
         <a class="btn btn-secondary"
            th:if="${requirementsPage == null}"
@@ -382,9 +372,8 @@
                projectId=${project.id},
                requirementsPage=${requirementsPage},
                dataFunctionsPage=${dataFunctionsPage},
-               transactionalFunctionsPage=${transactionalFunctionsPage})}">
-            Volver al análisis PF
-        </a>
+               transactionalFunctionsPage=${transactionalFunctionsPage})}"
+           th:text="#{requirement.details.backToFp}">Volver al análisis PF</a>
     </div>
 </main>
 

@@ -9,7 +9,7 @@
     <div class="container">
         <h2 th:text="#{login.title}">Identifícate</h2>
 
-        <div class="alert alert-success" th:if="${param.signupSuccess}">
+        <div class="alert alert-success" th:if="${param.signupSuccess}" th:text="#{auth.signup.success}">
             Cuenta creada correctamente. Ya puedes iniciar sesión.
         </div>
 

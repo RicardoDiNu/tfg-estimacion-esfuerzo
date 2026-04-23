@@ -48,9 +48,8 @@
             </button>
 
             <a class="btn btn-secondary"
-               th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}">
-                Cancelar
-            </a>
+               th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}"
+               th:text="#{requirement.edit.cancel}">Cancelar</a>
         </form>
     </div>
 </main>
