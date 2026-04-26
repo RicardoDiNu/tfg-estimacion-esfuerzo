@@ -40,10 +40,16 @@
             </div>
 
             <button type="submit"
-                    class="btn btn-primary"
+                    class="btn btn-primary mr-2"
                     th:text="#{project.add.submit}">
                 Guardar
             </button>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects}"
+               th:text="#{project.add.cancel}">
+                Cancelar
+            </a>
         </form>
     </div>
 </main>

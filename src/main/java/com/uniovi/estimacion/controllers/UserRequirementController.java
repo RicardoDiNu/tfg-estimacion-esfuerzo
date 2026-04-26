@@ -380,7 +380,7 @@ public class UserRequirementController {
         return redirectToRequirementDetails(projectId, requirementId);
     }
 
-    @GetMapping("/requirements/{requirementId}/data-functions/edit/{dataFunctionId}")
+    @GetMapping("/{requirementId}/data-functions/edit/{dataFunctionId}")
     public String getEditDataFunctionFromRequirementForm(@PathVariable Long projectId,
                                                          @PathVariable Long requirementId,
                                                          @PathVariable Long dataFunctionId,
@@ -402,7 +402,7 @@ public class UserRequirementController {
         return "fp/data-function-edit";
     }
 
-    @PostMapping("/requirements/{requirementId}/data-functions/edit/{dataFunctionId}")
+    @PostMapping("/{requirementId}/data-functions/edit/{dataFunctionId}")
     public String updateDataFunctionFromRequirement(@PathVariable Long projectId,
                                                     @PathVariable Long requirementId,
                                                     @PathVariable Long dataFunctionId,
@@ -437,7 +437,7 @@ public class UserRequirementController {
         return redirectToRequirementDetails(projectId, requirementId);
     }
 
-    @GetMapping("/requirements/{requirementId}/transactional-functions/edit/{transactionalFunctionId}")
+    @GetMapping("/{requirementId}/transactional-functions/edit/{transactionalFunctionId}")
     public String getEditTransactionalFunctionFromRequirementForm(@PathVariable Long projectId,
                                                                   @PathVariable Long requirementId,
                                                                   @PathVariable Long transactionalFunctionId,
@@ -459,7 +459,7 @@ public class UserRequirementController {
         return "fp/transactional-function-edit";
     }
 
-    @PostMapping("/requirements/{requirementId}/transactional-functions/edit/{transactionalFunctionId}")
+    @PostMapping("/{requirementId}/transactional-functions/edit/{transactionalFunctionId}")
     public String updateTransactionalFunctionFromRequirement(@PathVariable Long projectId,
                                                              @PathVariable Long requirementId,
                                                              @PathVariable Long transactionalFunctionId,

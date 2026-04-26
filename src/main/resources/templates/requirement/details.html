@@ -75,7 +75,7 @@
                                 <tr th:each="dataFunction : ${dataFunctionsList}">
                                     <td th:text="${dataFunction.type}">ILF</td>
                                     <td th:text="${dataFunction.name}">Clientes</td>
-                                    <td th:text="${dataFunction.complexity}">AVERAGE</td>
+                                    <td th:text="${#messages.msg('fp.complexity.' + #strings.toLowerCase(dataFunction.complexity.name()))}">Media</td>
                                     <td th:text="${dataFunction.weight}">10</td>
                                     <td>
                                         <a class="btn btn-sm btn-outline-primary mr-2"
@@ -234,7 +234,7 @@
                                 <tr th:each="transactionalFunction : ${transactionalFunctionsList}">
                                     <td th:text="${transactionalFunction.type}">EI</td>
                                     <td th:text="${transactionalFunction.name}">Alta cliente</td>
-                                    <td th:text="${transactionalFunction.complexity}">AVERAGE</td>
+                                    <td th:text="${#messages.msg('fp.complexity.' + #strings.toLowerCase(transactionalFunction.complexity.name()))}">Media</td>
                                     <td th:text="${transactionalFunction.weight}">4</td>
                                     <td>
                                         <a class="btn btn-sm btn-outline-primary mr-2"

@@ -8,6 +8,8 @@ import com.uniovi.estimacion.entities.functionpoints.TransactionalFunctionType;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.requirements.UserRequirement;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointResults;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.requirements.UserRequirementService;
 import com.uniovi.estimacion.validators.functionpoints.DataFunctionValidator;
@@ -34,6 +36,7 @@ public class FunctionPointAnalysisController {
     private final UserRequirementService userRequirementService;
     private final FunctionPointAnalysisValidator functionPointAnalysisValidator;
     private final GeneralSystemCharacteristicsValidator generalSystemCharacteristicsValidator;
+    private final FunctionPointCalculationService functionPointCalculationService;
 
     @GetMapping("/function-points/add")
     public String getCreateForm(@PathVariable Long projectId, Model model) {
@@ -104,6 +107,11 @@ public class FunctionPointAnalysisController {
             return redirectToFunctionPointAdd(projectId);
         }
 
+        EstimationProject project = optionalProject.get();
+        FunctionPointAnalysis analysis = optionalAnalysis.get();
+
+        FunctionPointResults results = functionPointCalculationService.buildResults(analysis);
+
         Page<UserRequirement> requirementsPageResult =
                 userRequirementService.findPageByProjectId(projectId, PageRequest.of(requirementsPage, 5));
 
@@ -113,8 +121,9 @@ public class FunctionPointAnalysisController {
         Page<TransactionalFunction> transactionalFunctionsPageResult =
                 functionPointAnalysisService.findTransactionalFunctionsPageByProjectId(projectId, PageRequest.of(transactionalFunctionsPage, 5));
 
-        model.addAttribute("project", optionalProject.get());
-        model.addAttribute("analysis", optionalAnalysis.get());
+        model.addAttribute("project", project);
+        model.addAttribute("analysis", analysis);
+        model.addAttribute("results", results);
 
         model.addAttribute("requirementsList", requirementsPageResult.getContent());
         model.addAttribute("requirementsPage", requirementsPageResult);

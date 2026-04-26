@@ -240,7 +240,7 @@
                                             Ver requisito
                                         </a>
                                     </td>
-                                    <td th:text="${dataFunction.complexity}">AVERAGE</td>
+                                    <td th:text="${#messages.msg('fp.complexity.' + #strings.toLowerCase(dataFunction.complexity.name()))}">Media</td>
                                     <td th:text="${dataFunction.weight}">10</td>
                                 </tr>
                                 </tbody>
@@ -383,7 +383,7 @@
                                             Ver requisito
                                         </a>
                                     </td>
-                                    <td th:text="${transactionalFunction.complexity}">AVERAGE</td>
+                                    <td th:text="${#messages.msg('fp.complexity.' + #strings.toLowerCase(transactionalFunction.complexity.name()))}">Media</td>
                                     <td th:text="${transactionalFunction.weight}">4</td>
                                 </tr>
                                 </tbody>
@@ -536,14 +536,14 @@
                             <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
                                     <h6 class="text-muted mb-2" th:text="#{fp.field.ufp}">Puntos Función No Ajustados</h6>
-                                    <p class="card-text mb-0 fp-result-value" th:text="${analysis.unadjustedFunctionPoints}">0</p>
+                                    <p class="card-text mb-0 fp-result-value" th:text="${results.unadjustedFunctionPoints}">0</p>
                                 </div>
                             </div>
 
                             <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
                                     <h6 class="text-muted mb-2" th:text="#{fp.field.tdi}">Grado total de influencia</h6>
-                                    <p class="card-text mb-0 fp-result-value" th:text="${analysis.totalDegreeOfInfluence}">0</p>
+                                    <p class="card-text mb-0 fp-result-value" th:text="${results.totalDegreeOfInfluence}">0</p>
                                 </div>
                             </div>
 
@@ -551,7 +551,7 @@
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
                                     <h6 class="text-muted mb-2" th:text="#{fp.field.vaf}">Factor de ajuste del valor</h6>
                                     <p class="card-text mb-0 fp-result-value"
-                                       th:text="${#numbers.formatDecimal(analysis.valueAdjustmentFactor, 1, 2)}">0.65</p>
+                                       th:text="${#numbers.formatDecimal(results.valueAdjustmentFactor, 1, 2)}">0.65</p>
                                 </div>
                             </div>
 
@@ -559,10 +559,48 @@
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
                                     <h6 class="text-muted mb-2" th:text="#{fp.field.afp}">Puntos Función Ajustados</h6>
                                     <p class="card-text mb-0 fp-result-value"
-                                       th:text="${#numbers.formatDecimal(analysis.adjustedFunctionPoints, 1, 2)}">0.00</p>
+                                       th:text="${#numbers.formatDecimal(results.adjustedFunctionPoints, 1, 2)}">0.00</p>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="mt-4">
+                            <h5 class="mb-3" th:text="#{fp.results.breakdown.title}">Conteo de funciones</h5>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover table-bordered mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th th:text="#{fp.results.field.type}">Tipo funcional</th>
+                                        <th th:text="#{fp.complexity.low}">Simple</th>
+                                        <th th:text="#{fp.complexity.average}">Media</th>
+                                        <th th:text="#{fp.complexity.high}">Compleja</th>
+                                        <th th:text="#{fp.results.field.total}">Total</th>
+                                        <th th:text="#{fp.results.field.ufpContribution}">Contribución UFP</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="row : ${results.breakdownRows}">
+                                        <td th:text="${#messages.msg(row['labelKey'])}">Entradas externas (EI)</td>
+                                        <td th:text="${row['simpleCount']}">0</td>
+                                        <td th:text="${row['averageCount']}">0</td>
+                                        <td th:text="${row['highCount']}">0</td>
+                                        <td th:text="${row['totalCount']}">0</td>
+                                        <td th:text="${row['ufpContribution']}">0</td>
+                                    </tr>
+                                    <tr class="font-weight-bold">
+                                        <td th:text="#{fp.results.type.total}">Total</td>
+                                        <td th:text="${results.breakdownTotalSimple}">0</td>
+                                        <td th:text="${results.breakdownTotalAverage}">0</td>
+                                        <td th:text="${results.breakdownTotalHigh}">0</td>
+                                        <td th:text="${results.breakdownTotalFunctions}">0</td>
+                                        <td th:text="${results.breakdownTotalUfp}">0</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
