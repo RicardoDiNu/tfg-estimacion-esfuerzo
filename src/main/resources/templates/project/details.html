@@ -9,41 +9,144 @@
     <div class="container">
         <h1 th:text="#{project.details.title}">Detalle del proyecto de estimación</h1>
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{project.field.name}">Nombre</div>
+        <!-- RESUMEN DEL PROYECTO -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{project.details.summary.title}">Resumen del proyecto</div>
             <div class="card-body">
-                <p class="card-text" th:text="${project.name}">Nombre del proyecto</p>
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary mr-2"
+                       th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='details')}"
+                       th:text="#{project.action.edit}">Editar</a>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.name}">Nombre</h6>
+                    <p class="card-text mb-0"
+                       th:text="${project.name != null and !#strings.isEmpty(project.name) ? project.name : '-'}">
+                        Nombre del proyecto
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.description}">Descripción</h6>
+                    <p class="card-text mb-0"
+                       th:text="${project.description != null and !#strings.isEmpty(project.description) ? project.description : '-'}">
+                        Descripción del proyecto
+                    </p>
+                </div>
+
+                <div>
+                    <h6 class="text-muted" th:text="#{project.field.createdAt}">Fecha de creación</h6>
+                    <p class="card-text mb-0"
+                       th:text="${#temporals.format(project.createdAt, 'dd/MM/yyyy HH:mm')}">
+                        16/04/2026 22:57
+                    </p>
+                </div>
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{project.field.description}">Descripción</div>
+        <!-- ANÁLISIS PF -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{project.details.fp.title}">Análisis PF</div>
             <div class="card-body">
-                <p class="card-text" th:text="${project.description}">Descripción del proyecto</p>
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary mr-2"
+                       th:href="@{/projects/{id}/function-points/access(id=${project.id})}"
+                       th:text="${hasFunctionPointAnalysis} ? #{project.details.fp.open} : #{project.details.fp.create}">
+                        Análisis PF
+                    </a>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.details.fp.size}">Tamaño calculado</h6>
+
+                    <div th:if="${hasFunctionPointAnalysis}" class="border rounded p-3 bg-light">
+                        <p class="card-text mb-1">
+                            <strong th:text="${#numbers.formatDecimal(functionPointResults.adjustedFunctionPoints, 1, 2)}">0.00</strong>
+                            <strong th:text="#{project.details.fp.sizeUnit}">PF</strong>
+                        </p>
+                        <small class="text-muted">
+                            <span th:text="#{fp.field.ufp}">Puntos Función No Ajustados</span>:
+                            <span th:text="${functionPointResults.unadjustedFunctionPoints}">0</span>
+                        </small>
+                    </div>
+
+                    <div th:unless="${hasFunctionPointAnalysis}"
+                         class="alert alert-light border mb-0"
+                         th:text="#{project.details.fp.noSize}">
+                        Todavía no hay un tamaño PF calculado.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.details.fp.efforts}">Esfuerzos calculados</h6>
+                    <div class="alert alert-light border mb-0"
+                         th:text="#{project.details.fp.noEfforts}">
+                        Todavía no hay conversiones a esfuerzo registradas.
+                    </div>
+                </div>
+
+                <div>
+                    <h6 class="text-muted" th:text="#{project.details.fp.costs}">Costes asociados</h6>
+                    <div class="alert alert-light border mb-0"
+                         th:text="#{project.details.fp.noCosts}">
+                        Todavía no hay costes calculados.
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{project.field.createdAt}">Fecha de creación</div>
+        <!-- ANÁLISIS UCP -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{project.details.ucp.title}">Análisis UCP</div>
             <div class="card-body">
-                <p class="card-text"
-                   th:text="${#temporals.format(project.createdAt, 'dd/MM/yyyy HH:mm')}">
-                    16/04/2026 22:57
-                </p>
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary mr-2 disabled"
+                       href="#"
+                       tabindex="-1"
+                       aria-disabled="true"
+                       th:text="${hasUseCasePointAnalysis} ? #{project.details.ucp.open} : #{project.details.ucp.create}">
+                        Análisis UCP
+                    </a>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.details.ucp.size}">Tamaño calculado</h6>
+
+                    <div th:if="${hasUseCasePointAnalysis}" class="border rounded p-3 bg-light">
+                        <p class="card-text mb-1">
+                            <strong>0.00</strong>
+                            <strong> th:text="#{project.details.ucp.sizeUnit}">UCP</strong>
+                        </p>
+                    </div>
+
+                    <div th:unless="${hasUseCasePointAnalysis}"
+                         class="alert alert-light border mb-0"
+                         th:text="#{project.details.ucp.noSize}">
+                        Todavía no hay un tamaño UCP calculado.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.details.ucp.efforts}">Esfuerzos calculados</h6>
+                    <div class="alert alert-light border mb-0"
+                         th:text="#{project.details.ucp.noEfforts}">
+                        Todavía no hay conversiones a esfuerzo registradas.
+                    </div>
+                </div>
+
+                <div>
+                    <h6 class="text-muted" th:text="#{project.details.ucp.costs}">Costes asociados</h6>
+                    <div class="alert alert-light border mb-0"
+                         th:text="#{project.details.ucp.noCosts}">
+                        Todavía no hay costes calculados.
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- ACCIONES FINALES -->
         <div class="mb-4">
-            <a class="btn btn-outline-secondary mr-2"
-               th:href="@{/projects/{id}/function-points/access(id=${project.id})}"
-               th:text="#{project.functionPoints.view}">Análisis PF</a>
-        </div>
-
-        <div class="mb-4">
-            <a class="btn btn-primary mr-2"
-               th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='details')}"
-               th:text="#{project.action.edit}">Editar</a>
-
             <a class="btn btn-danger mr-2"
                th:href="@{/projects/delete/{id}(id=${project.id})}"
                th:text="#{project.action.delete}"

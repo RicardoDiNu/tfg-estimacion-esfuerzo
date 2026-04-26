@@ -1,7 +1,9 @@
 package com.uniovi.estimacion.controllers;
 
+import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.validators.projects.EstimationProjectValidator;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class EstimationProjectController {
 
     private final EstimationProjectService estimationProjectService;
     private final FunctionPointAnalysisService functionPointAnalysisService;
+    private final FunctionPointCalculationService functionPointCalculationService;
     private final EstimationProjectValidator estimationProjectValidator;
 
     @GetMapping
@@ -56,9 +59,22 @@ public class EstimationProjectController {
             return redirectToList();
         }
 
+        Optional<FunctionPointAnalysis> optionalFunctionPointAnalysis =
+                functionPointAnalysisService.findDetailedByProjectId(projectId);
+
+        boolean hasFunctionPointAnalysis = optionalFunctionPointAnalysis.isPresent();
+
         model.addAttribute("project", optionalProject.get());
-        model.addAttribute("hasFunctionPointAnalysis",
-                functionPointAnalysisService.findByProjectId(projectId).isPresent());
+        model.addAttribute("hasFunctionPointAnalysis", hasFunctionPointAnalysis);
+
+        if (hasFunctionPointAnalysis) {
+            model.addAttribute(
+                    "functionPointResults",
+                    functionPointCalculationService.buildResults(optionalFunctionPointAnalysis.get())
+            );
+        }
+
+        model.addAttribute("hasUseCasePointAnalysis", false);
 
         return "project/details";
     }
