@@ -1,7 +1,6 @@
-package com.uniovi.estimacion.entities.functionpoints;
+package com.uniovi.estimacion.entities.functionpoints.gscs;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 public enum GeneralSystemCharacteristicType {

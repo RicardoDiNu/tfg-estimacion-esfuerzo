@@ -8,9 +8,12 @@
 <main class="app-content">
     <div class="container">
         <h1 th:text="#{requirement.add.title}">Nuevo requisito de usuario</h1>
+        <p th:text="#{requirement.add.subtitle}">Introduce los datos básicos del requisito</p>
 
         <form method="post"
-              th:action="@{/projects/{projectId}/requirements/add(projectId=${project.id})}"
+              th:action="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/add(
+                  projectId=${project.id},
+                  moduleId=${module.id})}"
               th:object="${requirement}">
 
             <div class="form-group">
@@ -19,7 +22,6 @@
                        class="form-control"
                        id="identifier"
                        th:field="*{identifier}"
-                       maxlength="50"
                        required>
 
                 <span class="text-danger"
@@ -32,8 +34,7 @@
                 <textarea class="form-control"
                           id="statement"
                           th:field="*{statement}"
-                          rows="5"
-                          maxlength="2000"
+                          rows="4"
                           required></textarea>
 
                 <span class="text-danger"
@@ -48,7 +49,9 @@
             </button>
 
             <a class="btn btn-secondary"
-               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
+               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}(
+                   projectId=${project.id},
+                   moduleId=${module.id})}"
                th:text="#{requirement.add.cancel}">
                 Cancelar
             </a>

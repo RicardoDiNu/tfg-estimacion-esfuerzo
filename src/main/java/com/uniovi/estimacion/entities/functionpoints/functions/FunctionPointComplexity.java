@@ -1,4 +1,4 @@
-package com.uniovi.estimacion.entities.functionpoints;
+package com.uniovi.estimacion.entities.functionpoints.functions;
 
 public enum FunctionPointComplexity {
     LOW,

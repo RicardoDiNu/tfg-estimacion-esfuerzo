@@ -1,12 +1,15 @@
 package com.uniovi.estimacion.entities.functionpoints;
 
+import com.uniovi.estimacion.entities.analysis.AbstractSizeAnalysis;
+import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
+import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
+import com.uniovi.estimacion.entities.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,15 +21,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class FunctionPointAnalysis {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "estimation_project_id", nullable = false, unique = true)
-    private EstimationProject estimationProject;
+public class FunctionPointAnalysis extends AbstractSizeAnalysis {
 
     @Column(nullable = false, length = 2000)
     private String systemBoundaryDescription;
@@ -52,26 +47,23 @@ public class FunctionPointAnalysis {
     @OneToMany(mappedBy = "functionPointAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GeneralSystemCharacteristicAssessment> generalSystemCharacteristicAssessments = new ArrayList<>();
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
     public FunctionPointAnalysis(EstimationProject estimationProject, String systemBoundaryDescription) {
-        this.estimationProject = estimationProject;
+        setEstimationProject(estimationProject);
         this.systemBoundaryDescription = systemBoundaryDescription;
     }
 
-    @PrePersist
-    public void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
+    @Override
+    public Double getCalculatedSizeValue() {
+        return adjustedFunctionPoints;
     }
 
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    @Override
+    public String getSizeUnitCode() {
+        return "PF";
+    }
+
+    @Override
+    public String getTechniqueCode() {
+        return "FUNCTION_POINTS";
     }
 }

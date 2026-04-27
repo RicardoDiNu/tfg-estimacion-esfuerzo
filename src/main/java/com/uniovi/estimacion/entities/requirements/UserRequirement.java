@@ -1,8 +1,9 @@
 package com.uniovi.estimacion.entities.requirements;
 
+import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
-import com.uniovi.estimacion.entities.functionpoints.DataFunction;
-import com.uniovi.estimacion.entities.functionpoints.TransactionalFunction;
+import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
+import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,8 +25,8 @@ public class UserRequirement {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "estimation_project_id", nullable = false)
-    private EstimationProject estimationProject;
+    @JoinColumn(name = "estimation_module_id", nullable = false)
+    private EstimationModule estimationModule;
 
     @Column(length = 50, nullable = false)
     private String identifier;
@@ -55,5 +56,10 @@ public class UserRequirement {
     @PreUpdate
     public void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    @Transient
+    public EstimationProject getEstimationProject() {
+        return estimationModule != null ? estimationModule.getEstimationProject() : null;
     }
 }

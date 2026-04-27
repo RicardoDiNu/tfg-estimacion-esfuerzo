@@ -1,12 +1,12 @@
 package com.uniovi.estimacion.services.functionpoints;
 
-import com.uniovi.estimacion.entities.functionpoints.DataFunction;
-import com.uniovi.estimacion.entities.functionpoints.DataFunctionType;
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.functionpoints.FunctionPointComplexity;
-import com.uniovi.estimacion.entities.functionpoints.GeneralSystemCharacteristicAssessment;
-import com.uniovi.estimacion.entities.functionpoints.TransactionalFunction;
-import com.uniovi.estimacion.entities.functionpoints.TransactionalFunctionType;
+import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
+import com.uniovi.estimacion.entities.functionpoints.functions.DataFunctionType;
+import com.uniovi.estimacion.entities.functionpoints.functions.FunctionPointComplexity;
+import com.uniovi.estimacion.entities.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
+import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
+import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunctionType;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -54,42 +54,25 @@ public class FunctionPointCalculationService {
         analysis.setAdjustedFunctionPoints(adjustedFunctionPoints);
     }
 
-    public FunctionPointResults buildResults(FunctionPointAnalysis analysis) {
+    public FunctionPointAnalysisSummary buildSummary(FunctionPointAnalysis analysis) {
         recalculateAnalysis(analysis);
 
-        List<Map<String, Object>> breakdownRows = buildBreakdownRows(analysis);
-
-        int breakdownTotalSimple = breakdownRows.stream()
-                .mapToInt(row -> (Integer) row.get("simpleCount"))
-                .sum();
-
-        int breakdownTotalAverage = breakdownRows.stream()
-                .mapToInt(row -> (Integer) row.get("averageCount"))
-                .sum();
-
-        int breakdownTotalHigh = breakdownRows.stream()
-                .mapToInt(row -> (Integer) row.get("highCount"))
-                .sum();
-
-        int breakdownTotalFunctions = breakdownRows.stream()
-                .mapToInt(row -> (Integer) row.get("totalCount"))
-                .sum();
-
-        int breakdownTotalUfp = breakdownRows.stream()
-                .mapToInt(row -> (Integer) row.get("ufpContribution"))
-                .sum();
-
-        return new FunctionPointResults(
-                analysis.getUnadjustedFunctionPoints(),
+        return buildSummary(
+                analysis.getDataFunctions(),
+                analysis.getTransactionalFunctions(),
                 analysis.getTotalDegreeOfInfluence(),
-                analysis.getValueAdjustmentFactor(),
-                analysis.getAdjustedFunctionPoints(),
-                breakdownRows,
-                breakdownTotalSimple,
-                breakdownTotalAverage,
-                breakdownTotalHigh,
-                breakdownTotalFunctions,
-                breakdownTotalUfp
+                analysis.getValueAdjustmentFactor()
+        );
+    }
+
+    public FunctionPointAnalysisSummary buildModuleSummary(FunctionPointAnalysis analysis,
+                                                           List<DataFunction> dataFunctions,
+                                                           List<TransactionalFunction> transactionalFunctions) {
+        return buildSummary(
+                dataFunctions,
+                transactionalFunctions,
+                analysis.getTotalDegreeOfInfluence(),
+                analysis.getValueAdjustmentFactor()
         );
     }
 
@@ -112,10 +95,8 @@ public class FunctionPointCalculationService {
         };
     }
 
-    public int calculateTransactionalFunctionWeight(
-            TransactionalFunctionType type,
-            FunctionPointComplexity complexity
-    ) {
+    public int calculateTransactionalFunctionWeight(TransactionalFunctionType type,
+                                                    FunctionPointComplexity complexity) {
         if (type == null || complexity == null) {
             return 0;
         }
@@ -139,35 +120,103 @@ public class FunctionPointCalculationService {
         };
     }
 
-    private List<Map<String, Object>> buildBreakdownRows(FunctionPointAnalysis analysis) {
+    private FunctionPointAnalysisSummary buildSummary(List<DataFunction> dataFunctions,
+                                                      List<TransactionalFunction> transactionalFunctions,
+                                                      Integer totalDegreeOfInfluence,
+                                                      Double valueAdjustmentFactor) {
+        int unadjustedFunctionPoints = calculateUnadjustedFunctionPoints(dataFunctions, transactionalFunctions);
+
+        int tdi = totalDegreeOfInfluence != null ? totalDegreeOfInfluence : 0;
+        double vaf = valueAdjustmentFactor != null ? valueAdjustmentFactor : 0.65 + (0.01 * tdi);
+        double adjustedFunctionPoints = unadjustedFunctionPoints * vaf;
+
+        List<Map<String, Object>> breakdownRows = buildBreakdownRows(dataFunctions, transactionalFunctions);
+
+        int breakdownTotalSimple = breakdownRows.stream()
+                .mapToInt(row -> (Integer) row.get("simpleCount"))
+                .sum();
+
+        int breakdownTotalAverage = breakdownRows.stream()
+                .mapToInt(row -> (Integer) row.get("averageCount"))
+                .sum();
+
+        int breakdownTotalHigh = breakdownRows.stream()
+                .mapToInt(row -> (Integer) row.get("highCount"))
+                .sum();
+
+        int breakdownTotalFunctions = breakdownRows.stream()
+                .mapToInt(row -> (Integer) row.get("totalCount"))
+                .sum();
+
+        int breakdownTotalUfp = breakdownRows.stream()
+                .mapToInt(row -> (Integer) row.get("ufpContribution"))
+                .sum();
+
+        return new FunctionPointAnalysisSummary(
+                unadjustedFunctionPoints,
+                tdi,
+                vaf,
+                adjustedFunctionPoints,
+                breakdownRows,
+                breakdownTotalSimple,
+                breakdownTotalAverage,
+                breakdownTotalHigh,
+                breakdownTotalFunctions,
+                breakdownTotalUfp
+        );
+    }
+
+    private int calculateUnadjustedFunctionPoints(List<DataFunction> dataFunctions,
+                                                  List<TransactionalFunction> transactionalFunctions) {
+        int unadjustedFunctionPoints = 0;
+
+        for (DataFunction dataFunction : dataFunctions) {
+            unadjustedFunctionPoints += calculateDataFunctionWeight(
+                    dataFunction.getType(),
+                    dataFunction.getComplexity()
+            );
+        }
+
+        for (TransactionalFunction transactionalFunction : transactionalFunctions) {
+            unadjustedFunctionPoints += calculateTransactionalFunctionWeight(
+                    transactionalFunction.getType(),
+                    transactionalFunction.getComplexity()
+            );
+        }
+
+        return unadjustedFunctionPoints;
+    }
+
+    private List<Map<String, Object>> buildBreakdownRows(List<DataFunction> dataFunctions,
+                                                         List<TransactionalFunction> transactionalFunctions) {
         List<Map<String, Object>> rows = new ArrayList<>();
 
         rows.add(buildTransactionalFunctionRow(
-                analysis,
+                transactionalFunctions,
                 TransactionalFunctionType.EI,
                 "fp.results.type.ei"
         ));
 
         rows.add(buildTransactionalFunctionRow(
-                analysis,
+                transactionalFunctions,
                 TransactionalFunctionType.EO,
                 "fp.results.type.eo"
         ));
 
         rows.add(buildTransactionalFunctionRow(
-                analysis,
+                transactionalFunctions,
                 TransactionalFunctionType.EQ,
                 "fp.results.type.eq"
         ));
 
         rows.add(buildDataFunctionRow(
-                analysis,
+                dataFunctions,
                 DataFunctionType.ILF,
                 "fp.results.type.ilf"
         ));
 
         rows.add(buildDataFunctionRow(
-                analysis,
+                dataFunctions,
                 DataFunctionType.EIF,
                 "fp.results.type.eif"
         ));
@@ -175,20 +224,18 @@ public class FunctionPointCalculationService {
         return rows;
     }
 
-    private Map<String, Object> buildDataFunctionRow(
-            FunctionPointAnalysis analysis,
-            DataFunctionType type,
-            String labelKey
-    ) {
-        int simpleCount = (int) analysis.getDataFunctions().stream()
+    private Map<String, Object> buildDataFunctionRow(List<DataFunction> dataFunctions,
+                                                     DataFunctionType type,
+                                                     String labelKey) {
+        int simpleCount = (int) dataFunctions.stream()
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.LOW)
                 .count();
 
-        int averageCount = (int) analysis.getDataFunctions().stream()
+        int averageCount = (int) dataFunctions.stream()
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.AVERAGE)
                 .count();
 
-        int highCount = (int) analysis.getDataFunctions().stream()
+        int highCount = (int) dataFunctions.stream()
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.HIGH)
                 .count();
 
@@ -209,20 +256,18 @@ public class FunctionPointCalculationService {
         return row;
     }
 
-    private Map<String, Object> buildTransactionalFunctionRow(
-            FunctionPointAnalysis analysis,
-            TransactionalFunctionType type,
-            String labelKey
-    ) {
-        int simpleCount = (int) analysis.getTransactionalFunctions().stream()
+    private Map<String, Object> buildTransactionalFunctionRow(List<TransactionalFunction> transactionalFunctions,
+                                                              TransactionalFunctionType type,
+                                                              String labelKey) {
+        int simpleCount = (int) transactionalFunctions.stream()
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.LOW)
                 .count();
 
-        int averageCount = (int) analysis.getTransactionalFunctions().stream()
+        int averageCount = (int) transactionalFunctions.stream()
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.AVERAGE)
                 .count();
 
-        int highCount = (int) analysis.getTransactionalFunctions().stream()
+        int highCount = (int) transactionalFunctions.stream()
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.HIGH)
                 .count();
 

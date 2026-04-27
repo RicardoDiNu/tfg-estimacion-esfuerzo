@@ -1,19 +1,18 @@
 package com.uniovi.estimacion.services.requirements;
 
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.requirements.UserRequirement;
 import com.uniovi.estimacion.repositories.functionpoints.FunctionPointAnalysisRepository;
 import com.uniovi.estimacion.repositories.requirements.UserRequirementRepository;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,14 +27,42 @@ public class UserRequirementService {
     private final FunctionPointCalculationService functionPointCalculationService;
 
     public List<UserRequirement> findAllByProjectId(Long projectId) {
-        return userRequirementRepository.findByEstimationProjectIdOrderByIdAsc(projectId);
+        List<UserRequirement> requirements =
+                userRequirementRepository.findByEstimationModuleEstimationProjectIdOrderByIdAsc(projectId);
+
+        requirements.forEach(this::initializeRequirementReferences);
+        return requirements;
     }
 
     @Transactional(readOnly = true)
     public List<UserRequirement> findDetailedAllByProjectId(Long projectId) {
-        List<UserRequirement> requirements = userRequirementRepository.findByEstimationProjectIdOrderByIdAsc(projectId);
+        List<UserRequirement> requirements =
+                userRequirementRepository.findByEstimationModuleEstimationProjectIdOrderByIdAsc(projectId);
 
         requirements.forEach(requirement -> {
+            initializeRequirementReferences(requirement);
+            Hibernate.initialize(requirement.getDataFunctions());
+            Hibernate.initialize(requirement.getTransactionalFunctions());
+        });
+
+        return requirements;
+    }
+
+    public List<UserRequirement> findAllByModuleId(Long moduleId) {
+        List<UserRequirement> requirements =
+                userRequirementRepository.findByEstimationModuleIdOrderByIdAsc(moduleId);
+
+        requirements.forEach(this::initializeRequirementReferences);
+        return requirements;
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserRequirement> findDetailedAllByModuleId(Long moduleId) {
+        List<UserRequirement> requirements =
+                userRequirementRepository.findByEstimationModuleIdOrderByIdAsc(moduleId);
+
+        requirements.forEach(requirement -> {
+            initializeRequirementReferences(requirement);
             Hibernate.initialize(requirement.getDataFunctions());
             Hibernate.initialize(requirement.getTransactionalFunctions());
         });
@@ -48,20 +75,60 @@ public class UserRequirementService {
     }
 
     public Optional<UserRequirement> findByIdAndProjectId(Long requirementId, Long projectId) {
-        return userRequirementRepository.findByIdAndEstimationProjectId(requirementId, projectId);
+        Optional<UserRequirement> optionalRequirement =
+                userRequirementRepository.findByIdAndEstimationModuleEstimationProjectId(requirementId, projectId);
+
+        optionalRequirement.ifPresent(this::initializeRequirementReferences);
+        return optionalRequirement;
+    }
+
+    public Optional<UserRequirement> findByIdAndModuleId(Long requirementId, Long moduleId) {
+        Optional<UserRequirement> optionalRequirement =
+                userRequirementRepository.findByIdAndEstimationModuleId(requirementId, moduleId);
+
+        optionalRequirement.ifPresent(this::initializeRequirementReferences);
+        return optionalRequirement;
     }
 
     @Transactional(readOnly = true)
     public Page<UserRequirement> findPageByProjectId(Long projectId, Pageable pageable) {
-        return userRequirementRepository.findByEstimationProjectIdOrderByIdAsc(projectId, pageable);
+        Page<UserRequirement> page =
+                userRequirementRepository.findByEstimationModuleEstimationProjectIdOrderByIdAsc(projectId, pageable);
+
+        page.getContent().forEach(this::initializeRequirementReferences);
+        return page;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<UserRequirement> findPageByModuleId(Long moduleId, Pageable pageable) {
+        Page<UserRequirement> page =
+                userRequirementRepository.findByEstimationModuleIdOrderByIdAsc(moduleId, pageable);
+
+        page.getContent().forEach(this::initializeRequirementReferences);
+        return page;
     }
 
     @Transactional(readOnly = true)
     public Optional<UserRequirement> findDetailedByIdAndProjectId(Long requirementId, Long projectId) {
         Optional<UserRequirement> optionalRequirement =
-                userRequirementRepository.findByIdAndEstimationProjectId(requirementId, projectId);
+                userRequirementRepository.findByIdAndEstimationModuleEstimationProjectId(requirementId, projectId);
 
         optionalRequirement.ifPresent(requirement -> {
+            initializeRequirementReferences(requirement);
+            Hibernate.initialize(requirement.getDataFunctions());
+            Hibernate.initialize(requirement.getTransactionalFunctions());
+        });
+
+        return optionalRequirement;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserRequirement> findDetailedByIdAndModuleId(Long requirementId, Long moduleId) {
+        Optional<UserRequirement> optionalRequirement =
+                userRequirementRepository.findByIdAndEstimationModuleId(requirementId, moduleId);
+
+        optionalRequirement.ifPresent(requirement -> {
+            initializeRequirementReferences(requirement);
             Hibernate.initialize(requirement.getDataFunctions());
             Hibernate.initialize(requirement.getTransactionalFunctions());
         });
@@ -74,22 +141,18 @@ public class UserRequirementService {
                 && StringUtils.hasText(requirement.getStatement());
     }
 
-    private String normalize(String value) {
-        return value == null ? null : value.trim();
-    }
-
     @Transactional
-    public UserRequirement createForProject(EstimationProject project, UserRequirement requirement) {
-        requirement.setEstimationProject(project);
+    public UserRequirement createForModule(EstimationModule module, UserRequirement requirement) {
+        requirement.setEstimationModule(module);
         requirement.setIdentifier(normalize(requirement.getIdentifier()));
         requirement.setStatement(normalize(requirement.getStatement()));
         return userRequirementRepository.save(requirement);
     }
 
     @Transactional
-    public boolean updateBasicData(Long projectId, Long requirementId, UserRequirement formRequirement) {
+    public boolean updateBasicData(Long moduleId, Long requirementId, UserRequirement formRequirement) {
         Optional<UserRequirement> optionalRequirement =
-                userRequirementRepository.findByIdAndEstimationProjectId(requirementId, projectId);
+                userRequirementRepository.findByIdAndEstimationModuleId(requirementId, moduleId);
 
         if (optionalRequirement.isEmpty()) {
             return false;
@@ -104,17 +167,19 @@ public class UserRequirementService {
     }
 
     @Transactional
-    public boolean deleteByIdWithDerivedFunctions(Long projectId, Long requirementId) {
+    public boolean deleteByIdWithDerivedFunctions(Long moduleId, Long requirementId) {
         Optional<UserRequirement> optionalRequirement =
-                userRequirementRepository.findByIdAndEstimationProjectId(requirementId, projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis =
-                functionPointAnalysisRepository.findByEstimationProjectId(projectId);
+                userRequirementRepository.findByIdAndEstimationModuleId(requirementId, moduleId);
 
         if (optionalRequirement.isEmpty()) {
             return false;
         }
 
         UserRequirement requirement = optionalRequirement.get();
+        Long projectId = requirement.getEstimationProject().getId();
+
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisRepository.findByEstimationProjectId(projectId);
 
         if (optionalAnalysis.isPresent()) {
             FunctionPointAnalysis analysis = optionalAnalysis.get();
@@ -138,5 +203,13 @@ public class UserRequirementService {
 
         userRequirementRepository.delete(requirement);
         return true;
+    }
+
+    private void initializeRequirementReferences(UserRequirement requirement) {
+        Hibernate.initialize(requirement.getEstimationModule());
+    }
+
+    private String normalize(String value) {
+        return value == null ? null : value.trim();
     }
 }

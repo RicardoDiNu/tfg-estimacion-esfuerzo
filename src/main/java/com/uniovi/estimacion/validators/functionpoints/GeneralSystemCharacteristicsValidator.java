@@ -1,7 +1,7 @@
 package com.uniovi.estimacion.validators.functionpoints;
 
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.functionpoints.GeneralSystemCharacteristicAssessment;
+import com.uniovi.estimacion.entities.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;

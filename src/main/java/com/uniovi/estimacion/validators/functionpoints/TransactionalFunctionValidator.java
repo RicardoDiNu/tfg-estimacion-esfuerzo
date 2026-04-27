@@ -1,6 +1,6 @@
 package com.uniovi.estimacion.validators.functionpoints;
 
-import com.uniovi.estimacion.entities.functionpoints.TransactionalFunction;
+import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;

@@ -8,9 +8,13 @@
 <main class="app-content">
     <div class="container">
         <h1 th:text="#{requirement.edit.title}">Editar requisito de usuario</h1>
+        <p th:text="#{requirement.edit.subtitle}">Modifica los datos del requisito</p>
 
         <form method="post"
-              th:action="@{/projects/{projectId}/requirements/edit/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}"
+              th:action="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/edit/{requirementId}(
+                  projectId=${project.id},
+                  moduleId=${module.id},
+                  requirementId=${requirement.id})}"
               th:object="${requirement}">
 
             <div class="form-group">
@@ -19,7 +23,6 @@
                        class="form-control"
                        id="identifier"
                        th:field="*{identifier}"
-                       maxlength="50"
                        required>
 
                 <span class="text-danger"
@@ -32,8 +35,7 @@
                 <textarea class="form-control"
                           id="statement"
                           th:field="*{statement}"
-                          rows="5"
-                          maxlength="2000"
+                          rows="4"
                           required></textarea>
 
                 <span class="text-danger"
@@ -48,8 +50,13 @@
             </button>
 
             <a class="btn btn-secondary"
-               th:href="@{/projects/{projectId}/requirements/{requirementId}(projectId=${project.id}, requirementId=${requirement.id})}"
-               th:text="#{requirement.edit.cancel}">Cancelar</a>
+               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                   projectId=${project.id},
+                   moduleId=${module.id},
+                   requirementId=${requirement.id})}"
+               th:text="#{requirement.edit.cancel}">
+                Cancelar
+            </a>
         </form>
     </div>
 </main>

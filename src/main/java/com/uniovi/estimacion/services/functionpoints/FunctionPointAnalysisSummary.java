@@ -3,7 +3,7 @@ package com.uniovi.estimacion.services.functionpoints;
 import java.util.List;
 import java.util.Map;
 
-public class FunctionPointResults {
+public class FunctionPointAnalysisSummary {
 
     private final int unadjustedFunctionPoints;
     private final int totalDegreeOfInfluence;
@@ -18,7 +18,7 @@ public class FunctionPointResults {
     private final int breakdownTotalFunctions;
     private final int breakdownTotalUfp;
 
-    public FunctionPointResults(
+    public FunctionPointAnalysisSummary(
             int unadjustedFunctionPoints,
             int totalDegreeOfInfluence,
             double valueAdjustmentFactor,

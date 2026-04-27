@@ -1,5 +1,6 @@
-package com.uniovi.estimacion.entities.functionpoints;
+package com.uniovi.estimacion.entities.functionpoints.functions;
 
+import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.requirements.UserRequirement;
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -16,7 +16,9 @@
                 <div class="mb-3">
                     <a class="btn btn-outline-primary mr-2"
                        th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='details')}"
-                       th:text="#{project.action.edit}">Editar</a>
+                       th:text="#{project.action.edit}">
+                        Editar
+                    </a>
                 </div>
 
                 <div class="mb-3">
@@ -63,7 +65,7 @@
                     <div th:if="${hasFunctionPointAnalysis}" class="border rounded p-3 bg-light">
                         <p class="card-text mb-1">
                             <strong th:text="${#numbers.formatDecimal(functionPointResults.adjustedFunctionPoints, 1, 2)}">0.00</strong>
-                            <strong th:text="#{project.details.fp.sizeUnit}">PF</strong>
+                            <span th:text="#{project.details.fp.sizeUnit}">PF</span>
                         </p>
                         <small class="text-muted">
                             <span th:text="#{fp.field.ufp}">Puntos Función No Ajustados</span>:
@@ -80,9 +82,44 @@
 
                 <div class="mb-3">
                     <h6 class="text-muted" th:text="#{project.details.fp.efforts}">Esfuerzos calculados</h6>
-                    <div class="alert alert-light border mb-0"
+
+                    <div th:if="${functionPointDelphiConversions == null or functionPointDelphiConversions.isEmpty()}"
+                         class="alert alert-light border mb-0"
                          th:text="#{project.details.fp.noEfforts}">
                         Todavía no hay conversiones a esfuerzo registradas.
+                    </div>
+
+                    <div class="table-responsive"
+                         th:if="${functionPointDelphiConversions != null and !functionPointDelphiConversions.isEmpty()}">
+                        <table class="table table-hover table-bordered mb-0">
+                            <thead>
+                            <tr>
+                                <th th:text="#{project.details.fp.effort.method}">Método</th>
+                                <th th:text="#{project.details.fp.effort.hoursPerUnit}">Horas por unidad</th>
+                                <th th:text="#{project.details.fp.effort.totalHours}">Esfuerzo total</th>
+                                <th th:text="#{project.details.fp.effort.status}">Estado</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="conversion : ${functionPointDelphiConversions}">
+                                <td th:text="#{project.details.fp.effort.method.delphi}">Delphi</td>
+                                <td th:text="${#numbers.formatDecimal(conversion.hoursPerUnit, 1, 2)}">0.00</td>
+                                <td th:text="${#numbers.formatDecimal(conversion.estimatedEffortHours, 1, 2)}">0.00</td>
+                                <td>
+                                    <span th:if="${conversion.outdated}"
+                                          class="badge badge-warning"
+                                          th:text="#{project.details.fp.effort.status.outdated}">
+                                        Desactualizada
+                                    </span>
+                                    <span th:unless="${conversion.outdated}"
+                                          class="badge badge-success"
+                                          th:text="#{project.details.fp.effort.status.current}">
+                                        Vigente
+                                    </span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -116,7 +153,7 @@
                     <div th:if="${hasUseCasePointAnalysis}" class="border rounded p-3 bg-light">
                         <p class="card-text mb-1">
                             <strong>0.00</strong>
-                            <strong> th:text="#{project.details.ucp.sizeUnit}">UCP</strong>
+                            <span th:text="#{project.details.ucp.sizeUnit}">UCP</span>
                         </p>
                     </div>
 
@@ -150,11 +187,15 @@
             <a class="btn btn-danger mr-2"
                th:href="@{/projects/delete/{id}(id=${project.id})}"
                th:text="#{project.action.delete}"
-               th:onclick="|return confirm('#{project.confirm.delete}');|">Eliminar</a>
+               th:onclick="|return confirm('#{project.confirm.delete}');|">
+                Eliminar
+            </a>
 
             <a class="btn btn-secondary"
                href="/projects"
-               th:text="#{project.details.back}">Volver al listado</a>
+               th:text="#{project.details.back}">
+                Volver al listado
+            </a>
         </div>
 
     </div>

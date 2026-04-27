@@ -1,9 +1,11 @@
 package com.uniovi.estimacion.services.projects;
 
+import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.users.User;
+import com.uniovi.estimacion.repositories.functionpoints.FunctionPointAnalysisRepository;
+import com.uniovi.estimacion.repositories.projects.EstimationModuleRepository;
 import com.uniovi.estimacion.repositories.projects.EstimationProjectRepository;
-import com.uniovi.estimacion.repositories.requirements.UserRequirementRepository;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.users.CurrentUserService;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +23,9 @@ import java.util.Optional;
 public class EstimationProjectService {
 
     private final EstimationProjectRepository estimationProjectRepository;
+    private final EstimationModuleRepository estimationModuleRepository;
+    private final FunctionPointAnalysisRepository functionPointAnalysisRepository;
     private final FunctionPointAnalysisService functionPointAnalysisService;
-    private final UserRequirementRepository userRequirementRepository;
     private final CurrentUserService currentUserService;
 
     public Page<EstimationProject> findPageForCurrentUser(Pageable pageable) {
@@ -83,16 +86,25 @@ public class EstimationProjectService {
             return false;
         }
 
-        // 1) Borrar el análisis PF y, en cascada, sus funciones y GSC
-        functionPointAnalysisService.deleteByProjectId(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisRepository.findByEstimationProjectId(projectId);
 
-        // 2) Borrar los requisitos del proyecto
-        userRequirementRepository.deleteAll(
-                userRequirementRepository.findByEstimationProjectIdOrderByIdAsc(projectId)
+        if (optionalAnalysis.isPresent()) {
+            // Borrar el análisis PF y, en cascada, sus funciones y GSC
+            functionPointAnalysisService.deleteByProjectId(projectId);
+        }
+
+        // Borrar módulos del proyecto y, en cascada, sus requisitos
+        estimationModuleRepository.deleteAll(
+                estimationModuleRepository.findByEstimationProjectIdOrderByIdAsc(projectId)
         );
 
-        // 3) Borrar finalmente el proyecto
+        // Borrar finalmente el proyecto
         estimationProjectRepository.delete(optionalProject.get());
+
+        // Forzar sincronización para detectar problemas de integridad referencial
+        estimationProjectRepository.flush();
+
         return true;
     }
 

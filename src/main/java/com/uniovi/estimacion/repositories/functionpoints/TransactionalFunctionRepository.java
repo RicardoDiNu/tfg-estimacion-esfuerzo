@@ -1,10 +1,12 @@
 package com.uniovi.estimacion.repositories.functionpoints;
 
-import com.uniovi.estimacion.entities.functionpoints.TransactionalFunction;
+import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
 
 public interface TransactionalFunctionRepository extends JpaRepository<TransactionalFunction, Long> {
 
@@ -13,4 +15,8 @@ public interface TransactionalFunctionRepository extends JpaRepository<Transacti
 
     @EntityGraph(attributePaths = "userRequirement")
     Page<TransactionalFunction> findByUserRequirementIdOrderByIdAsc(Long requirementId, Pageable pageable);
+
+    Page<TransactionalFunction> findByUserRequirementEstimationModuleIdOrderByIdAsc(Long moduleId, Pageable pageable);
+
+    List<TransactionalFunction> findByUserRequirementEstimationModuleIdOrderByIdAsc(Long moduleId);
 }

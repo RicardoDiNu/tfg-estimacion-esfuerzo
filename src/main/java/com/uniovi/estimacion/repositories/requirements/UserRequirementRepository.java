@@ -10,9 +10,19 @@ import java.util.Optional;
 
 public interface UserRequirementRepository extends JpaRepository<UserRequirement, Long> {
 
-    List<UserRequirement> findByEstimationProjectIdOrderByIdAsc(Long projectId);
+    List<UserRequirement> findByEstimationModuleEstimationProjectIdOrderByIdAsc(Long projectId);
 
-    Page<UserRequirement> findByEstimationProjectIdOrderByIdAsc(Long projectId, Pageable pageable);
+    List<UserRequirement> findByEstimationModuleIdOrderByIdAsc(Long moduleId);
 
-    Optional<UserRequirement> findByIdAndEstimationProjectId(Long id, Long projectId);
+    Page<UserRequirement> findByEstimationModuleEstimationProjectIdOrderByIdAsc(Long projectId, Pageable pageable);
+
+    Page<UserRequirement> findByEstimationModuleIdOrderByIdAsc(Long moduleId, Pageable pageable);
+
+    Optional<UserRequirement> findByIdAndEstimationModuleEstimationProjectId(Long requirementId, Long projectId);
+
+    Optional<UserRequirement> findByIdAndEstimationModuleId(Long requirementId, Long moduleId);
+
+    Optional<UserRequirement> findByIdAndEstimationProjectId(Long requirementId, Long projectId);
+
+    Iterable<? extends UserRequirement> findByEstimationProjectIdOrderByIdAsc(Long projectId);
 }

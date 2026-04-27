@@ -1,21 +1,19 @@
 package com.uniovi.estimacion.controllers;
 
-import com.uniovi.estimacion.entities.functionpoints.DataFunction;
-import com.uniovi.estimacion.entities.functionpoints.DataFunctionType;
+import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.functionpoints.TransactionalFunction;
-import com.uniovi.estimacion.entities.functionpoints.TransactionalFunctionType;
+import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
+import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.requirements.UserRequirement;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointResults;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisSummary;
+import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.requirements.UserRequirementService;
-import com.uniovi.estimacion.validators.functionpoints.DataFunctionValidator;
 import com.uniovi.estimacion.validators.functionpoints.FunctionPointAnalysisValidator;
 import com.uniovi.estimacion.validators.functionpoints.GeneralSystemCharacteristicsValidator;
-import com.uniovi.estimacion.validators.functionpoints.TransactionalFunctionValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +22,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -37,6 +38,7 @@ public class FunctionPointAnalysisController {
     private final FunctionPointAnalysisValidator functionPointAnalysisValidator;
     private final GeneralSystemCharacteristicsValidator generalSystemCharacteristicsValidator;
     private final FunctionPointCalculationService functionPointCalculationService;
+    private final EstimationModuleService estimationModuleService;
 
     @GetMapping("/function-points/add")
     public String getCreateForm(@PathVariable Long projectId, Model model) {
@@ -110,7 +112,29 @@ public class FunctionPointAnalysisController {
         EstimationProject project = optionalProject.get();
         FunctionPointAnalysis analysis = optionalAnalysis.get();
 
-        FunctionPointResults results = functionPointCalculationService.buildResults(analysis);
+        FunctionPointAnalysisSummary results = functionPointCalculationService.buildSummary(analysis);
+
+        List<EstimationModule> modulesList =
+                estimationModuleService.findAllByProjectId(projectId);
+
+        Map<Long, FunctionPointAnalysisSummary> moduleResultsMap = new LinkedHashMap<>();
+
+        for (EstimationModule module : modulesList) {
+            List<DataFunction> moduleDataFunctions =
+                    functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
+
+            List<TransactionalFunction> moduleTransactionalFunctions =
+                    functionPointAnalysisService.findAllTransactionalFunctionsByModuleId(module.getId());
+
+            FunctionPointAnalysisSummary moduleSummary =
+                    functionPointCalculationService.buildModuleSummary(
+                            analysis,
+                            moduleDataFunctions,
+                            moduleTransactionalFunctions
+                    );
+
+            moduleResultsMap.put(module.getId(), moduleSummary);
+        }
 
         Page<UserRequirement> requirementsPageResult =
                 userRequirementService.findPageByProjectId(projectId, PageRequest.of(requirementsPage, 5));
@@ -124,6 +148,8 @@ public class FunctionPointAnalysisController {
         model.addAttribute("project", project);
         model.addAttribute("analysis", analysis);
         model.addAttribute("results", results);
+        model.addAttribute("modulesList", modulesList);
+        model.addAttribute("moduleResultsMap", moduleResultsMap);
 
         model.addAttribute("requirementsList", requirementsPageResult.getContent());
         model.addAttribute("requirementsPage", requirementsPageResult);

@@ -3,6 +3,7 @@ package com.uniovi.estimacion.controllers;
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.validators.projects.EstimationProjectValidator;
@@ -15,6 +16,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -66,15 +69,18 @@ public class EstimationProjectController {
 
         model.addAttribute("project", optionalProject.get());
         model.addAttribute("hasFunctionPointAnalysis", hasFunctionPointAnalysis);
+        model.addAttribute("hasUseCasePointAnalysis", false);
+
+        FunctionPointAnalysisSummary functionPointResults = null;
 
         if (hasFunctionPointAnalysis) {
-            model.addAttribute(
-                    "functionPointResults",
-                    functionPointCalculationService.buildResults(optionalFunctionPointAnalysis.get())
-            );
+            FunctionPointAnalysis functionPointAnalysis = optionalFunctionPointAnalysis.get();
+
+            functionPointResults =
+                    functionPointCalculationService.buildSummary(functionPointAnalysis);
         }
 
-        model.addAttribute("hasUseCasePointAnalysis", false);
+        model.addAttribute("functionPointResults", functionPointResults);
 
         return "project/details";
     }
