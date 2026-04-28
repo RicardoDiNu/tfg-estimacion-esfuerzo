@@ -25,7 +25,7 @@ public class DataFunctionValidator implements Validator {
         if (dataFunction.getName() != null) {
             String name = dataFunction.getName().trim();
 
-            if (name.length() < 2 || name.length() > 100) {
+            if (name.isEmpty() || name.length() > 100) {
                 errors.rejectValue("name", "Error.dataFunction.name.length");
             }
         }

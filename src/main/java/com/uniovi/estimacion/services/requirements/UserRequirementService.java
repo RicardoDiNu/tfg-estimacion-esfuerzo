@@ -5,6 +5,7 @@ import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.requirements.UserRequirement;
 import com.uniovi.estimacion.repositories.functionpoints.FunctionPointAnalysisRepository;
 import com.uniovi.estimacion.repositories.requirements.UserRequirementRepository;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
@@ -24,7 +25,7 @@ public class UserRequirementService {
 
     private final UserRequirementRepository userRequirementRepository;
     private final FunctionPointAnalysisRepository functionPointAnalysisRepository;
-    private final FunctionPointCalculationService functionPointCalculationService;
+    private final FunctionPointAnalysisService functionPointAnalysisService;
 
     public List<UserRequirement> findAllByProjectId(Long projectId) {
         List<UserRequirement> requirements =
@@ -197,7 +198,7 @@ public class UserRequirementService {
                     transactionalFunction.getUserRequirement() != null
                             && transactionalFunction.getUserRequirement().getId().equals(requirementId));
 
-            functionPointCalculationService.recalculateAnalysis(analysis);
+            functionPointAnalysisService.recalculateAndDeleteDerivedEfforts(analysis);
             functionPointAnalysisRepository.save(analysis);
         }
 

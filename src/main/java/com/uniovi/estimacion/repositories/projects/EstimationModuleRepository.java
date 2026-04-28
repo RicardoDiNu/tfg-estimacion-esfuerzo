@@ -1,6 +1,8 @@
 package com.uniovi.estimacion.repositories.projects;
 
 import com.uniovi.estimacion.entities.projects.EstimationModule;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -14,5 +16,7 @@ public interface EstimationModuleRepository extends JpaRepository<EstimationModu
 
     long countByEstimationProjectId(Long projectId);
 
-    Iterable<? extends EstimationModule> findByEstimationProjectIdOrderByIdAsc(Long projectId);
+    List<EstimationModule> findByEstimationProjectIdOrderByIdAsc(Long projectId);
+    Page<EstimationModule> findByEstimationProjectIdOrderByIdAsc(Long projectId, Pageable pageable);
+
 }

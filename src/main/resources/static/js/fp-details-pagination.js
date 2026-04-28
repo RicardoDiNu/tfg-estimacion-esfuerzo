@@ -42,3 +42,20 @@ $(document).on("click", ".transactional-functions-page-link", function (e) {
         }
     });
 });
+
+
+$(document).on("click", ".modules-page-link", function (e) {
+    e.preventDefault();
+
+    const ajaxUrl = $(this).attr("href");
+    const browserUrl = $(this).data("browser-url");
+
+    $.get(ajaxUrl, function (html) {
+        $("#modules-container").replaceWith(html);
+
+        if (browserUrl) {
+            history.replaceState(null, "", browserUrl);
+        }
+    });
+});
+

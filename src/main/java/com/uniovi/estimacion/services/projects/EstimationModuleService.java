@@ -5,9 +5,13 @@ import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.repositories.functionpoints.FunctionPointAnalysisRepository;
 import com.uniovi.estimacion.repositories.projects.EstimationModuleRepository;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +25,7 @@ public class EstimationModuleService {
 
     private final EstimationModuleRepository estimationModuleRepository;
     private final FunctionPointAnalysisRepository functionPointAnalysisRepository;
-    private final FunctionPointCalculationService functionPointCalculationService;
+    private final FunctionPointAnalysisService functionPointAnalysisService;
 
     public List<EstimationModule> findAllByProjectId(Long projectId) {
         return estimationModuleRepository.findByEstimationProjectIdOrderByDisplayOrderAscIdAsc(projectId);
@@ -68,7 +72,7 @@ public class EstimationModuleService {
                             && transactionalFunction.getUserRequirement().getEstimationModule() != null
                             && transactionalFunction.getUserRequirement().getEstimationModule().getId().equals(moduleId));
 
-            functionPointCalculationService.recalculateAnalysis(analysis);
+            functionPointAnalysisService.recalculateAndDeleteDerivedEfforts(analysis);
             functionPointAnalysisRepository.save(analysis);
         }
 
@@ -101,4 +105,7 @@ public class EstimationModuleService {
         return (int) estimationModuleRepository.countByEstimationProjectId(projectId) + 1;
     }
 
+    public Page<EstimationModule> findPageByProjectId(Long projectId, Pageable pageable) {
+        return estimationModuleRepository.findByEstimationProjectIdOrderByIdAsc(projectId, pageable);
+    }
 }

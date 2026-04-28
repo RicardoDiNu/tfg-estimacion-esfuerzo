@@ -25,7 +25,7 @@ public class TransactionalFunctionValidator implements Validator {
         if (transactionalFunction.getName() != null) {
             String name = transactionalFunction.getName().trim();
 
-            if (name.length() < 2 || name.length() > 100) {
+            if (name.isEmpty() || name.length() > 100) {
                 errors.rejectValue("name", "Error.transactionalFunction.name.length");
             }
         }

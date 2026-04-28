@@ -27,7 +27,7 @@ public class FunctionPointAnalysisValidator implements Validator {
         if (analysis.getSystemBoundaryDescription() != null) {
             String boundary = analysis.getSystemBoundaryDescription().trim();
 
-            if (boundary.length() < 5 || boundary.length() > 2000) {
+            if (boundary.isEmpty() || boundary.length() > 2000) {
                 errors.rejectValue(
                         "systemBoundaryDescription",
                         "Error.functionPointAnalysis.systemBoundaryDescription.length"

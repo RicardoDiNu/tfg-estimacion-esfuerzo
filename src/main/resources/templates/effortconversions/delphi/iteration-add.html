@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1>Registrar iteración Delphi</h1>
+
+        <div class="card mb-4">
+            <div class="card-header">Módulos de referencia</div>
+            <div class="card-body">
+                <p><strong>Módulo mínimo:</strong>
+                    <span th:text="${estimation.minimumModuleNameSnapshot}">Mínimo</span>
+                    (<span th:text="${#numbers.formatDecimal(estimation.minimumModuleSizeSnapshot, 1, 2)}">0.00</span>)
+                </p>
+                <p><strong>Módulo máximo:</strong>
+                    <span th:text="${estimation.maximumModuleNameSnapshot}">Máximo</span>
+                    (<span th:text="${#numbers.formatDecimal(estimation.maximumModuleSizeSnapshot, 1, 2)}">0.00</span>)
+                </p>
+            </div>
+        </div>
+
+        <form method="post"
+              th:action="@{/projects/{projectId}/function-points/delphi/{delphiEstimationId}/iterations/add(
+                  projectId=${project.id},
+                  delphiEstimationId=${estimation.id})}"
+              th:object="${iterationForm}">
+
+            <div class="card mb-4">
+                <div class="card-header">Estimaciones de expertos</div>
+                <div class="card-body">
+
+                    <div th:each="expert, stat : *{expertEstimates}" class="border rounded p-3 mb-3">
+                        <h6>Experto <span th:text="${stat.index + 1}">1</span></h6>
+
+                        <div class="form-group">
+                            <label th:for="${'expertEstimates' + stat.index + '.evaluatorAlias'}">Alias</label>
+                            <input type="text" class="form-control"
+                                   th:field="*{expertEstimates[__${stat.index}__].evaluatorAlias}">
+                        </div>
+
+                        <div class="form-group">
+                            <label th:for="${'expertEstimates' + stat.index + '.minimumModuleEstimatedEffortHours'}">
+                                Horas estimadas módulo mínimo
+                            </label>
+                            <input type="number" step="0.01" class="form-control"
+                                   th:field="*{expertEstimates[__${stat.index}__].minimumModuleEstimatedEffortHours}">
+                        </div>
+
+                        <div class="form-group">
+                            <label th:for="${'expertEstimates' + stat.index + '.maximumModuleEstimatedEffortHours'}">
+                                Horas estimadas módulo máximo
+                            </label>
+                            <input type="number" step="0.01" class="form-control"
+                                   th:field="*{expertEstimates[__${stat.index}__].maximumModuleEstimatedEffortHours}">
+                        </div>
+
+                        <div class="form-group">
+                            <label th:for="${'expertEstimates' + stat.index + '.comments'}">Comentarios</label>
+                            <textarea class="form-control"
+                                      rows="3"
+                                      th:field="*{expertEstimates[__${stat.index}__].comments}"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mr-2">Guardar iteración</button>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/function-points/delphi/{delphiEstimationId}(
+                   projectId=${project.id},
+                   delphiEstimationId=${estimation.id})}">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

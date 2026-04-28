@@ -1,10 +1,16 @@
 package com.uniovi.estimacion.controllers;
 
+import com.uniovi.estimacion.entities.effortconversions.DelphiEstimation;
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
+import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
+import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
+import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.validators.projects.EstimationProjectValidator;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +22,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -29,6 +36,8 @@ public class EstimationProjectController {
     private final FunctionPointAnalysisService functionPointAnalysisService;
     private final FunctionPointCalculationService functionPointCalculationService;
     private final EstimationProjectValidator estimationProjectValidator;
+    private final DelphiEstimationService delphiEstimationService;
+    private final EstimationModuleService estimationModuleService;
 
     @GetMapping
     public String listProjects(Model model, Pageable pageable) {
@@ -72,15 +81,56 @@ public class EstimationProjectController {
         model.addAttribute("hasUseCasePointAnalysis", false);
 
         FunctionPointAnalysisSummary functionPointResults = null;
+        DelphiEstimation activeFunctionPointDelphi = null;
+        Double functionPointDelphiEstimatedTotalHours = null;
 
         if (hasFunctionPointAnalysis) {
             FunctionPointAnalysis functionPointAnalysis = optionalFunctionPointAnalysis.get();
 
             functionPointResults =
                     functionPointCalculationService.buildSummary(functionPointAnalysis);
+
+            Optional<DelphiEstimation> optionalActiveDelphi =
+                    delphiEstimationService.findDetailedActiveBySourceAnalysis(functionPointAnalysis);
+
+            if (optionalActiveDelphi.isPresent()) {
+                activeFunctionPointDelphi = optionalActiveDelphi.get();
+
+                if (activeFunctionPointDelphi.getRegressionIntercept() != null
+                        && activeFunctionPointDelphi.getRegressionSlope() != null) {
+
+                    List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(projectId);
+                    Map<Long, Double> moduleSizeById = new LinkedHashMap<>();
+
+                    for (EstimationModule module : modulesList) {
+                        List<DataFunction> moduleDataFunctions =
+                                functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
+
+                        List<TransactionalFunction> moduleTransactionalFunctions =
+                                functionPointAnalysisService.findAllTransactionalFunctionsByModuleId(module.getId());
+
+                        FunctionPointAnalysisSummary moduleSummary =
+                                functionPointCalculationService.buildModuleSummary(
+                                        functionPointAnalysis,
+                                        moduleDataFunctions,
+                                        moduleTransactionalFunctions
+                                );
+
+                        moduleSizeById.put(module.getId(), moduleSummary.getAdjustedFunctionPoints());
+                    }
+
+                    functionPointDelphiEstimatedTotalHours =
+                            delphiEstimationService.calculateTotalEstimatedEffortHours(
+                                    activeFunctionPointDelphi,
+                                    moduleSizeById
+                            );
+                }
+            }
         }
 
         model.addAttribute("functionPointResults", functionPointResults);
+        model.addAttribute("activeFunctionPointDelphi", activeFunctionPointDelphi);
+        model.addAttribute("functionPointDelphiEstimatedTotalHours", functionPointDelphiEstimatedTotalHours);
 
         return "project/details";
     }

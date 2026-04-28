@@ -24,7 +24,7 @@ public class UserRequirementValidator implements Validator {
         if (requirement.getIdentifier() != null) {
             String identifier = requirement.getIdentifier().trim();
 
-            if (identifier.length() < 2 || identifier.length() > 50) {
+            if (identifier.isEmpty() || identifier.length() > 50) {
                 errors.rejectValue("identifier", "Error.requirement.identifier.length");
             }
         }
@@ -32,7 +32,7 @@ public class UserRequirementValidator implements Validator {
         if (requirement.getStatement() != null) {
             String statement = requirement.getStatement().trim();
 
-            if (statement.length() < 5 || statement.length() > 1000) {
+            if (statement.isEmpty() || statement.length() > 1000) {
                 errors.rejectValue("statement", "Error.requirement.statement.length");
             }
         }

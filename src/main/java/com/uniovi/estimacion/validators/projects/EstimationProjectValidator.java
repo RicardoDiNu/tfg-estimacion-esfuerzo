@@ -23,7 +23,7 @@ public class EstimationProjectValidator implements Validator {
         if (project.getName() != null) {
             String name = project.getName().trim();
 
-            if (name.length() < 3 || name.length() > 100) {
+            if (name.isEmpty() || name.length() > 100) {
                 errors.rejectValue("name", "Error.project.name.length");
             }
         }

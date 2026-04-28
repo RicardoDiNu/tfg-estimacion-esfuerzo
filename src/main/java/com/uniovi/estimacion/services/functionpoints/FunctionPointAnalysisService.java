@@ -11,6 +11,9 @@ import com.uniovi.estimacion.repositories.functionpoints.DataFunctionRepository;
 import com.uniovi.estimacion.repositories.functionpoints.FunctionPointAnalysisRepository;
 import com.uniovi.estimacion.repositories.functionpoints.TransactionalFunctionRepository;
 import com.uniovi.estimacion.repositories.requirements.UserRequirementRepository;
+import com.uniovi.estimacion.entities.projects.EstimationModule;
+import com.uniovi.estimacion.repositories.projects.EstimationModuleRepository;
+import com.uniovi.estimacion.services.effortconversions.EffortResultsInvalidationCoordinator;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
@@ -18,7 +21,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -31,6 +36,8 @@ public class FunctionPointAnalysisService {
     private final TransactionalFunctionRepository transactionalFunctionRepository;
     private final UserRequirementRepository userRequirementRepository;
     private final FunctionPointCalculationService functionPointCalculationService;
+    private final EstimationModuleRepository estimationModuleRepository;
+    private final EffortResultsInvalidationCoordinator effortResultsInvalidationCoordinator;
 
     public Optional<FunctionPointAnalysis> findByProjectId(Long projectId) {
         return functionPointAnalysisRepository.findByEstimationProjectId(projectId);
@@ -341,6 +348,13 @@ public class FunctionPointAnalysisService {
         return true;
     }
 
+    @Transactional
+    public void recalculateAndDeleteDerivedEfforts(FunctionPointAnalysis analysis) {
+        functionPointCalculationService.recalculateAnalysis(analysis);
+        effortResultsInvalidationCoordinator.deleteForFunctionPointAnalysis(analysis);
+    }
+
+
     public Page<DataFunction> findDataFunctionsPageByModuleId(Long moduleId, Pageable pageable) {
         Page<DataFunction> page =
                 dataFunctionRepository.findByUserRequirementEstimationModuleIdOrderByIdAsc(moduleId, pageable);
@@ -428,6 +442,6 @@ public class FunctionPointAnalysisService {
     }
 
     private void recalculateManagedAnalysis(FunctionPointAnalysis analysis) {
-        functionPointCalculationService.recalculateAnalysis(analysis);
+        recalculateAndDeleteDerivedEfforts(analysis);
     }
 }

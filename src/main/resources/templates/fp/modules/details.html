@@ -20,15 +20,6 @@
                      th:text="#{project.action.edit}">
               Editar
             </a>
-
-            <a class="btn btn-outline-danger"
-               th:href="@{/projects/{projectId}/function-points/modules/delete/{moduleId}(
-                 projectId=${project.id},
-                 moduleId=${module.id})}"
-                     th:onclick="|return confirm('#{fp.modules.confirm.delete}');|"
-                     th:text="#{project.action.delete}">
-              Eliminar
-            </a>
           </div>
 
         <div class="mb-3">
@@ -544,13 +535,6 @@
             <div class="row">
               <div class="col-12 col-sm-6 col-lg-3 mb-3">
                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                  <h6 class="text-muted mb-2" th:text="#{fp.field.ufp}">Puntos Función No Ajustados</h6>
-                  <p class="card-text mb-0 fp-result-value" th:text="${moduleResults.unadjustedFunctionPoints}">0</p>
-                </div>
-              </div>
-
-              <div class="col-12 col-sm-6 col-lg-3 mb-3">
-                <div class="border rounded p-3 bg-light h-100 fp-result-box">
                   <h6 class="text-muted mb-2" th:text="#{fp.field.tdi}">Grado total de influencia</h6>
                   <p class="card-text mb-0 fp-result-value" th:text="${moduleResults.totalDegreeOfInfluence}">0</p>
                 </div>
@@ -561,6 +545,13 @@
                   <h6 class="text-muted mb-2" th:text="#{fp.field.vaf}">Factor de ajuste del valor</h6>
                   <p class="card-text mb-0 fp-result-value"
                      th:text="${#numbers.formatDecimal(moduleResults.valueAdjustmentFactor, 1, 2)}">0.65</p>
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6 col-lg-3 mb-3">
+                <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                  <h6 class="text-muted mb-2" th:text="#{fp.field.ufp}">Puntos Función No Ajustados</h6>
+                  <p class="card-text mb-0 fp-result-value" th:text="${moduleResults.unadjustedFunctionPoints}">0</p>
                 </div>
               </div>
 
@@ -615,11 +606,22 @@
       </div>
     </div>
 
-    <a class="btn btn-secondary"
-       th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
-       th:text="#{fp.details.back}">
-      Volver al análisis PF
-    </a>
+    <div class="mt-4">
+      <a class="btn btn-danger mr-2"
+         th:href="@{/projects/{projectId}/function-points/modules/delete/{moduleId}(
+                   projectId=${project.id},
+                   moduleId=${module.id})}"
+         th:onclick="|return confirm('#{fp.modules.confirm.delete}');|"
+         th:text="#{project.action.delete}">
+        Eliminar
+      </a>
+
+      <a class="btn btn-secondary"
+         th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
+         th:text="#{module.details.back}">
+        Volver al análisis PF
+      </a>
+    </div>
   </div>
 </main>
 

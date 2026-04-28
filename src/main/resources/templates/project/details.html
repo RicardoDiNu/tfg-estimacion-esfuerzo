@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body class="app-page">
 
-<nav th:replace="fragments/nav :: nav"></nav>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
 
 <main class="app-content">
-    <div class="container">
-        <h1 th:text="#{project.details.title}">Detalle del proyecto de estimación</h1>
+    <div class="container-fluid fp-analysis-container">
+        <h1 class="mb-4" th:text="#{project.details.title}">Detalle del proyecto de estimación</h1>
 
         <!-- RESUMEN DEL PROYECTO -->
         <div class="card mb-4">
@@ -47,143 +47,152 @@
             </div>
         </div>
 
-        <!-- ANÁLISIS PF -->
-        <div class="card mb-4">
-            <div class="card-header" th:text="#{project.details.fp.title}">Análisis PF</div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <a class="btn btn-outline-primary mr-2"
-                       th:href="@{/projects/{id}/function-points/access(id=${project.id})}"
-                       th:text="${hasFunctionPointAnalysis} ? #{project.details.fp.open} : #{project.details.fp.create}">
-                        Análisis PF
-                    </a>
-                </div>
+        <!-- ANÁLISIS PF Y UCP EN DOS COLUMNAS -->
+        <div class="row">
+            <!-- ANÁLISIS PF -->
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4 h-100">
+                    <div class="card-header" th:text="#{project.details.fp.title}">Análisis PF</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary mr-2"
+                               th:href="@{/projects/{id}/function-points/access(id=${project.id})}"
+                               th:text="${hasFunctionPointAnalysis} ? #{project.details.fp.open} : #{project.details.fp.create}">
+                                Análisis PF
+                            </a>
+                        </div>
 
-                <div class="mb-3">
-                    <h6 class="text-muted" th:text="#{project.details.fp.size}">Tamaño calculado</h6>
+                        <div class="mb-4">
+                            <h6 class="text-muted" th:text="#{project.details.fp.size}">Tamaño calculado</h6>
 
-                    <div th:if="${hasFunctionPointAnalysis}" class="border rounded p-3 bg-light">
-                        <p class="card-text mb-1">
-                            <strong th:text="${#numbers.formatDecimal(functionPointResults.adjustedFunctionPoints, 1, 2)}">0.00</strong>
-                            <span th:text="#{project.details.fp.sizeUnit}">PF</span>
-                        </p>
-                        <small class="text-muted">
-                            <span th:text="#{fp.field.ufp}">Puntos Función No Ajustados</span>:
-                            <span th:text="${functionPointResults.unadjustedFunctionPoints}">0</span>
-                        </small>
-                    </div>
+                            <div th:if="${hasFunctionPointAnalysis}" class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointResults.adjustedFunctionPoints, 1, 2)}">0.00</strong>
+                                    <strong th:text="#{project.details.fp.sizeUnit}">PF</strong>
+                                </p>
+                                <small class="text-muted">
+                                    <span th:text="#{fp.field.ufp}">Puntos Función No Ajustados</span>:
+                                    <span th:text="${functionPointResults.unadjustedFunctionPoints}">0</span>
+                                </small>
+                            </div>
 
-                    <div th:unless="${hasFunctionPointAnalysis}"
-                         class="alert alert-light border mb-0"
-                         th:text="#{project.details.fp.noSize}">
-                        Todavía no hay un tamaño PF calculado.
-                    </div>
-                </div>
+                            <div th:unless="${hasFunctionPointAnalysis}"
+                                 class="alert alert-light border mb-0"
+                                 th:text="#{project.details.fp.noSize}">
+                                Todavía no hay un tamaño PF calculado.
+                            </div>
+                        </div>
 
-                <div class="mb-3">
-                    <h6 class="text-muted" th:text="#{project.details.fp.efforts}">Esfuerzos calculados</h6>
+                        <!-- CONVERSIÓN DELPHI PF -->
+                        <div class="mb-4">
+                            <h6 class="text-muted" th:text="#{project.details.fp.delphi.title}">
+                                Conversión a esfuerzo Delphi
+                            </h6>
 
-                    <div th:if="${functionPointDelphiConversions == null or functionPointDelphiConversions.isEmpty()}"
-                         class="alert alert-light border mb-0"
-                         th:text="#{project.details.fp.noEfforts}">
-                        Todavía no hay conversiones a esfuerzo registradas.
-                    </div>
+                            <div th:if="${activeFunctionPointDelphi != null and activeFunctionPointDelphi.regressionIntercept != null}"
+                                 class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointDelphiEstimatedTotalHours, 1, 2)}">0.00</strong>
+                                    <strong th:text="#{project.details.effort.hoursUnit}">h</strong>
+                                </p>
 
-                    <div class="table-responsive"
-                         th:if="${functionPointDelphiConversions != null and !functionPointDelphiConversions.isEmpty()}">
-                        <table class="table table-hover table-bordered mb-0">
-                            <thead>
-                            <tr>
-                                <th th:text="#{project.details.fp.effort.method}">Método</th>
-                                <th th:text="#{project.details.fp.effort.hoursPerUnit}">Horas por unidad</th>
-                                <th th:text="#{project.details.fp.effort.totalHours}">Esfuerzo total</th>
-                                <th th:text="#{project.details.fp.effort.status}">Estado</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="conversion : ${functionPointDelphiConversions}">
-                                <td th:text="#{project.details.fp.effort.method.delphi}">Delphi</td>
-                                <td th:text="${#numbers.formatDecimal(conversion.hoursPerUnit, 1, 2)}">0.00</td>
-                                <td th:text="${#numbers.formatDecimal(conversion.estimatedEffortHours, 1, 2)}">0.00</td>
-                                <td>
-                                    <span th:if="${conversion.outdated}"
-                                          class="badge badge-warning"
-                                          th:text="#{project.details.fp.effort.status.outdated}">
-                                        Desactualizada
-                                    </span>
-                                    <span th:unless="${conversion.outdated}"
-                                          class="badge badge-success"
-                                          th:text="#{project.details.fp.effort.status.current}">
-                                        Vigente
-                                    </span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                <small class="text-muted d-block">
+                                    <span th:text="#{project.details.fp.delphi.minimumModuleEffort}">Esfuerzo módulo mínimo</span>:
+                                    <span th:text="${#numbers.formatDecimal(activeFunctionPointDelphi.minimumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                                    <span th:text="#{project.details.effort.hoursUnit}">h</span>
+                                </small>
 
-                <div>
-                    <h6 class="text-muted" th:text="#{project.details.fp.costs}">Costes asociados</h6>
-                    <div class="alert alert-light border mb-0"
-                         th:text="#{project.details.fp.noCosts}">
-                        Todavía no hay costes calculados.
+                                <small class="text-muted d-block">
+                                    <span th:text="#{project.details.fp.delphi.maximumModuleEffort}">Esfuerzo módulo máximo</span>:
+                                    <span th:text="${#numbers.formatDecimal(activeFunctionPointDelphi.maximumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                                    <span th:text="#{project.details.effort.hoursUnit}">h</span>
+                                </small>
+                            </div>
+
+                            <div th:unless="${activeFunctionPointDelphi != null and activeFunctionPointDelphi.regressionIntercept != null}"
+                                 class="alert alert-light border mb-0"
+                                 th:text="#{project.details.fp.delphi.empty}">
+                                Todavía no hay una conversión Delphi finalizada disponible.
+                            </div>
+                        </div>
+
+                        <!-- CONVERSIÓN FUNCIÓN PF -->
+                        <div>
+                            <h6 class="text-muted" th:text="#{project.details.fp.transformation.title}">
+                                Conversión a esfuerzo con función de transformación
+                            </h6>
+
+                            <div class="alert alert-light border mb-0"
+                                 th:text="#{project.details.fp.transformation.empty}">
+                                Todavía no hay una conversión mediante función de transformación disponible.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ANÁLISIS UCP -->
-        <div class="card mb-4">
-            <div class="card-header" th:text="#{project.details.ucp.title}">Análisis UCP</div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <a class="btn btn-outline-primary mr-2 disabled"
-                       href="#"
-                       tabindex="-1"
-                       aria-disabled="true"
-                       th:text="${hasUseCasePointAnalysis} ? #{project.details.ucp.open} : #{project.details.ucp.create}">
-                        Análisis UCP
-                    </a>
-                </div>
+            <!-- ANÁLISIS UCP -->
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4 h-100">
+                    <div class="card-header" th:text="#{project.details.ucp.title}">Análisis UCP</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary mr-2 disabled"
+                               href="#"
+                               tabindex="-1"
+                               aria-disabled="true"
+                               th:text="${hasUseCasePointAnalysis} ? #{project.details.ucp.open} : #{project.details.ucp.create}">
+                                Análisis UCP
+                            </a>
+                        </div>
 
-                <div class="mb-3">
-                    <h6 class="text-muted" th:text="#{project.details.ucp.size}">Tamaño calculado</h6>
+                        <div class="mb-4">
+                            <h6 class="text-muted" th:text="#{project.details.ucp.size}">Tamaño calculado</h6>
 
-                    <div th:if="${hasUseCasePointAnalysis}" class="border rounded p-3 bg-light">
-                        <p class="card-text mb-1">
-                            <strong>0.00</strong>
-                            <span th:text="#{project.details.ucp.sizeUnit}">UCP</span>
-                        </p>
-                    </div>
+                            <div th:if="${hasUseCasePointAnalysis}" class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong>0.00</strong>
+                                    <span th:text="#{project.details.ucp.sizeUnit}">UCP</span>
+                                </p>
+                            </div>
 
-                    <div th:unless="${hasUseCasePointAnalysis}"
-                         class="alert alert-light border mb-0"
-                         th:text="#{project.details.ucp.noSize}">
-                        Todavía no hay un tamaño UCP calculado.
-                    </div>
-                </div>
+                            <div th:unless="${hasUseCasePointAnalysis}"
+                                 class="alert alert-light border mb-0"
+                                 th:text="#{project.details.ucp.noSize}">
+                                Todavía no hay un tamaño UCP calculado.
+                            </div>
+                        </div>
 
-                <div class="mb-3">
-                    <h6 class="text-muted" th:text="#{project.details.ucp.efforts}">Esfuerzos calculados</h6>
-                    <div class="alert alert-light border mb-0"
-                         th:text="#{project.details.ucp.noEfforts}">
-                        Todavía no hay conversiones a esfuerzo registradas.
-                    </div>
-                </div>
+                        <!-- CONVERSIÓN DELPHI UCP -->
+                        <div class="mb-4">
+                            <h6 class="text-muted" th:text="#{project.details.ucp.delphi.title}">
+                                Conversión a esfuerzo Delphi
+                            </h6>
 
-                <div>
-                    <h6 class="text-muted" th:text="#{project.details.ucp.costs}">Costes asociados</h6>
-                    <div class="alert alert-light border mb-0"
-                         th:text="#{project.details.ucp.noCosts}">
-                        Todavía no hay costes calculados.
+                            <div class="alert alert-light border mb-0"
+                                 th:text="#{project.details.ucp.delphi.empty}">
+                                Todavía no hay una conversión Delphi finalizada disponible para UCP.
+                            </div>
+                        </div>
+
+                        <!-- CONVERSIÓN FUNCIÓN UCP -->
+                        <div>
+                            <h6 class="text-muted" th:text="#{project.details.ucp.transformation.title}">
+                                Conversión a esfuerzo con función de transformación
+                            </h6>
+
+                            <div class="alert alert-light border mb-0"
+                                 th:text="#{project.details.ucp.transformation.empty}">
+                                Todavía no hay una conversión mediante función de transformación disponible para UCP.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- ACCIONES FINALES -->
-        <div class="mb-4">
+        <div class="mt-4 mb-4">
             <a class="btn btn-danger mr-2"
                th:href="@{/projects/delete/{id}(id=${project.id})}"
                th:text="#{project.action.delete}"
@@ -197,7 +206,6 @@
                 Volver al listado
             </a>
         </div>
-
     </div>
 </main>
 

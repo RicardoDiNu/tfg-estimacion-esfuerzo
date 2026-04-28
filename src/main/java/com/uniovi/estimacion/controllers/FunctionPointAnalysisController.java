@@ -1,14 +1,16 @@
 package com.uniovi.estimacion.controllers;
 
-import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
+import com.uniovi.estimacion.entities.effortconversions.DelphiEstimation;
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.requirements.UserRequirement;
+import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisSummary;
+import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.requirements.UserRequirementService;
@@ -39,6 +41,7 @@ public class FunctionPointAnalysisController {
     private final GeneralSystemCharacteristicsValidator generalSystemCharacteristicsValidator;
     private final FunctionPointCalculationService functionPointCalculationService;
     private final EstimationModuleService estimationModuleService;
+    private final DelphiEstimationService delphiEstimationService;
 
     @GetMapping("/function-points/add")
     public String getCreateForm(@PathVariable Long projectId, Model model) {
@@ -92,6 +95,7 @@ public class FunctionPointAnalysisController {
 
     @GetMapping("/function-points")
     public String getFunctionPointAnalysisDetails(@PathVariable Long projectId,
+                                                  @RequestParam(name = "modulesPage", defaultValue = "0") int modulesPage,
                                                   @RequestParam(name = "requirementsPage", defaultValue = "0") int requirementsPage,
                                                   @RequestParam(name = "dataFunctionsPage", defaultValue = "0") int dataFunctionsPage,
                                                   @RequestParam(name = "transactionalFunctionsPage", defaultValue = "0") int transactionalFunctionsPage,
@@ -114,12 +118,131 @@ public class FunctionPointAnalysisController {
 
         FunctionPointAnalysisSummary results = functionPointCalculationService.buildSummary(analysis);
 
-        List<EstimationModule> modulesList =
+        List<EstimationModule> allModules =
                 estimationModuleService.findAllByProjectId(projectId);
+
+        Page<EstimationModule> modulesPageResult =
+                estimationModuleService.findPageByProjectId(projectId, PageRequest.of(modulesPage, 5));
+
+        Map<Long, FunctionPointAnalysisSummary> moduleResultsMap = new LinkedHashMap<>();
+        Map<Long, Double> moduleSizeById = new LinkedHashMap<>();
+
+        for (EstimationModule module : allModules) {
+            List<DataFunction> moduleDataFunctions =
+                    functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
+
+            List<TransactionalFunction> moduleTransactionalFunctions =
+                    functionPointAnalysisService.findAllTransactionalFunctionsByModuleId(module.getId());
+
+            FunctionPointAnalysisSummary moduleSummary =
+                    functionPointCalculationService.buildModuleSummary(
+                            analysis,
+                            moduleDataFunctions,
+                            moduleTransactionalFunctions
+                    );
+
+            moduleSizeById.put(module.getId(), moduleSummary.getAdjustedFunctionPoints());
+
+            if (modulesPageResult.getContent().stream().anyMatch(m -> m.getId().equals(module.getId()))) {
+                moduleResultsMap.put(module.getId(), moduleSummary);
+            }
+        }
+
+        Optional<DelphiEstimation> optionalActiveDelphi =
+                delphiEstimationService.findDetailedActiveBySourceAnalysis(analysis);
+
+        Double delphiEstimatedTotalHours = null;
+        Integer activeDelphiIterationsCount = 0;
+
+        Map<Long, Double> moduleDelphiEffortById = new LinkedHashMap<>();
+
+        if (optionalActiveDelphi.isPresent()) {
+            DelphiEstimation activeDelphi = optionalActiveDelphi.get();
+            activeDelphiIterationsCount = activeDelphi.getIterations().size();
+
+            if (activeDelphi.getRegressionIntercept() != null
+                    && activeDelphi.getRegressionSlope() != null) {
+
+                for (Map.Entry<Long, Double> entry : moduleSizeById.entrySet()) {
+                    Double moduleSize = entry.getValue();
+
+                    if (moduleSize != null && moduleSize > 0) {
+                        moduleDelphiEffortById.put(
+                                entry.getKey(),
+                                delphiEstimationService.calculateEstimatedEffortHours(activeDelphi, moduleSize)
+                        );
+                    }
+                }
+
+                delphiEstimatedTotalHours =
+                        delphiEstimationService.calculateTotalEstimatedEffortHours(activeDelphi, moduleSizeById);
+            }
+        }
+
+        Page<UserRequirement> requirementsPageResult =
+                userRequirementService.findPageByProjectId(projectId, PageRequest.of(requirementsPage, 5));
+
+        Page<DataFunction> dataFunctionsPageResult =
+                functionPointAnalysisService.findDataFunctionsPageByProjectId(projectId, PageRequest.of(dataFunctionsPage, 5));
+
+        Page<TransactionalFunction> transactionalFunctionsPageResult =
+                functionPointAnalysisService.findTransactionalFunctionsPageByProjectId(projectId, PageRequest.of(transactionalFunctionsPage, 5));
+
+        model.addAttribute("project", project);
+        model.addAttribute("analysis", analysis);
+        model.addAttribute("results", results);
+        model.addAttribute("modulesList", modulesPageResult.getContent());
+        model.addAttribute("modulesPage", modulesPageResult);
+        model.addAttribute("moduleResultsMap", moduleResultsMap);
+
+        model.addAttribute("activeDelphiEstimation", optionalActiveDelphi.orElse(null));
+        model.addAttribute("activeDelphiIterationsCount", activeDelphiIterationsCount);
+        model.addAttribute("delphiEstimatedTotalHours", delphiEstimatedTotalHours);
+        model.addAttribute("moduleDelphiEffortById", moduleDelphiEffortById);
+
+        model.addAttribute("requirementsList", requirementsPageResult.getContent());
+        model.addAttribute("requirementsPage", requirementsPageResult);
+
+        model.addAttribute("dataFunctionsList", dataFunctionsPageResult.getContent());
+        model.addAttribute("dataFunctionsPage", dataFunctionsPageResult);
+
+        model.addAttribute("transactionalFunctionsList", transactionalFunctionsPageResult.getContent());
+        model.addAttribute("transactionalFunctionsPage", transactionalFunctionsPageResult);
+
+        model.addAttribute("dataFunctionsCurrentPage", dataFunctionsPageResult.getNumber());
+        model.addAttribute("transactionalFunctionsCurrentPage", transactionalFunctionsPageResult.getNumber());
+
+        return "fp/details";
+    }
+
+    @GetMapping("/function-points/modules/update")
+    public String updateModulesSection(@PathVariable Long projectId,
+                                       @RequestParam(name = "modulesPage", defaultValue = "0") int modulesPage,
+                                       Model model) {
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisService.findDetailedByProjectId(projectId);
+
+        if (optionalProject.isEmpty()) {
+            return redirectToProjects();
+        }
+
+        if (optionalAnalysis.isEmpty()) {
+            return redirectToFunctionPointAdd(projectId);
+        }
+
+        FunctionPointAnalysis analysis = optionalAnalysis.get();
+
+        List<EstimationModule> allModules =
+                estimationModuleService.findAllByProjectId(projectId);
+
+        Page<EstimationModule> modulesPageResult =
+                estimationModuleService.findPageByProjectId(projectId, PageRequest.of(modulesPage, 5));
 
         Map<Long, FunctionPointAnalysisSummary> moduleResultsMap = new LinkedHashMap<>();
 
-        for (EstimationModule module : modulesList) {
+        for (EstimationModule module : modulesPageResult.getContent()) {
             List<DataFunction> moduleDataFunctions =
                     functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
 
@@ -136,34 +259,12 @@ public class FunctionPointAnalysisController {
             moduleResultsMap.put(module.getId(), moduleSummary);
         }
 
-        Page<UserRequirement> requirementsPageResult =
-                userRequirementService.findPageByProjectId(projectId, PageRequest.of(requirementsPage, 5));
-
-        Page<DataFunction> dataFunctionsPageResult =
-                functionPointAnalysisService.findDataFunctionsPageByProjectId(projectId, PageRequest.of(dataFunctionsPage, 5));
-
-        Page<TransactionalFunction> transactionalFunctionsPageResult =
-                functionPointAnalysisService.findTransactionalFunctionsPageByProjectId(projectId, PageRequest.of(transactionalFunctionsPage, 5));
-
-        model.addAttribute("project", project);
-        model.addAttribute("analysis", analysis);
-        model.addAttribute("results", results);
-        model.addAttribute("modulesList", modulesList);
+        model.addAttribute("project", optionalProject.get());
+        model.addAttribute("modulesList", modulesPageResult.getContent());
+        model.addAttribute("modulesPage", modulesPageResult);
         model.addAttribute("moduleResultsMap", moduleResultsMap);
 
-        model.addAttribute("requirementsList", requirementsPageResult.getContent());
-        model.addAttribute("requirementsPage", requirementsPageResult);
-
-        model.addAttribute("dataFunctionsList", dataFunctionsPageResult.getContent());
-        model.addAttribute("dataFunctionsPage", dataFunctionsPageResult);
-
-        model.addAttribute("transactionalFunctionsList", transactionalFunctionsPageResult.getContent());
-        model.addAttribute("transactionalFunctionsPage", transactionalFunctionsPageResult);
-
-        model.addAttribute("dataFunctionsCurrentPage", dataFunctionsPageResult.getNumber());
-        model.addAttribute("transactionalFunctionsCurrentPage", transactionalFunctionsPageResult.getNumber());
-
-        return "fp/details";
+        return "fp/details :: modulesSection";
     }
 
     @GetMapping("/function-points/edit")
@@ -376,6 +477,19 @@ public class FunctionPointAnalysisController {
         return redirectToFunctionPointDetails(projectId);
     }
 
+    @GetMapping("/function-points/delete")
+    public String deleteFunctionPointAnalysis(@PathVariable Long projectId) {
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+
+        if (optionalProject.isEmpty()) {
+            return "redirect:/projects";
+        }
+
+        functionPointAnalysisService.deleteByProjectId(projectId);
+        return "redirect:/projects/" + projectId;
+    }
+
     private String redirectToProjects() {
         return "redirect:/projects";
     }
@@ -386,9 +500,5 @@ public class FunctionPointAnalysisController {
 
     private String redirectToFunctionPointDetails(Long projectId) {
         return "redirect:/projects/" + projectId + "/function-points";
-    }
-
-    private String redirectToRequirementDetails(Long projectId, Long requirementId) {
-        return "redirect:/projects/" + projectId + "/requirements/" + requirementId;
     }
 }

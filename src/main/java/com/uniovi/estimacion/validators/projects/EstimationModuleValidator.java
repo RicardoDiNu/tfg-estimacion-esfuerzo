@@ -23,7 +23,7 @@ public class EstimationModuleValidator implements Validator {
         if (module.getName() != null) {
             String name = module.getName().trim();
 
-            if (name.length() < 3 || name.length() > 100) {
+            if (name.isEmpty() || name.length() > 100) {
                 errors.rejectValue("name", "Error.module.name.length");
             }
         }
