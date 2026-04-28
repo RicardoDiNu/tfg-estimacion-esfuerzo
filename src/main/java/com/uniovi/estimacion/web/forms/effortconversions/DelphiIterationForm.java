@@ -10,5 +10,6 @@ import java.util.List;
 @Setter
 public class DelphiIterationForm {
 
+    private Integer expectedExpertCount = 3;
     private List<DelphiExpertEstimateForm> expertEstimates = new ArrayList<>();
 }

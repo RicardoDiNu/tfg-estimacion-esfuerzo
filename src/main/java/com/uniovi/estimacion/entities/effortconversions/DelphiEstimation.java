@@ -68,13 +68,13 @@ public class DelphiEstimation {
     private Double regressionSlope;
 
     @Column(nullable = false)
-    private Double confidencePercentage = 95.0;
-
-    @Column(nullable = false)
     private Double acceptableDeviationPercentage = 10.0;
 
     @Column(nullable = false)
     private Integer maximumIterations = 2;
+
+    @Column(nullable = false)
+    private Integer expertCount = 3;
 
     @Column(nullable = false)
     private Boolean active = true;

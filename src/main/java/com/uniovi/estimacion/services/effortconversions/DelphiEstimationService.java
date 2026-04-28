@@ -30,6 +30,8 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class DelphiEstimationService {
 
+    private static final int MINIMUM_EXPERT_COUNT = 3;
+
     private final DelphiEstimationRepository delphiEstimationRepository;
 
     public Optional<DelphiEstimation> findActiveBySourceAnalysis(SizeAnalysis sourceAnalysis) {
@@ -38,6 +40,19 @@ public class DelphiEstimationService {
                         sourceAnalysis.getId(),
                         sourceAnalysis.getTechniqueCode()
                 );
+    }
+
+    public Optional<DelphiEstimation> findDetailedActiveBySourceAnalysis(SizeAnalysis sourceAnalysis) {
+        Optional<DelphiEstimation> optionalEstimation =
+                delphiEstimationRepository
+                        .findFirstBySourceAnalysisIdAndSourceTechniqueCodeAndActiveTrueOrderByCreatedAtDesc(
+                                sourceAnalysis.getId(),
+                                sourceAnalysis.getTechniqueCode()
+                        );
+
+        optionalEstimation.ifPresent(this::initializeIterations);
+
+        return optionalEstimation;
     }
 
     public List<DelphiEstimation> findHistoryBySourceAnalysis(SizeAnalysis sourceAnalysis) {
@@ -52,15 +67,40 @@ public class DelphiEstimationService {
         return delphiEstimationRepository.findByEstimationProjectIdOrderByCreatedAtDesc(projectId);
     }
 
-    @Transactional(readOnly = true)
-    public Map<Long, Double> buildModuleSizeById(SizeAnalysis sourceAnalysis,
+    public Optional<DelphiEstimation> findByIdAndProjectId(Long delphiEstimationId, Long projectId) {
+        return delphiEstimationRepository.findByIdAndEstimationProjectId(delphiEstimationId, projectId);
+    }
+
+    public Optional<DelphiEstimation> findDetailedByIdAndProjectId(Long delphiEstimationId, Long projectId) {
+        Optional<DelphiEstimation> optionalEstimation =
+                delphiEstimationRepository.findByIdAndEstimationProjectId(delphiEstimationId, projectId);
+
+        optionalEstimation.ifPresent(this::initializeIterations);
+
+        return optionalEstimation;
+    }
+
+    public boolean canStartCalibration(Map<Long, Double> moduleSizeById) {
+        long distinctPositiveModuleCount = moduleSizeById.values().stream()
+                .filter(size -> size != null && size > 0)
+                .count();
+
+        long distinctPositiveSizes = moduleSizeById.values().stream()
+                .filter(size -> size != null && size > 0)
+                .distinct()
+                .count();
+
+        return distinctPositiveModuleCount >= 2 && distinctPositiveSizes >= 2;
+    }
+
+    public boolean isFinished(DelphiEstimation estimation) {
+        return estimation.getRegressionIntercept() != null && estimation.getRegressionSlope() != null;
+    }
+
+    public Map<Long, Double> buildModuleSizeById(FunctionPointAnalysis analysis,
                                                  List<EstimationModule> modulesList,
                                                  FunctionPointAnalysisService functionPointAnalysisService,
                                                  FunctionPointCalculationService functionPointCalculationService) {
-        if (!(sourceAnalysis instanceof FunctionPointAnalysis analysis)) {
-            throw new IllegalArgumentException("UNSUPPORTED_SIZE_ANALYSIS_TYPE");
-        }
-
         Map<Long, Double> moduleSizeById = new LinkedHashMap<>();
 
         for (EstimationModule module : modulesList) {
@@ -83,41 +123,20 @@ public class DelphiEstimationService {
         return moduleSizeById;
     }
 
-    @Transactional(readOnly = true)
-    public boolean canStartCalibration(Map<Long, Double> moduleSizeById) {
-        return moduleSizeById.values().stream()
-                .filter(size -> size != null && size > 0)
-                .distinct()
-                .count() >= 2;
-    }
-
-    @Transactional(readOnly = true)
-    public boolean isFinished(DelphiEstimation estimation) {
-        return estimation.getRegressionIntercept() != null
-                && estimation.getRegressionSlope() != null;
-    }
-
-    @Transactional(readOnly = true)
-    public int countIterations(DelphiEstimation estimation) {
-        if (estimation.getIterations() == null) {
-            return 0;
-        }
-        return estimation.getIterations().size();
-    }
-
     @Transactional
     public DelphiEstimation createInitialEstimation(SizeAnalysis sourceAnalysis,
                                                     List<EstimationModule> projectModules,
                                                     Map<Long, Double> moduleSizeById,
-                                                    Double confidencePercentage,
                                                     Double acceptableDeviationPercentage,
-                                                    Integer maximumIterations) {
-        assertValidSourceAnalysis(sourceAnalysis);
+                                                    Integer maximumIterations,
+                                                    Integer expertCount) {
+        validateSourceAnalysis(sourceAnalysis);
+        validateInitialConfiguration(acceptableDeviationPercentage, maximumIterations, expertCount);
 
         ModuleReference minimumModule = findMinimumModule(projectModules, moduleSizeById);
         ModuleReference maximumModule = findMaximumModule(projectModules, moduleSizeById);
 
-        assertExtremeModules(minimumModule, maximumModule);
+        validateExtremeModules(minimumModule, maximumModule);
 
         deactivatePreviousActiveEstimations(sourceAnalysis);
 
@@ -137,58 +156,24 @@ public class DelphiEstimationService {
         estimation.setMaximumModuleNameSnapshot(maximumModule.moduleName());
         estimation.setMaximumModuleSizeSnapshot(maximumModule.moduleSize());
 
-        estimation.setConfidencePercentage(confidencePercentage != null ? confidencePercentage : 95.0);
-        estimation.setAcceptableDeviationPercentage(
-                acceptableDeviationPercentage != null ? acceptableDeviationPercentage : 10.0
-        );
-        estimation.setMaximumIterations(maximumIterations != null ? maximumIterations : 2);
+        estimation.setAcceptableDeviationPercentage(acceptableDeviationPercentage);
+        estimation.setMaximumIterations(maximumIterations);
+        estimation.setExpertCount(expertCount);
 
         estimation.setActive(true);
+        estimation.setOutdated(false);
 
         return delphiEstimationRepository.save(estimation);
-    }
-
-    @Transactional
-    public DelphiEstimation applyFinalCalibration(DelphiEstimation estimation,
-                                                  Double minimumModuleEstimatedEffortHours,
-                                                  Double maximumModuleEstimatedEffortHours) {
-        applyFinalCalibrationInternal(
-                estimation,
-                minimumModuleEstimatedEffortHours,
-                maximumModuleEstimatedEffortHours
-        );
-
-        return delphiEstimationRepository.save(estimation);
-    }
-
-    public double calculateEstimatedEffortHours(DelphiEstimation estimation, Double moduleSize) {
-        assertCalibrationAvailable(estimation);
-
-        if (moduleSize == null || moduleSize < 0) {
-            throw new IllegalArgumentException("INVALID_MODULE_SIZE");
-        }
-
-        return estimation.getRegressionIntercept() + (estimation.getRegressionSlope() * moduleSize);
-    }
-
-    public double calculateTotalEstimatedEffortHours(DelphiEstimation estimation,
-                                                     Map<Long, Double> moduleSizeById) {
-        assertCalibrationAvailable(estimation);
-
-        return moduleSizeById.values().stream()
-                .filter(size -> size != null && size >= 0)
-                .mapToDouble(size -> calculateEstimatedEffortHours(estimation, size))
-                .sum();
     }
 
     @Transactional
     public DelphiEstimation registerIteration(Long delphiEstimationId,
                                               List<DelphiExpertEstimate> expertEstimates) {
         DelphiEstimation estimation = delphiEstimationRepository.findById(delphiEstimationId)
-                .orElseThrow(() -> new IllegalArgumentException("DELPHI_ESTIMATION_NOT_FOUND"));
+                .orElseThrow(() -> new IllegalArgumentException("No existe una conversión Delphi con ese id."));
 
-        assertEstimationOpenForIteration(estimation);
-        assertExpertEstimatesReady(expertEstimates);
+        validateEstimationForIteration(estimation);
+        validateExpertEstimates(estimation, expertEstimates);
 
         int nextIterationNumber = estimation.getIterations().size() + 1;
 
@@ -198,12 +183,8 @@ public class DelphiEstimationService {
         for (DelphiExpertEstimate incomingEstimate : expertEstimates) {
             DelphiExpertEstimate storedEstimate = new DelphiExpertEstimate();
             storedEstimate.setEvaluatorAlias(normalizeText(incomingEstimate.getEvaluatorAlias()));
-            storedEstimate.setMinimumModuleEstimatedEffortHours(
-                    incomingEstimate.getMinimumModuleEstimatedEffortHours()
-            );
-            storedEstimate.setMaximumModuleEstimatedEffortHours(
-                    incomingEstimate.getMaximumModuleEstimatedEffortHours()
-            );
+            storedEstimate.setMinimumModuleEstimatedEffortHours(incomingEstimate.getMinimumModuleEstimatedEffortHours());
+            storedEstimate.setMaximumModuleEstimatedEffortHours(incomingEstimate.getMaximumModuleEstimatedEffortHours());
             storedEstimate.setComments(normalizeText(incomingEstimate.getComments()));
 
             iteration.addExpertEstimate(storedEstimate);
@@ -249,32 +230,37 @@ public class DelphiEstimationService {
         return delphiEstimationRepository.save(estimation);
     }
 
-    public Optional<DelphiEstimation> findByIdAndProjectId(Long delphiEstimationId, Long projectId) {
-        return delphiEstimationRepository.findByIdAndEstimationProjectId(delphiEstimationId, projectId);
+    @Transactional
+    public DelphiEstimation applyFinalCalibration(DelphiEstimation estimation,
+                                                  Double minimumModuleEstimatedEffortHours,
+                                                  Double maximumModuleEstimatedEffortHours) {
+        applyFinalCalibrationInternal(
+                estimation,
+                minimumModuleEstimatedEffortHours,
+                maximumModuleEstimatedEffortHours
+        );
+
+        return delphiEstimationRepository.save(estimation);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<DelphiEstimation> findDetailedByIdAndProjectId(Long delphiEstimationId, Long projectId) {
-        Optional<DelphiEstimation> optionalEstimation =
-                delphiEstimationRepository.findByIdAndEstimationProjectId(delphiEstimationId, projectId);
+    public double calculateEstimatedEffortHours(DelphiEstimation estimation, Double moduleSize) {
+        if (!isFinished(estimation)) {
+            throw new IllegalStateException("La conversión Delphi todavía no tiene una función lineal calculada.");
+        }
 
-        optionalEstimation.ifPresent(this::initializeIterations);
+        if (moduleSize == null || moduleSize < 0) {
+            throw new IllegalArgumentException("El tamaño del módulo debe ser un valor no negativo.");
+        }
 
-        return optionalEstimation;
+        return estimation.getRegressionIntercept() + (estimation.getRegressionSlope() * moduleSize);
     }
 
-    @Transactional(readOnly = true)
-    public Optional<DelphiEstimation> findDetailedActiveBySourceAnalysis(SizeAnalysis sourceAnalysis) {
-        Optional<DelphiEstimation> optionalEstimation =
-                delphiEstimationRepository
-                        .findFirstBySourceAnalysisIdAndSourceTechniqueCodeAndActiveTrueOrderByCreatedAtDesc(
-                                sourceAnalysis.getId(),
-                                sourceAnalysis.getTechniqueCode()
-                        );
-
-        optionalEstimation.ifPresent(this::initializeIterations);
-
-        return optionalEstimation;
+    public double calculateTotalEstimatedEffortHours(DelphiEstimation estimation,
+                                                     Map<Long, Double> moduleSizeById) {
+        return moduleSizeById.values().stream()
+                .filter(size -> size != null && size >= 0)
+                .mapToDouble(size -> calculateEstimatedEffortHours(estimation, size))
+                .sum();
     }
 
     @Transactional
@@ -292,6 +278,19 @@ public class DelphiEstimationService {
         delphiEstimationRepository.deleteAll(estimations);
     }
 
+    @Transactional
+    public boolean deleteByIdAndProjectId(Long delphiEstimationId, Long projectId) {
+        Optional<DelphiEstimation> optionalEstimation =
+                delphiEstimationRepository.findByIdAndEstimationProjectId(delphiEstimationId, projectId);
+
+        if (optionalEstimation.isEmpty()) {
+            return false;
+        }
+
+        delphiEstimationRepository.delete(optionalEstimation.get());
+        return true;
+    }
+
     private void initializeIterations(DelphiEstimation estimation) {
         Hibernate.initialize(estimation.getIterations());
 
@@ -305,8 +304,8 @@ public class DelphiEstimationService {
     }
 
     private void deactivatePreviousActiveEstimations(SizeAnalysis sourceAnalysis) {
-        List<DelphiEstimation> previousEstimations =
-                delphiEstimationRepository.findBySourceAnalysisIdAndSourceTechniqueCodeOrderByCreatedAtDesc(
+        List<DelphiEstimation> previousEstimations = delphiEstimationRepository
+                .findBySourceAnalysisIdAndSourceTechniqueCodeOrderByCreatedAtDesc(
                         sourceAnalysis.getId(),
                         sourceAnalysis.getTechniqueCode()
                 );
@@ -326,7 +325,9 @@ public class DelphiEstimationService {
                 .map(module -> toModuleReference(module, moduleSizeById))
                 .filter(reference -> reference.moduleSize() > 0)
                 .min(Comparator.comparingDouble(ModuleReference::moduleSize))
-                .orElseThrow(() -> new IllegalStateException("DELPHI_MINIMUM_MODULE_NOT_AVAILABLE"));
+                .orElseThrow(() -> new IllegalStateException(
+                        "No existen suficientes módulos con tamaño calculado para iniciar Delphi."
+                ));
     }
 
     private ModuleReference findMaximumModule(List<EstimationModule> projectModules,
@@ -335,7 +336,9 @@ public class DelphiEstimationService {
                 .map(module -> toModuleReference(module, moduleSizeById))
                 .filter(reference -> reference.moduleSize() > 0)
                 .max(Comparator.comparingDouble(ModuleReference::moduleSize))
-                .orElseThrow(() -> new IllegalStateException("DELPHI_MAXIMUM_MODULE_NOT_AVAILABLE"));
+                .orElseThrow(() -> new IllegalStateException(
+                        "No existen suficientes módulos con tamaño calculado para iniciar Delphi."
+                ));
     }
 
     private ModuleReference toModuleReference(EstimationModule module,
@@ -343,7 +346,9 @@ public class DelphiEstimationService {
         Double moduleSize = moduleSizeById.get(module.getId());
 
         if (moduleSize == null) {
-            throw new IllegalStateException("DELPHI_MODULE_SIZE_NOT_AVAILABLE");
+            throw new IllegalStateException(
+                    "No existe tamaño calculado para el módulo con id " + module.getId()
+            );
         }
 
         return new ModuleReference(
@@ -353,50 +358,65 @@ public class DelphiEstimationService {
         );
     }
 
-    private void assertValidSourceAnalysis(SizeAnalysis sourceAnalysis) {
+    private void validateSourceAnalysis(SizeAnalysis sourceAnalysis) {
         if (sourceAnalysis == null) {
-            throw new IllegalArgumentException("SIZE_ANALYSIS_REQUIRED");
+            throw new IllegalArgumentException("El análisis de tamaño origen es obligatorio.");
         }
 
         if (sourceAnalysis.getId() == null) {
-            throw new IllegalArgumentException("SIZE_ANALYSIS_NOT_PERSISTED");
+            throw new IllegalArgumentException("El análisis de tamaño origen debe estar persistido.");
         }
 
-        if (sourceAnalysis.getEstimationProject() == null
-                || sourceAnalysis.getEstimationProject().getId() == null) {
-            throw new IllegalArgumentException("SIZE_ANALYSIS_PROJECT_NOT_PERSISTED");
+        if (sourceAnalysis.getEstimationProject() == null || sourceAnalysis.getEstimationProject().getId() == null) {
+            throw new IllegalArgumentException("El análisis de tamaño debe pertenecer a un proyecto persistido.");
         }
 
         if (sourceAnalysis.getCalculatedSizeValue() == null || sourceAnalysis.getCalculatedSizeValue() <= 0) {
-            throw new IllegalArgumentException("SIZE_ANALYSIS_VALUE_INVALID");
+            throw new IllegalArgumentException("El análisis de tamaño debe tener un tamaño calculado positivo.");
         }
 
         if (sourceAnalysis.getTechniqueCode() == null || sourceAnalysis.getTechniqueCode().isBlank()) {
-            throw new IllegalArgumentException("SIZE_ANALYSIS_TECHNIQUE_REQUIRED");
+            throw new IllegalArgumentException("El código de técnica de tamaño es obligatorio.");
         }
 
         if (sourceAnalysis.getSizeUnitCode() == null || sourceAnalysis.getSizeUnitCode().isBlank()) {
-            throw new IllegalArgumentException("SIZE_ANALYSIS_UNIT_REQUIRED");
+            throw new IllegalArgumentException("La unidad de tamaño es obligatoria.");
         }
     }
 
-    private void assertPositive(Double value, String errorCode) {
+    private void validateInitialConfiguration(Double acceptableDeviationPercentage,
+                                              Integer maximumIterations,
+                                              Integer expertCount) {
+        if (acceptableDeviationPercentage == null || acceptableDeviationPercentage <= 0 || acceptableDeviationPercentage > 100) {
+            throw new IllegalArgumentException("La desviación aceptable debe ser mayor que 0 y menor o igual que 100.");
+        }
+
+        if (maximumIterations == null || maximumIterations < 1) {
+            throw new IllegalArgumentException("El número máximo de iteraciones debe ser al menos 1.");
+        }
+
+        if (expertCount == null || expertCount < MINIMUM_EXPERT_COUNT) {
+            throw new IllegalArgumentException("El número de expertos debe ser al menos " + MINIMUM_EXPERT_COUNT + ".");
+        }
+    }
+
+    private void validateEffortValue(Double value, String fieldName) {
         if (value == null || value <= 0) {
-            throw new IllegalArgumentException(errorCode);
+            throw new IllegalArgumentException("El campo " + fieldName + " debe ser un valor positivo.");
         }
     }
 
     private void applyFinalCalibrationInternal(DelphiEstimation estimation,
                                                Double minimumModuleEstimatedEffortHours,
                                                Double maximumModuleEstimatedEffortHours) {
-        assertPositive(minimumModuleEstimatedEffortHours, "DELPHI_MINIMUM_EFFORT_INVALID");
-        assertPositive(maximumModuleEstimatedEffortHours, "DELPHI_MAXIMUM_EFFORT_INVALID");
+        validateEffortValue(minimumModuleEstimatedEffortHours, "minimumModuleEstimatedEffortHours");
+        validateEffortValue(maximumModuleEstimatedEffortHours, "maximumModuleEstimatedEffortHours");
 
         double minSize = estimation.getMinimumModuleSizeSnapshot();
         double maxSize = estimation.getMaximumModuleSizeSnapshot();
 
         if (Double.compare(minSize, maxSize) == 0) {
-            throw new IllegalStateException("DELPHI_REGRESSION_REQUIRES_DIFFERENT_SIZES");
+            throw new IllegalStateException("No se puede calcular la recta Delphi porque los tamaños mínimo y máximo coinciden.");
         }
 
         double slope =
@@ -409,38 +429,42 @@ public class DelphiEstimationService {
         estimation.setMaximumModuleEstimatedEffortHours(maximumModuleEstimatedEffortHours);
         estimation.setRegressionSlope(slope);
         estimation.setRegressionIntercept(intercept);
+        estimation.setOutdated(false);
     }
 
-    private void assertExtremeModules(ModuleReference minimumModule,
-                                      ModuleReference maximumModule) {
+    private void validateExtremeModules(ModuleReference minimumModule,
+                                        ModuleReference maximumModule) {
         if (minimumModule.moduleId().equals(maximumModule.moduleId())) {
-            throw new IllegalStateException("DELPHI_REQUIRES_TWO_DIFFERENT_MODULES");
+            throw new IllegalStateException("Delphi necesita al menos dos módulos distintos con tamaño calculado.");
         }
 
         if (Double.compare(minimumModule.moduleSize(), maximumModule.moduleSize()) == 0) {
-            throw new IllegalStateException("DELPHI_REQUIRES_DIFFERENT_EXTREME_SIZES");
+            throw new IllegalStateException("Delphi necesita módulos extremo con tamaños distintos para calcular la recta.");
         }
     }
 
-    private void assertEstimationOpenForIteration(DelphiEstimation estimation) {
+    private void validateEstimationForIteration(DelphiEstimation estimation) {
         if (Boolean.FALSE.equals(estimation.getActive())) {
-            throw new IllegalStateException("DELPHI_ESTIMATION_INACTIVE");
+            throw new IllegalStateException("No se puede registrar una iteración sobre una conversión Delphi inactiva.");
+        }
+
+        if (Boolean.TRUE.equals(estimation.getOutdated())) {
+            throw new IllegalStateException("No se puede registrar una iteración sobre una conversión Delphi desactualizada.");
         }
 
         if (isFinished(estimation)) {
-            throw new IllegalStateException("DELPHI_ESTIMATION_ALREADY_FINALIZED");
+            throw new IllegalStateException("La conversión Delphi ya tiene una función final calculada.");
         }
     }
 
-    private void assertCalibrationAvailable(DelphiEstimation estimation) {
-        if (!isFinished(estimation)) {
-            throw new IllegalStateException("DELPHI_CALIBRATION_NOT_AVAILABLE");
+    private void validateExpertEstimates(DelphiEstimation estimation,
+                                         List<DelphiExpertEstimate> expertEstimates) {
+        if (expertEstimates == null || expertEstimates.isEmpty()) {
+            throw new IllegalArgumentException("La iteración debe incluir estimaciones de expertos.");
         }
-    }
 
-    private void assertExpertEstimatesReady(List<DelphiExpertEstimate> expertEstimates) {
-        if (expertEstimates == null || expertEstimates.size() < 3) {
-            throw new IllegalArgumentException("DELPHI_EXPERT_ESTIMATES_MINIMUM_NOT_MET");
+        if (expertEstimates.size() != estimation.getExpertCount()) {
+            throw new IllegalArgumentException("La iteración debe incluir exactamente " + estimation.getExpertCount() + " expertos.");
         }
 
         Set<String> evaluatorAliases = new HashSet<>();
@@ -449,21 +473,21 @@ public class DelphiEstimationService {
             String alias = normalizeText(expertEstimate.getEvaluatorAlias());
 
             if (alias == null || alias.isBlank()) {
-                throw new IllegalArgumentException("DELPHI_EXPERT_ALIAS_REQUIRED");
+                throw new IllegalArgumentException("Cada estimación Delphi debe tener un alias de evaluador.");
             }
 
             if (!evaluatorAliases.add(alias.toLowerCase())) {
-                throw new IllegalArgumentException("DELPHI_EXPERT_ALIAS_DUPLICATED");
+                throw new IllegalArgumentException("No puede haber aliases de evaluador repetidos en la misma iteración.");
             }
 
-            assertPositive(
+            validateEffortValue(
                     expertEstimate.getMinimumModuleEstimatedEffortHours(),
-                    "DELPHI_MINIMUM_MODULE_EFFORT_INVALID"
+                    "minimumModuleEstimatedEffortHours"
             );
 
-            assertPositive(
+            validateEffortValue(
                     expertEstimate.getMaximumModuleEstimatedEffortHours(),
-                    "DELPHI_MAXIMUM_MODULE_EFFORT_INVALID"
+                    "maximumModuleEstimatedEffortHours"
             );
         }
     }
@@ -488,20 +512,20 @@ public class DelphiEstimationService {
         double min = values.stream()
                 .mapToDouble(Double::doubleValue)
                 .min()
-                .orElseThrow(() -> new IllegalStateException("DELPHI_DEVIATION_VALUES_EMPTY"));
+                .orElseThrow(() -> new IllegalStateException("No hay valores para calcular la desviación."));
 
         double max = values.stream()
                 .mapToDouble(Double::doubleValue)
                 .max()
-                .orElseThrow(() -> new IllegalStateException("DELPHI_DEVIATION_VALUES_EMPTY"));
+                .orElseThrow(() -> new IllegalStateException("No hay valores para calcular la desviación."));
 
         double average = values.stream()
                 .mapToDouble(Double::doubleValue)
                 .average()
-                .orElseThrow(() -> new IllegalStateException("DELPHI_DEVIATION_VALUES_EMPTY"));
+                .orElseThrow(() -> new IllegalStateException("No hay valores para calcular la desviación."));
 
         if (Double.compare(average, 0.0) == 0) {
-            throw new IllegalStateException("DELPHI_DEVIATION_AVERAGE_ZERO");
+            throw new IllegalStateException("No se puede calcular la desviación con media cero.");
         }
 
         return ((max - min) / average) * 100.0;
@@ -511,14 +535,14 @@ public class DelphiEstimationService {
         return expertEstimates.stream()
                 .mapToDouble(DelphiExpertEstimate::getMinimumModuleEstimatedEffortHours)
                 .average()
-                .orElseThrow(() -> new IllegalStateException("DELPHI_MINIMUM_MODULE_AVERAGE_NOT_AVAILABLE"));
+                .orElseThrow(() -> new IllegalStateException("No hay estimaciones para calcular el esfuerzo medio del módulo mínimo."));
     }
 
     private double calculateAverageMaximumModuleEffort(List<DelphiExpertEstimate> expertEstimates) {
         return expertEstimates.stream()
                 .mapToDouble(DelphiExpertEstimate::getMaximumModuleEstimatedEffortHours)
                 .average()
-                .orElseThrow(() -> new IllegalStateException("DELPHI_MAXIMUM_MODULE_AVERAGE_NOT_AVAILABLE"));
+                .orElseThrow(() -> new IllegalStateException("No hay estimaciones para calcular el esfuerzo medio del módulo máximo."));
     }
 
     private String normalizeText(String value) {

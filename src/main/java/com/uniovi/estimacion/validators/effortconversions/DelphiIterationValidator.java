@@ -3,6 +3,7 @@ package com.uniovi.estimacion.validators.effortconversions;
 import com.uniovi.estimacion.web.forms.effortconversions.DelphiExpertEstimateForm;
 import com.uniovi.estimacion.web.forms.effortconversions.DelphiIterationForm;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
@@ -13,7 +14,7 @@ import java.util.Set;
 @Component
 public class DelphiIterationValidator implements Validator {
 
-    private static final int MIN_EXPERTS = 3;
+    private static final int MINIMUM_EXPERT_COUNT = 3;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -24,103 +25,142 @@ public class DelphiIterationValidator implements Validator {
     public void validate(Object target, Errors errors) {
         DelphiIterationForm form = (DelphiIterationForm) target;
 
+        Integer expectedExpertCount = form.getExpectedExpertCount();
         List<DelphiExpertEstimateForm> expertEstimates = form.getExpertEstimates();
 
-        if (expertEstimates == null || expertEstimates.size() < MIN_EXPERTS) {
-            errors.reject(
-                    "delphi.validation.expertEstimates.minimum"
-            );
+        validateExpectedExpertCount(expectedExpertCount, errors);
+        validateExpertEstimateCollection(expectedExpertCount, expertEstimates, errors);
+
+        if (errors.hasErrors()) {
             return;
         }
 
         validateExpertEstimates(expertEstimates, errors);
     }
 
-    private void validateExpertEstimates(List<DelphiExpertEstimateForm> expertEstimates, Errors errors) {
-        Set<String> normalizedAliases = new HashSet<>();
-
-        for (int i = 0; i < expertEstimates.size(); i++) {
-            DelphiExpertEstimateForm expertEstimate = expertEstimates.get(i);
-            String fieldPrefix = "expertEstimates[" + i + "]";
-
-            validateEvaluatorAlias(expertEstimate, fieldPrefix, normalizedAliases, errors);
-            validateMinimumModuleEstimatedEffortHours(expertEstimate, fieldPrefix, errors);
-            validateMaximumModuleEstimatedEffortHours(expertEstimate, fieldPrefix, errors);
-        }
-    }
-
-    private void validateEvaluatorAlias(DelphiExpertEstimateForm expertEstimate,
-                                        String fieldPrefix,
-                                        Set<String> normalizedAliases,
-                                        Errors errors) {
-        String alias = normalize(expertEstimate.getEvaluatorAlias());
-
-        if (alias == null) {
-            errors.rejectValue(
-                    fieldPrefix + ".evaluatorAlias",
-                    "delphi.validation.evaluatorAlias.required"
+    private void validateExpectedExpertCount(Integer expectedExpertCount, Errors errors) {
+        if (expectedExpertCount == null) {
+            errors.reject(
+                    "delphi.validation.expectedExpertCount.required"
             );
             return;
         }
 
-        String normalizedAlias = alias.toLowerCase();
+        if (expectedExpertCount < MINIMUM_EXPERT_COUNT) {
+            errors.reject(
+                    "delphi.validation.expectedExpertCount.min",
+                    new Object[]{MINIMUM_EXPERT_COUNT},
+                    null
+            );
+        }
+    }
 
-        if (!normalizedAliases.add(normalizedAlias)) {
+    private void validateExpertEstimateCollection(Integer expectedExpertCount,
+                                                  List<DelphiExpertEstimateForm> expertEstimates,
+                                                  Errors errors) {
+        if (expertEstimates == null || expertEstimates.isEmpty()) {
+            errors.reject(
+                    "delphi.validation.expertEstimates.required"
+            );
+            return;
+        }
+
+        if (expectedExpertCount != null && expertEstimates.size() != expectedExpertCount) {
+            errors.reject(
+                    "delphi.validation.expertEstimates.count",
+                    new Object[]{expectedExpertCount},
+                    null
+            );
+        }
+    }
+
+    private void validateExpertEstimates(List<DelphiExpertEstimateForm> expertEstimates, Errors errors) {
+        Set<String> aliases = new HashSet<>();
+
+        for (int i = 0; i < expertEstimates.size(); i++) {
+            DelphiExpertEstimateForm expertEstimate = expertEstimates.get(i);
+
+            if (expertEstimate == null) {
+                errors.rejectValue(
+                        "expertEstimates[" + i + "]",
+                        "delphi.validation.expertEstimates.row.required"
+                );
+                continue;
+            }
+
+            validateEvaluatorAlias(expertEstimate, i, aliases, errors);
+            validateMinimumModuleEstimatedEffortHours(expertEstimate, i, errors);
+            validateMaximumModuleEstimatedEffortHours(expertEstimate, i, errors);
+        }
+    }
+
+    private void validateEvaluatorAlias(DelphiExpertEstimateForm expertEstimate,
+                                        int index,
+                                        Set<String> aliases,
+                                        Errors errors) {
+        String evaluatorAlias = normalize(expertEstimate.getEvaluatorAlias());
+
+        if (!StringUtils.hasText(evaluatorAlias)) {
             errors.rejectValue(
-                    fieldPrefix + ".evaluatorAlias",
-                    "delphi.validation.evaluatorAlias.duplicated"
+                    "expertEstimates[" + index + "].evaluatorAlias",
+                    "delphi.validation.expertEstimate.evaluatorAlias.required"
+            );
+            return;
+        }
+
+        String normalizedAliasKey = evaluatorAlias.toLowerCase();
+
+        if (!aliases.add(normalizedAliasKey)) {
+            errors.rejectValue(
+                    "expertEstimates[" + index + "].evaluatorAlias",
+                    "delphi.validation.expertEstimate.evaluatorAlias.duplicate"
             );
         }
     }
 
     private void validateMinimumModuleEstimatedEffortHours(DelphiExpertEstimateForm expertEstimate,
-                                                           String fieldPrefix,
+                                                           int index,
                                                            Errors errors) {
         Double value = expertEstimate.getMinimumModuleEstimatedEffortHours();
 
         if (value == null) {
             errors.rejectValue(
-                    fieldPrefix + ".minimumModuleEstimatedEffortHours",
-                    "delphi.validation.minimumModuleEstimatedEffortHours.required"
+                    "expertEstimates[" + index + "].minimumModuleEstimatedEffortHours",
+                    "delphi.validation.expertEstimate.minimumModuleEstimatedEffortHours.required"
             );
             return;
         }
 
         if (value <= 0) {
             errors.rejectValue(
-                    fieldPrefix + ".minimumModuleEstimatedEffortHours",
-                    "delphi.validation.minimumModuleEstimatedEffortHours.positive"
+                    "expertEstimates[" + index + "].minimumModuleEstimatedEffortHours",
+                    "delphi.validation.expertEstimate.minimumModuleEstimatedEffortHours.positive"
             );
         }
     }
 
     private void validateMaximumModuleEstimatedEffortHours(DelphiExpertEstimateForm expertEstimate,
-                                                           String fieldPrefix,
+                                                           int index,
                                                            Errors errors) {
         Double value = expertEstimate.getMaximumModuleEstimatedEffortHours();
 
         if (value == null) {
             errors.rejectValue(
-                    fieldPrefix + ".maximumModuleEstimatedEffortHours",
-                    "delphi.validation.maximumModuleEstimatedEffortHours.required"
+                    "expertEstimates[" + index + "].maximumModuleEstimatedEffortHours",
+                    "delphi.validation.expertEstimate.maximumModuleEstimatedEffortHours.required"
             );
             return;
         }
 
         if (value <= 0) {
             errors.rejectValue(
-                    fieldPrefix + ".maximumModuleEstimatedEffortHours",
-                    "delphi.validation.maximumModuleEstimatedEffortHours.positive"
+                    "expertEstimates[" + index + "].maximumModuleEstimatedEffortHours",
+                    "delphi.validation.expertEstimate.maximumModuleEstimatedEffortHours.positive"
             );
         }
     }
 
     private String normalize(String value) {
-        if (value == null) {
-            return null;
-        }
-
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+        return value == null ? null : value.trim();
     }
 }

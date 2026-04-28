@@ -133,9 +133,9 @@ public class DelphiEstimationController {
                 analysis,
                 modulesList,
                 moduleSizeById,
-                createForm.getConfidencePercentage(),
                 createForm.getAcceptableDeviationPercentage(),
-                createForm.getMaximumIterations()
+                createForm.getMaximumIterations(),
+                createForm.getExpertCount()
         );
 
         return redirectToIterationAdd(projectId, estimation.getId());
@@ -235,7 +235,7 @@ public class DelphiEstimationController {
         }
 
         DelphiIterationForm iterationForm = new DelphiIterationForm();
-        ensureMinimumExpertRows(iterationForm, 3);
+        initializeIterationForm(iterationForm, estimation.getExpertCount());
 
         loadIterationFormModel(optionalProject.get(), estimation, iterationForm, model);
         return "effortconversions/delphi/iteration-add";
@@ -266,10 +266,11 @@ public class DelphiEstimationController {
             return redirectToDelphiDetails(projectId, delphiEstimationId);
         }
 
+        iterationForm.setExpectedExpertCount(estimation.getExpertCount());
         delphiIterationValidator.validate(iterationForm, result);
 
         if (result.hasErrors()) {
-            ensureMinimumExpertRows(iterationForm, 3);
+            initializeIterationForm(iterationForm, estimation.getExpertCount());
             loadIterationFormModel(optionalProject.get(), estimation, iterationForm, model);
             return "effortconversions/delphi/iteration-add";
         }
@@ -282,6 +283,58 @@ public class DelphiEstimationController {
 
         return redirectToDelphiDetails(projectId, delphiEstimationId);
     }
+
+    @GetMapping("/{delphiEstimationId}/delete")
+    public String deleteEstimation(@PathVariable Long projectId,
+                                   @PathVariable Long delphiEstimationId) {
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+
+        if (optionalProject.isEmpty()) {
+            return redirectToProjects();
+        }
+
+        delphiEstimationService.deleteByIdAndProjectId(delphiEstimationId, projectId);
+
+        return redirectToFunctionPointDetails(projectId);
+    }
+
+    @GetMapping("/{delphiEstimationId}/iterations/{iterationNumber}")
+    public String getIterationDetails(@PathVariable Long projectId,
+                                      @PathVariable Long delphiEstimationId,
+                                      @PathVariable Integer iterationNumber,
+                                      Model model) {
+        Optional<EstimationProject> optionalProject =
+                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<DelphiEstimation> optionalEstimation =
+                delphiEstimationService.findDetailedByIdAndProjectId(delphiEstimationId, projectId);
+
+        if (optionalProject.isEmpty()) {
+            return redirectToProjects();
+        }
+
+        if (optionalEstimation.isEmpty()) {
+            return redirectToFunctionPointDetails(projectId);
+        }
+
+        DelphiEstimation estimation = optionalEstimation.get();
+
+        Optional<com.uniovi.estimacion.entities.effortconversions.DelphiIteration> optionalIteration =
+                estimation.getIterations().stream()
+                        .filter(iteration -> iteration.getIterationNumber().equals(iterationNumber))
+                        .findFirst();
+
+        if (optionalIteration.isEmpty()) {
+            return redirectToDelphiDetails(projectId, delphiEstimationId);
+        }
+
+        model.addAttribute("project", optionalProject.get());
+        model.addAttribute("estimation", estimation);
+        model.addAttribute("iteration", optionalIteration.get());
+
+        return "effortconversions/delphi/iteration-details";
+    }
+
 
     private void loadCreateFormModel(EstimationProject project,
                                      FunctionPointAnalysis analysis,
@@ -322,8 +375,10 @@ public class DelphiEstimationController {
         return entity;
     }
 
-    private void ensureMinimumExpertRows(DelphiIterationForm iterationForm, int minimumRows) {
-        while (iterationForm.getExpertEstimates().size() < minimumRows) {
+    private void initializeIterationForm(DelphiIterationForm iterationForm, int expectedExpertCount) {
+        iterationForm.setExpectedExpertCount(expectedExpertCount);
+
+        while (iterationForm.getExpertEstimates().size() < expectedExpertCount) {
             iterationForm.getExpertEstimates().add(new DelphiExpertEstimateForm());
         }
     }

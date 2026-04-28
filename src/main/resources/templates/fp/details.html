@@ -310,10 +310,10 @@
                             <a class="btn btn-outline-primary"
                                th:href="@{/projects/{projectId}/function-points/delphi/access(projectId=${project.id})}"
                                th:text="${activeDelphiEstimation == null}
-                                    ? #{fp.delphi.action.start}
-                                    : (activeDelphiEstimation.regressionIntercept == null
-                                        ? #{fp.delphi.action.continue}
-                                        : #{fp.delphi.action.details})">
+                        ? #{fp.delphi.action.start}
+                        : (activeDelphiEstimation.regressionIntercept == null
+                            ? #{fp.delphi.action.continue}
+                            : #{fp.delphi.action.details})">
                                 Delphi
                             </a>
                         </div>
@@ -328,37 +328,38 @@
                             <p class="mb-2">
                                 <strong th:text="#{fp.delphi.field.status}">Estado</strong>:
                                 <span th:if="${activeDelphiEstimation.regressionIntercept == null}"
+                                      class="badge badge-primary"
                                       th:text="#{fp.delphi.status.inProgress}">
-                                    En progreso
-                                </span>
+                        En progreso
+                    </span>
                                 <span th:if="${activeDelphiEstimation.regressionIntercept != null}"
+                                      class="badge badge-success"
                                       th:text="#{fp.delphi.status.finished}">
-                                    Finalizada
-                                </span>
+                        Finalizada
+                    </span>
                             </p>
 
                             <p class="mb-2">
-                                <strong th:text="#{fp.delphi.field.minimumModule}">Módulo mínimo</strong>:
-                                <span th:text="${activeDelphiEstimation.minimumModuleNameSnapshot}">Mínimo</span>
-                                (<span th:text="${#numbers.formatDecimal(activeDelphiEstimation.minimumModuleSizeSnapshot, 1, 2)}">0.00</span>)
+                                <strong th:text="#{fp.delphi.field.iterations}">Iteraciones registradas</strong>:
+                                <span th:text="${activeDelphiIterationsCount}">0</span>
                             </p>
 
                             <p class="mb-2">
-                                <strong th:text="#{fp.delphi.field.maximumModule}">Módulo máximo</strong>:
-                                <span th:text="${activeDelphiEstimation.maximumModuleNameSnapshot}">Máximo</span>
-                                (<span th:text="${#numbers.formatDecimal(activeDelphiEstimation.maximumModuleSizeSnapshot, 1, 2)}">0.00</span>)
+                                <strong th:text="#{fp.delphi.field.maximumIterations}">Número máximo de iteraciones</strong>:
+                                <span th:text="${activeDelphiEstimation.maximumIterations}">2</span>
                             </p>
 
                             <p class="mb-3">
-                                <strong th:text="#{fp.delphi.field.iterations}">Iteraciones registradas</strong>:
-                                <span th:text="${activeDelphiIterationsCount}">0</span>
+                                <strong th:text="#{fp.delphi.field.acceptableDeviationPercentage}">Desviación aceptable (%)</strong>:
+                                <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.acceptableDeviationPercentage, 1, 2)}">10.00</span>
+                                %
                             </p>
 
                             <div th:if="${activeDelphiEstimation.regressionIntercept != null and delphiEstimatedTotalHours != null}"
                                  class="border rounded p-3 bg-light">
                                 <p class="card-text mb-1">
                                     <strong th:text="${#numbers.formatDecimal(delphiEstimatedTotalHours, 1, 2)}">0.00</strong>
-                                    <span th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</span>
+                                    <strong th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</strong>
                                 </p>
 
                                 <small class="text-muted d-block">

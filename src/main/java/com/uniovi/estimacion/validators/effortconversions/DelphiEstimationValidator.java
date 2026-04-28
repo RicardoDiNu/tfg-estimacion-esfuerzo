@@ -8,10 +8,7 @@ import org.springframework.validation.Validator;
 @Component
 public class DelphiEstimationValidator implements Validator {
 
-    private static final double MIN_CONFIDENCE = 0.0;
-    private static final double MAX_CONFIDENCE = 100.0;
-    private static final double MIN_ACCEPTABLE_DEVIATION = 0.0;
-    private static final int MIN_MAXIMUM_ITERATIONS = 1;
+    private static final int MINIMUM_EXPERT_COUNT = 3;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -22,46 +19,33 @@ public class DelphiEstimationValidator implements Validator {
     public void validate(Object target, Errors errors) {
         DelphiEstimationCreateForm form = (DelphiEstimationCreateForm) target;
 
-        validateConfidencePercentage(form.getConfidencePercentage(), errors);
-        validateAcceptableDeviationPercentage(form.getAcceptableDeviationPercentage(), errors);
-        validateMaximumIterations(form.getMaximumIterations(), errors);
+        validateAcceptableDeviationPercentage(form, errors);
+        validateMaximumIterations(form, errors);
+        validateExpertCount(form, errors);
     }
 
-    private void validateConfidencePercentage(Double confidencePercentage, Errors errors) {
-        if (confidencePercentage == null) {
-            errors.rejectValue(
-                    "confidencePercentage",
-                    "delphi.validation.confidence.required"
-            );
-            return;
-        }
+    private void validateAcceptableDeviationPercentage(DelphiEstimationCreateForm form, Errors errors) {
+        Double acceptableDeviationPercentage = form.getAcceptableDeviationPercentage();
 
-        if (confidencePercentage < MIN_CONFIDENCE || confidencePercentage > MAX_CONFIDENCE) {
-            errors.rejectValue(
-                    "confidencePercentage",
-                    "delphi.validation.confidence.range"
-            );
-        }
-    }
-
-    private void validateAcceptableDeviationPercentage(Double acceptableDeviationPercentage, Errors errors) {
         if (acceptableDeviationPercentage == null) {
             errors.rejectValue(
                     "acceptableDeviationPercentage",
-                    "delphi.validation.acceptableDeviation.required"
+                    "delphi.validation.acceptableDeviationPercentage.required"
             );
             return;
         }
 
-        if (acceptableDeviationPercentage <= MIN_ACCEPTABLE_DEVIATION) {
+        if (acceptableDeviationPercentage <= 0 || acceptableDeviationPercentage > 100) {
             errors.rejectValue(
                     "acceptableDeviationPercentage",
-                    "delphi.validation.acceptableDeviation.positive"
+                    "delphi.validation.acceptableDeviationPercentage.range"
             );
         }
     }
 
-    private void validateMaximumIterations(Integer maximumIterations, Errors errors) {
+    private void validateMaximumIterations(DelphiEstimationCreateForm form, Errors errors) {
+        Integer maximumIterations = form.getMaximumIterations();
+
         if (maximumIterations == null) {
             errors.rejectValue(
                     "maximumIterations",
@@ -70,10 +54,31 @@ public class DelphiEstimationValidator implements Validator {
             return;
         }
 
-        if (maximumIterations < MIN_MAXIMUM_ITERATIONS) {
+        if (maximumIterations < 1) {
             errors.rejectValue(
                     "maximumIterations",
                     "delphi.validation.maximumIterations.min"
+            );
+        }
+    }
+
+    private void validateExpertCount(DelphiEstimationCreateForm form, Errors errors) {
+        Integer expertCount = form.getExpertCount();
+
+        if (expertCount == null) {
+            errors.rejectValue(
+                    "expertCount",
+                    "delphi.validation.expertCount.required"
+            );
+            return;
+        }
+
+        if (expertCount < MINIMUM_EXPERT_COUNT) {
+            errors.rejectValue(
+                    "expertCount",
+                    "delphi.validation.expertCount.min",
+                    new Object[]{MINIMUM_EXPERT_COUNT},
+                    null
             );
         }
     }
