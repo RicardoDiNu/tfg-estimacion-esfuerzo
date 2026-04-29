@@ -1,12 +1,11 @@
 package com.uniovi.estimacion.entities.effortconversions;
 
-import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.common.codes.EffortConversionTechniqueCodes;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,27 +14,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class DelphiEstimation {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "estimation_project_id", nullable = false)
-    private EstimationProject estimationProject;
-
-    @Column(nullable = false)
-    private Long sourceAnalysisId;
-
-    @Column(nullable = false, length = 50)
-    private String sourceTechniqueCode;
-
-    @Column(nullable = false, length = 30)
-    private String sourceSizeUnitCode;
-
-    @Column(nullable = false)
-    private Double sourceProjectSizeSnapshot;
+public class DelphiEstimation extends AbstractEffortConversion {
 
     @Column(nullable = false)
     private Long minimumModuleId;
@@ -76,20 +55,18 @@ public class DelphiEstimation {
     @Column(nullable = false)
     private Integer expertCount = 3;
 
-    @Column(nullable = false)
-    private Boolean active = true;
-
-    @Column(nullable = false)
-    private Boolean outdated = false;
-
     @OneToMany(mappedBy = "delphiEstimation", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DelphiIteration> iterations = new ArrayList<>();
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Override
+    public String getConversionTechniqueCode() {
+        return EffortConversionTechniqueCodes.DELPHI;
+    }
 
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    @Override
+    public boolean isFinished() {
+        return regressionIntercept != null && regressionSlope != null;
+    }
 
     public void addIteration(DelphiIteration iteration) {
         iteration.setDelphiEstimation(this);
@@ -99,17 +76,5 @@ public class DelphiEstimation {
     public void removeIteration(DelphiIteration iteration) {
         this.iterations.remove(iteration);
         iteration.setDelphiEstimation(null);
-    }
-
-    @PrePersist
-    public void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-    }
-
-    @PreUpdate
-    public void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
     }
 }

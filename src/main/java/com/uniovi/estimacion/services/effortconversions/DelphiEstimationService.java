@@ -4,14 +4,8 @@ import com.uniovi.estimacion.entities.analysis.SizeAnalysis;
 import com.uniovi.estimacion.entities.effortconversions.DelphiEstimation;
 import com.uniovi.estimacion.entities.effortconversions.DelphiExpertEstimate;
 import com.uniovi.estimacion.entities.effortconversions.DelphiIteration;
-import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
-import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.repositories.effortconversions.DelphiEstimationRepository;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisSummary;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
@@ -19,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,34 +87,10 @@ public class DelphiEstimationService {
     }
 
     public boolean isFinished(DelphiEstimation estimation) {
-        return estimation.getRegressionIntercept() != null && estimation.getRegressionSlope() != null;
+        return estimation != null && estimation.isFinished();
     }
 
-    public Map<Long, Double> buildModuleSizeById(FunctionPointAnalysis analysis,
-                                                 List<EstimationModule> modulesList,
-                                                 FunctionPointAnalysisService functionPointAnalysisService,
-                                                 FunctionPointCalculationService functionPointCalculationService) {
-        Map<Long, Double> moduleSizeById = new LinkedHashMap<>();
 
-        for (EstimationModule module : modulesList) {
-            List<DataFunction> moduleDataFunctions =
-                    functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
-
-            List<TransactionalFunction> moduleTransactionalFunctions =
-                    functionPointAnalysisService.findAllTransactionalFunctionsByModuleId(module.getId());
-
-            FunctionPointAnalysisSummary moduleSummary =
-                    functionPointCalculationService.buildModuleSummary(
-                            analysis,
-                            moduleDataFunctions,
-                            moduleTransactionalFunctions
-                    );
-
-            moduleSizeById.put(module.getId(), moduleSummary.getAdjustedFunctionPoints());
-        }
-
-        return moduleSizeById;
-    }
 
     @Transactional
     public DelphiEstimation createInitialEstimation(SizeAnalysis sourceAnalysis,
@@ -248,11 +217,12 @@ public class DelphiEstimationService {
             throw new IllegalStateException("La conversión Delphi todavía no tiene una función lineal calculada.");
         }
 
-        if (moduleSize == null || moduleSize < 0) {
-            throw new IllegalArgumentException("El tamaño del módulo debe ser un valor no negativo.");
-        }
+        LinearEffortModel model = new LinearEffortModel(
+                estimation.getRegressionIntercept(),
+                estimation.getRegressionSlope()
+        );
 
-        return estimation.getRegressionIntercept() + (estimation.getRegressionSlope() * moduleSize);
+        return model.estimate(moduleSize);
     }
 
     public double calculateTotalEstimatedEffortHours(DelphiEstimation estimation,
@@ -419,16 +389,17 @@ public class DelphiEstimationService {
             throw new IllegalStateException("No se puede calcular la recta Delphi porque los tamaños mínimo y máximo coinciden.");
         }
 
-        double slope =
-                (maximumModuleEstimatedEffortHours - minimumModuleEstimatedEffortHours) / (maxSize - minSize);
-
-        double intercept =
-                minimumModuleEstimatedEffortHours - (slope * minSize);
+        LinearEffortModel model = LinearEffortModel.fromTwoPoints(
+                minSize,
+                minimumModuleEstimatedEffortHours,
+                maxSize,
+                maximumModuleEstimatedEffortHours
+        );
 
         estimation.setMinimumModuleEstimatedEffortHours(minimumModuleEstimatedEffortHours);
         estimation.setMaximumModuleEstimatedEffortHours(maximumModuleEstimatedEffortHours);
-        estimation.setRegressionSlope(slope);
-        estimation.setRegressionIntercept(intercept);
+        estimation.setRegressionSlope(model.slope());
+        estimation.setRegressionIntercept(model.intercept());
         estimation.setOutdated(false);
     }
 

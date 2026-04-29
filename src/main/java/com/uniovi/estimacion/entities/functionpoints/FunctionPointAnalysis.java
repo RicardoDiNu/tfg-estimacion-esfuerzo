@@ -1,5 +1,7 @@
 package com.uniovi.estimacion.entities.functionpoints;
 
+import com.uniovi.estimacion.common.codes.SizeTechniqueCodes;
+import com.uniovi.estimacion.common.codes.SizeUnitCodes;
 import com.uniovi.estimacion.entities.analysis.AbstractSizeAnalysis;
 import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
@@ -59,11 +61,11 @@ public class FunctionPointAnalysis extends AbstractSizeAnalysis {
 
     @Override
     public String getSizeUnitCode() {
-        return "PF";
+        return SizeUnitCodes.FP;
     }
 
     @Override
     public String getTechniqueCode() {
-        return "FUNCTION_POINTS";
+        return SizeTechniqueCodes.FUNCTION_POINTS;
     }
 }

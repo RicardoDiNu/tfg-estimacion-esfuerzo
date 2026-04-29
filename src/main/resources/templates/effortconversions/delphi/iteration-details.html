@@ -105,9 +105,10 @@
     </div>
 
     <a class="btn btn-secondary"
-       th:href="@{/projects/{projectId}/function-points/delphi/{delphiEstimationId}(
-               projectId=${project.id},
-               delphiEstimationId=${estimation.id})}"
+       th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}(
+        projectId=${project.id},
+        sourceTechniqueCode=${sourceTechniqueCode},
+        delphiEstimationId=${estimation.id})}"
        th:text="#{delphi.iteration.details.back}">
       Volver al detalle de la conversión
     </a>

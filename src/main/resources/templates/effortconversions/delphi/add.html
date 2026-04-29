@@ -76,7 +76,7 @@
         </div>
 
         <form method="post"
-              th:action="@{/projects/{projectId}/function-points/delphi/add(projectId=${project.id})}"
+              th:action="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/add(projectId=${project.id}, sourceTechniqueCode=${sourceTechniqueCode})}"
               th:object="${createForm}">
 
             <div class="form-group">
@@ -145,7 +145,7 @@
             </button>
 
             <a class="btn btn-secondary"
-               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
+               th:href="${sourceAnalysisDetailsPath}"
                th:text="#{common.action.back}">
                 Volver
             </a>

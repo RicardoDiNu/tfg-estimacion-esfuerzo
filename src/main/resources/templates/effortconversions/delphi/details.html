@@ -97,7 +97,6 @@
                         <thead>
                         <tr>
                             <th th:text="#{delphi.details.iterations.field.number}">Nº</th>
-                            <th th:text="#{delphi.details.iterations.field.experts}">Expertos</th>
                             <th th:text="#{delphi.details.iterations.field.minimumDeviation}">Desv. módulo mínimo</th>
                             <th th:text="#{delphi.details.iterations.field.maximumDeviation}">Desv. módulo máximo</th>
                             <th th:text="#{delphi.details.iterations.field.acceptedByDeviation}">Aceptada por desviación</th>
@@ -108,17 +107,17 @@
                         <tbody>
                         <tr th:each="iteration : ${estimation.iterations}">
                             <td th:text="${iteration.iterationNumber}">1</td>
-                            <td th:text="${iteration.expertEstimates.size()}">3</td>
                             <td th:text="${#numbers.formatDecimal(iteration.minimumModuleDeviationPercentage, 1, 2)} + ' %'">0.00 %</td>
                             <td th:text="${#numbers.formatDecimal(iteration.maximumModuleDeviationPercentage, 1, 2)} + ' %'">0.00 %</td>
                             <td th:text="${iteration.acceptedByDeviation ? #messages.msg('common.boolean.yes') : #messages.msg('common.boolean.no')}">No</td>
                             <td th:text="${iteration.acceptedAsLastIteration ? #messages.msg('common.boolean.yes') : #messages.msg('common.boolean.no')}">No</td>
                             <td>
                                 <a class="btn btn-sm btn-outline-primary"
-                                   th:href="@{/projects/{projectId}/function-points/delphi/{delphiEstimationId}/iterations/{iterationNumber}(
-                                       projectId=${project.id},
-                                       delphiEstimationId=${estimation.id},
-                                       iterationNumber=${iteration.iterationNumber})}"
+                                   th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/iterations/{iterationNumber}(
+                                    projectId=${project.id},
+                                    sourceTechniqueCode=${sourceTechniqueCode},
+                                    delphiEstimationId=${estimation.id},
+                                    iterationNumber=${iteration.iterationNumber})}"
                                    th:text="#{project.action.details}">
                                     Ver detalle
                                 </a>
@@ -130,9 +129,10 @@
 
                 <div class="mt-3" th:if="${canAddIteration}">
                     <a class="btn btn-outline-primary"
-                       th:href="@{/projects/{projectId}/function-points/delphi/{delphiEstimationId}/iterations/add(
-                           projectId=${project.id},
-                           delphiEstimationId=${estimation.id})}"
+                       th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/iterations/add(
+                        projectId=${project.id},
+                        sourceTechniqueCode=${sourceTechniqueCode},
+                        delphiEstimationId=${estimation.id})}"
                        th:text="#{delphi.details.iterations.add}">
                         Registrar nueva iteración
                     </a>
@@ -236,16 +236,17 @@
 
         <div class="mt-4">
             <a class="btn btn-danger mr-2"
-               th:href="@{/projects/{projectId}/function-points/delphi/{delphiEstimationId}/delete(
-           projectId=${project.id},
-           delphiEstimationId=${estimation.id})}"
+               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/delete(
+                projectId=${project.id},
+                sourceTechniqueCode=${sourceTechniqueCode},
+                delphiEstimationId=${estimation.id})}"
                th:onclick="|return confirm('#{delphi.confirm.delete}');|"
                th:text="#{project.action.delete}">
                 Eliminar
             </a>
 
             <a class="btn btn-secondary"
-               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
+               th:href="${sourceAnalysisDetailsPath}"
                th:text="#{fp.details.back}">
                 Volver al análisis PF
             </a>

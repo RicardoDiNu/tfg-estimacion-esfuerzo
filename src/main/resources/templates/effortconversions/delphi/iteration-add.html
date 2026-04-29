@@ -39,9 +39,10 @@
         </div>
 
         <form method="post"
-              th:action="@{/projects/{projectId}/function-points/delphi/{delphiEstimationId}/iterations/add(
-                  projectId=${project.id},
-                  delphiEstimationId=${estimation.id})}"
+              th:action="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/iterations/add(
+                projectId=${project.id},
+                sourceTechniqueCode=${sourceTechniqueCode},
+                delphiEstimationId=${estimation.id})}"
               th:object="${iterationForm}">
 
             <input type="hidden" th:field="*{expectedExpertCount}"/>
@@ -120,9 +121,10 @@
             </button>
 
             <a class="btn btn-secondary"
-               th:href="@{/projects/{projectId}/function-points/delphi/{delphiEstimationId}(
-                   projectId=${project.id},
-                   delphiEstimationId=${estimation.id})}"
+               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}(
+                projectId=${project.id},
+                sourceTechniqueCode=${sourceTechniqueCode},
+                delphiEstimationId=${estimation.id})}"
                th:text="#{common.action.cancel}">
                 Cancelar
             </a>

@@ -1,13 +1,14 @@
 package com.uniovi.estimacion.controllers;
 
+import com.uniovi.estimacion.entities.analysis.SizeAnalysis;
 import com.uniovi.estimacion.entities.effortconversions.DelphiEstimation;
 import com.uniovi.estimacion.entities.effortconversions.DelphiExpertEstimate;
-import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.effortconversions.DelphiIteration;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.services.analysis.SizeAnalysisProvider;
+import com.uniovi.estimacion.services.analysis.SizeAnalysisProviderRegistry;
 import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.validators.effortconversions.DelphiEstimationValidator;
@@ -21,66 +22,74 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/projects/{projectId}/function-points/delphi")
+@RequestMapping("/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi")
 @RequiredArgsConstructor
 public class DelphiEstimationController {
 
     private final EstimationProjectService estimationProjectService;
-    private final FunctionPointAnalysisService functionPointAnalysisService;
-    private final FunctionPointCalculationService functionPointCalculationService;
     private final EstimationModuleService estimationModuleService;
     private final DelphiEstimationService delphiEstimationService;
     private final DelphiEstimationValidator delphiEstimationValidator;
     private final DelphiIterationValidator delphiIterationValidator;
+    private final SizeAnalysisProviderRegistry sizeAnalysisProviderRegistry;
 
     @GetMapping("/access")
-    public String accessDelphi(@PathVariable Long projectId) {
+    public String accessDelphi(@PathVariable Long projectId,
+                               @PathVariable String sourceTechniqueCode) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis =
-                functionPointAnalysisService.findDetailedByProjectId(projectId);
+        Optional<? extends SizeAnalysis> optionalAnalysis =
+                findSourceAnalysis(projectId, sourceTechniqueCode);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
         }
 
         if (optionalAnalysis.isEmpty()) {
-            return redirectToFunctionPointAdd(projectId);
+            return redirectToSourceAnalysisAdd(projectId, sourceTechniqueCode);
         }
 
         Optional<DelphiEstimation> optionalActiveEstimation =
                 delphiEstimationService.findActiveBySourceAnalysis(optionalAnalysis.get());
 
         if (optionalActiveEstimation.isPresent()) {
-            return redirectToDelphiDetails(projectId, optionalActiveEstimation.get().getId());
+            return redirectToDelphiDetails(
+                    projectId,
+                    sourceTechniqueCode,
+                    optionalActiveEstimation.get().getId()
+            );
         }
 
-        return redirectToDelphiAdd(projectId);
+        return redirectToDelphiAdd(projectId, sourceTechniqueCode);
     }
 
     @GetMapping("/add")
-    public String getCreateForm(@PathVariable Long projectId, Model model) {
+    public String getCreateForm(@PathVariable Long projectId,
+                                @PathVariable String sourceTechniqueCode,
+                                Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis =
-                functionPointAnalysisService.findDetailedByProjectId(projectId);
+        Optional<? extends SizeAnalysis> optionalAnalysis =
+                findSourceAnalysis(projectId, sourceTechniqueCode);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
         }
 
         if (optionalAnalysis.isEmpty()) {
-            return redirectToFunctionPointAdd(projectId);
+            return redirectToSourceAnalysisAdd(projectId, sourceTechniqueCode);
         }
 
         loadCreateFormModel(
                 optionalProject.get(),
                 optionalAnalysis.get(),
+                sourceTechniqueCode,
                 new DelphiEstimationCreateForm(),
                 model
         );
@@ -90,32 +99,31 @@ public class DelphiEstimationController {
 
     @PostMapping("/add")
     public String createInitialEstimation(@PathVariable Long projectId,
+                                          @PathVariable String sourceTechniqueCode,
                                           @ModelAttribute("createForm") DelphiEstimationCreateForm createForm,
                                           BindingResult result,
                                           Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis =
-                functionPointAnalysisService.findDetailedByProjectId(projectId);
+        Optional<? extends SizeAnalysis> optionalAnalysis =
+                findSourceAnalysis(projectId, sourceTechniqueCode);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
         }
 
         if (optionalAnalysis.isEmpty()) {
-            return redirectToFunctionPointAdd(projectId);
+            return redirectToSourceAnalysisAdd(projectId, sourceTechniqueCode);
         }
 
         EstimationProject project = optionalProject.get();
-        FunctionPointAnalysis analysis = optionalAnalysis.get();
+        SizeAnalysis analysis = optionalAnalysis.get();
 
         List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(projectId);
         Map<Long, Double> moduleSizeById =
-                delphiEstimationService.buildModuleSizeById(
+                getSourceAnalysisProvider(sourceTechniqueCode).buildModuleSizeById(
                         analysis,
-                        modulesList,
-                        functionPointAnalysisService,
-                        functionPointCalculationService
+                        modulesList
                 );
 
         delphiEstimationValidator.validate(createForm, result);
@@ -125,7 +133,7 @@ public class DelphiEstimationController {
         }
 
         if (result.hasErrors()) {
-            loadCreateFormModel(project, analysis, createForm, model);
+            loadCreateFormModel(project, analysis, sourceTechniqueCode, createForm, model);
             return "effortconversions/delphi/add";
         }
 
@@ -138,17 +146,18 @@ public class DelphiEstimationController {
                 createForm.getExpertCount()
         );
 
-        return redirectToIterationAdd(projectId, estimation.getId());
+        return redirectToIterationAdd(projectId, sourceTechniqueCode, estimation.getId());
     }
 
     @GetMapping("/{delphiEstimationId}")
     public String getDetails(@PathVariable Long projectId,
+                             @PathVariable String sourceTechniqueCode,
                              @PathVariable Long delphiEstimationId,
                              Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<FunctionPointAnalysis> optionalAnalysis =
-                functionPointAnalysisService.findDetailedByProjectId(projectId);
+        Optional<? extends SizeAnalysis> optionalAnalysis =
+                findSourceAnalysis(projectId, sourceTechniqueCode);
         Optional<DelphiEstimation> optionalEstimation =
                 delphiEstimationService.findDetailedByIdAndProjectId(delphiEstimationId, projectId);
 
@@ -157,27 +166,26 @@ public class DelphiEstimationController {
         }
 
         if (optionalAnalysis.isEmpty()) {
-            return redirectToFunctionPointAdd(projectId);
+            return redirectToSourceAnalysisAdd(projectId, sourceTechniqueCode);
         }
 
-        if (optionalEstimation.isEmpty()) {
-            return redirectToFunctionPointDetails(projectId);
+        if (optionalEstimation.isEmpty()
+                || !belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
         EstimationProject project = optionalProject.get();
-        FunctionPointAnalysis analysis = optionalAnalysis.get();
+        SizeAnalysis analysis = optionalAnalysis.get();
         DelphiEstimation estimation = optionalEstimation.get();
 
         List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(projectId);
         Map<Long, Double> moduleSizeById =
-                delphiEstimationService.buildModuleSizeById(
+                getSourceAnalysisProvider(sourceTechniqueCode).buildModuleSizeById(
                         analysis,
-                        modulesList,
-                        functionPointAnalysisService,
-                        functionPointCalculationService
+                        modulesList
                 );
 
-        Map<Long, Double> moduleEstimatedEffortById = new java.util.LinkedHashMap<>();
+        Map<Long, Double> moduleEstimatedEffortById = new LinkedHashMap<>();
         boolean hasFinalCalibration = delphiEstimationService.isFinished(estimation);
         boolean canAddIteration = !hasFinalCalibration;
         Double totalEstimatedHours = null;
@@ -201,6 +209,9 @@ public class DelphiEstimationController {
         model.addAttribute("project", project);
         model.addAttribute("analysis", analysis);
         model.addAttribute("estimation", estimation);
+        model.addAttribute("sourceTechniqueCode", sourceTechniqueCode);
+        model.addAttribute("sourceAnalysisDetailsPath",
+                getSourceAnalysisProvider(sourceTechniqueCode).getDetailsPath(projectId));
         model.addAttribute("modulesList", modulesList);
         model.addAttribute("moduleSizeById", moduleSizeById);
         model.addAttribute("moduleEstimatedEffortById", moduleEstimatedEffortById);
@@ -213,6 +224,7 @@ public class DelphiEstimationController {
 
     @GetMapping("/{delphiEstimationId}/iterations/add")
     public String getAddIterationForm(@PathVariable Long projectId,
+                                      @PathVariable String sourceTechniqueCode,
                                       @PathVariable Long delphiEstimationId,
                                       Model model) {
         Optional<EstimationProject> optionalProject =
@@ -224,25 +236,34 @@ public class DelphiEstimationController {
             return redirectToProjects();
         }
 
-        if (optionalEstimation.isEmpty()) {
-            return redirectToFunctionPointDetails(projectId);
+        if (optionalEstimation.isEmpty()
+                || !belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
         DelphiEstimation estimation = optionalEstimation.get();
 
         if (delphiEstimationService.isFinished(estimation)) {
-            return redirectToDelphiDetails(projectId, delphiEstimationId);
+            return redirectToDelphiDetails(projectId, sourceTechniqueCode, delphiEstimationId);
         }
 
         DelphiIterationForm iterationForm = new DelphiIterationForm();
         initializeIterationForm(iterationForm, estimation.getExpertCount());
 
-        loadIterationFormModel(optionalProject.get(), estimation, iterationForm, model);
+        loadIterationFormModel(
+                optionalProject.get(),
+                estimation,
+                sourceTechniqueCode,
+                iterationForm,
+                model
+        );
+
         return "effortconversions/delphi/iteration-add";
     }
 
     @PostMapping("/{delphiEstimationId}/iterations/add")
     public String addIteration(@PathVariable Long projectId,
+                               @PathVariable String sourceTechniqueCode,
                                @PathVariable Long delphiEstimationId,
                                @ModelAttribute("iterationForm") DelphiIterationForm iterationForm,
                                BindingResult result,
@@ -256,14 +277,15 @@ public class DelphiEstimationController {
             return redirectToProjects();
         }
 
-        if (optionalEstimation.isEmpty()) {
-            return redirectToFunctionPointDetails(projectId);
+        if (optionalEstimation.isEmpty()
+                || !belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
         DelphiEstimation estimation = optionalEstimation.get();
 
         if (delphiEstimationService.isFinished(estimation)) {
-            return redirectToDelphiDetails(projectId, delphiEstimationId);
+            return redirectToDelphiDetails(projectId, sourceTechniqueCode, delphiEstimationId);
         }
 
         iterationForm.setExpectedExpertCount(estimation.getExpertCount());
@@ -271,7 +293,13 @@ public class DelphiEstimationController {
 
         if (result.hasErrors()) {
             initializeIterationForm(iterationForm, estimation.getExpertCount());
-            loadIterationFormModel(optionalProject.get(), estimation, iterationForm, model);
+            loadIterationFormModel(
+                    optionalProject.get(),
+                    estimation,
+                    sourceTechniqueCode,
+                    iterationForm,
+                    model
+            );
             return "effortconversions/delphi/iteration-add";
         }
 
@@ -281,26 +309,33 @@ public class DelphiEstimationController {
 
         delphiEstimationService.registerIteration(delphiEstimationId, expertEstimates);
 
-        return redirectToDelphiDetails(projectId, delphiEstimationId);
+        return redirectToDelphiDetails(projectId, sourceTechniqueCode, delphiEstimationId);
     }
 
     @GetMapping("/{delphiEstimationId}/delete")
     public String deleteEstimation(@PathVariable Long projectId,
+                                   @PathVariable String sourceTechniqueCode,
                                    @PathVariable Long delphiEstimationId) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+        Optional<DelphiEstimation> optionalEstimation =
+                delphiEstimationService.findByIdAndProjectId(delphiEstimationId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
         }
 
-        delphiEstimationService.deleteByIdAndProjectId(delphiEstimationId, projectId);
+        if (optionalEstimation.isPresent()
+                && belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+            delphiEstimationService.deleteByIdAndProjectId(delphiEstimationId, projectId);
+        }
 
-        return redirectToFunctionPointDetails(projectId);
+        return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
     }
 
     @GetMapping("/{delphiEstimationId}/iterations/{iterationNumber}")
     public String getIterationDetails(@PathVariable Long projectId,
+                                      @PathVariable String sourceTechniqueCode,
                                       @PathVariable Long delphiEstimationId,
                                       @PathVariable Integer iterationNumber,
                                       Model model) {
@@ -313,44 +348,49 @@ public class DelphiEstimationController {
             return redirectToProjects();
         }
 
-        if (optionalEstimation.isEmpty()) {
-            return redirectToFunctionPointDetails(projectId);
+        if (optionalEstimation.isEmpty()
+                || !belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
         DelphiEstimation estimation = optionalEstimation.get();
 
-        Optional<com.uniovi.estimacion.entities.effortconversions.DelphiIteration> optionalIteration =
+        Optional<DelphiIteration> optionalIteration =
                 estimation.getIterations().stream()
                         .filter(iteration -> iteration.getIterationNumber().equals(iterationNumber))
                         .findFirst();
 
         if (optionalIteration.isEmpty()) {
-            return redirectToDelphiDetails(projectId, delphiEstimationId);
+            return redirectToDelphiDetails(projectId, sourceTechniqueCode, delphiEstimationId);
         }
 
         model.addAttribute("project", optionalProject.get());
         model.addAttribute("estimation", estimation);
         model.addAttribute("iteration", optionalIteration.get());
+        model.addAttribute("sourceTechniqueCode", sourceTechniqueCode);
+        model.addAttribute("sourceAnalysisDetailsPath",
+                getSourceAnalysisProvider(sourceTechniqueCode).getDetailsPath(projectId));
 
         return "effortconversions/delphi/iteration-details";
     }
 
-
     private void loadCreateFormModel(EstimationProject project,
-                                     FunctionPointAnalysis analysis,
+                                     SizeAnalysis analysis,
+                                     String sourceTechniqueCode,
                                      DelphiEstimationCreateForm createForm,
                                      Model model) {
         List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(project.getId());
         Map<Long, Double> moduleSizeById =
-                delphiEstimationService.buildModuleSizeById(
+                getSourceAnalysisProvider(sourceTechniqueCode).buildModuleSizeById(
                         analysis,
-                        modulesList,
-                        functionPointAnalysisService,
-                        functionPointCalculationService
+                        modulesList
                 );
 
         model.addAttribute("project", project);
         model.addAttribute("analysis", analysis);
+        model.addAttribute("sourceTechniqueCode", sourceTechniqueCode);
+        model.addAttribute("sourceAnalysisDetailsPath",
+                getSourceAnalysisProvider(sourceTechniqueCode).getDetailsPath(project.getId()));
         model.addAttribute("modulesList", modulesList);
         model.addAttribute("moduleSizeById", moduleSizeById);
         model.addAttribute("canStartDelphi", delphiEstimationService.canStartCalibration(moduleSizeById));
@@ -359,10 +399,14 @@ public class DelphiEstimationController {
 
     private void loadIterationFormModel(EstimationProject project,
                                         DelphiEstimation estimation,
+                                        String sourceTechniqueCode,
                                         DelphiIterationForm iterationForm,
                                         Model model) {
         model.addAttribute("project", project);
         model.addAttribute("estimation", estimation);
+        model.addAttribute("sourceTechniqueCode", sourceTechniqueCode);
+        model.addAttribute("sourceAnalysisDetailsPath",
+                getSourceAnalysisProvider(sourceTechniqueCode).getDetailsPath(project.getId()));
         model.addAttribute("iterationForm", iterationForm);
     }
 
@@ -383,27 +427,54 @@ public class DelphiEstimationController {
         }
     }
 
+    private boolean belongsToSourceTechnique(DelphiEstimation estimation, String sourceTechniqueCode) {
+        return estimation.getSourceTechniqueCode() != null
+                && estimation.getSourceTechniqueCode().equals(sourceTechniqueCode);
+    }
+
+    private SizeAnalysisProvider getSourceAnalysisProvider(String sourceTechniqueCode) {
+        return sizeAnalysisProviderRegistry.getByTechniqueCode(sourceTechniqueCode);
+    }
+
+    private Optional<? extends SizeAnalysis> findSourceAnalysis(Long projectId,
+                                                                String sourceTechniqueCode) {
+        return getSourceAnalysisProvider(sourceTechniqueCode).findDetailedByProjectId(projectId);
+    }
+
     private String redirectToProjects() {
         return "redirect:/projects";
     }
 
-    private String redirectToFunctionPointAdd(Long projectId) {
-        return "redirect:/projects/" + projectId + "/function-points/add";
+    private String redirectToSourceAnalysisAdd(Long projectId, String sourceTechniqueCode) {
+        SizeAnalysisProvider provider = getSourceAnalysisProvider(sourceTechniqueCode);
+        return "redirect:" + provider.getAddPath(projectId);
     }
 
-    private String redirectToFunctionPointDetails(Long projectId) {
-        return "redirect:/projects/" + projectId + "/function-points";
+    private String redirectToSourceAnalysisDetails(Long projectId, String sourceTechniqueCode) {
+        SizeAnalysisProvider provider = getSourceAnalysisProvider(sourceTechniqueCode);
+        return "redirect:" + provider.getDetailsPath(projectId);
     }
 
-    private String redirectToDelphiAdd(Long projectId) {
-        return "redirect:/projects/" + projectId + "/function-points/delphi/add";
+    private String redirectToDelphiAdd(Long projectId, String sourceTechniqueCode) {
+        return "redirect:/projects/" + projectId
+                + "/size-analyses/" + sourceTechniqueCode
+                + "/delphi/add";
     }
 
-    private String redirectToDelphiDetails(Long projectId, Long delphiEstimationId) {
-        return "redirect:/projects/" + projectId + "/function-points/delphi/" + delphiEstimationId;
+    private String redirectToDelphiDetails(Long projectId,
+                                           String sourceTechniqueCode,
+                                           Long delphiEstimationId) {
+        return "redirect:/projects/" + projectId
+                + "/size-analyses/" + sourceTechniqueCode
+                + "/delphi/" + delphiEstimationId;
     }
 
-    private String redirectToIterationAdd(Long projectId, Long delphiEstimationId) {
-        return "redirect:/projects/" + projectId + "/function-points/delphi/" + delphiEstimationId + "/iterations/add";
+    private String redirectToIterationAdd(Long projectId,
+                                          String sourceTechniqueCode,
+                                          Long delphiEstimationId) {
+        return "redirect:/projects/" + projectId
+                + "/size-analyses/" + sourceTechniqueCode
+                + "/delphi/" + delphiEstimationId
+                + "/iterations/add";
     }
 }
