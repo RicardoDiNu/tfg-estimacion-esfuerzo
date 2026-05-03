@@ -234,6 +234,20 @@
             </div>
         </div>
 
+
+        <div class="card mb-4" th:if="${totalEstimatedCost != null}">
+            <div class="card-header" th:text="#{cost.estimated}">Coste estimado</div>
+            <div class="card-body">
+                <p class="mb-0">
+                    <strong th:text="${#numbers.formatDecimal(totalEstimatedCost, 1, 2)}">0.00</strong>
+                    <strong th:text="${project.currencyCode}">EUR</strong>
+                </p>
+            </div>
+        </div>
+
+
+
+
         <div class="mt-4">
             <a class="btn btn-danger mr-2"
                th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/delete(

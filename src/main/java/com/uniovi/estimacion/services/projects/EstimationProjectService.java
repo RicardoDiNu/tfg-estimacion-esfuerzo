@@ -59,6 +59,7 @@ public class EstimationProjectService {
         project.setName(normalize(project.getName()));
         project.setDescription(normalize(project.getDescription()));
         project.setOwner(currentUser);
+        normalizeCostFields(project);
 
         return estimationProjectRepository.save(project);
     }
@@ -72,8 +73,15 @@ public class EstimationProjectService {
         }
 
         EstimationProject existingProject = optionalProject.get();
+
         existingProject.setName(normalize(formProject.getName()));
         existingProject.setDescription(normalize(formProject.getDescription()));
+
+        existingProject.setHourlyRate(formProject.getHourlyRate());
+        existingProject.setCurrencyCode(formProject.getCurrencyCode());
+        normalizeCostFields(existingProject);
+
+        estimationProjectRepository.save(existingProject);
 
         return true;
     }
@@ -90,19 +98,14 @@ public class EstimationProjectService {
                 functionPointAnalysisRepository.findByEstimationProjectId(projectId);
 
         if (optionalAnalysis.isPresent()) {
-            // Borrar el análisis PF y, en cascada, sus funciones y GSC
             functionPointAnalysisService.deleteByProjectId(projectId);
         }
 
-        // Borrar módulos del proyecto y, en cascada, sus requisitos
         estimationModuleRepository.deleteAll(
                 estimationModuleRepository.findByEstimationProjectIdOrderByIdAsc(projectId)
         );
 
-        // Borrar finalmente el proyecto
         estimationProjectRepository.delete(optionalProject.get());
-
-        // Forzar sincronización para detectar problemas de integridad referencial
         estimationProjectRepository.flush();
 
         return true;
@@ -113,5 +116,13 @@ public class EstimationProjectService {
             return null;
         }
         return value.trim();
+    }
+
+    private void normalizeCostFields(EstimationProject project) {
+        if (project.getCurrencyCode() == null || project.getCurrencyCode().trim().isEmpty()) {
+            project.setCurrencyCode("EUR");
+        } else {
+            project.setCurrencyCode(project.getCurrencyCode().trim().toUpperCase());
+        }
     }
 }

@@ -7,6 +7,7 @@ import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunc
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.requirements.UserRequirement;
+import com.uniovi.estimacion.services.costs.CostCalculationService;
 import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
 import com.uniovi.estimacion.services.effortconversions.TransformationFunctionService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
@@ -27,6 +28,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,7 @@ public class FunctionPointAnalysisController {
     private final EstimationModuleService estimationModuleService;
     private final DelphiEstimationService delphiEstimationService;
     private final TransformationFunctionService transformationFunctionService;
+    private final CostCalculationService costCalculationService;
 
     @GetMapping("/function-points/add")
     public String getCreateForm(@PathVariable Long projectId, Model model) {
@@ -157,6 +160,8 @@ public class FunctionPointAnalysisController {
 
         Double delphiEstimatedTotalHours = null;
         Integer activeDelphiIterationsCount = 0;
+        BigDecimal delphiEstimatedCost = null;
+        BigDecimal transformationEstimatedCost = null;
 
         Map<Long, Double> moduleDelphiEffortById = new LinkedHashMap<>();
 
@@ -180,6 +185,11 @@ public class FunctionPointAnalysisController {
 
                 delphiEstimatedTotalHours =
                         delphiEstimationService.calculateTotalEstimatedEffortHours(activeDelphi, moduleSizeById);
+                delphiEstimatedCost =
+                        costCalculationService.calculateCost(
+                                delphiEstimatedTotalHours,
+                                project.getHourlyRate()
+                        );
             }
         }
 
@@ -206,6 +216,11 @@ public class FunctionPointAnalysisController {
                             activeTransformationConversion,
                             analysis.getCalculatedSizeValue()
                     );
+            transformationEstimatedCost =
+                    costCalculationService.calculateCost(
+                            transformationEstimatedHours,
+                            project.getHourlyRate()
+                    );
         }
 
         model.addAttribute("activeTransformationConversion", activeTransformationConversion);
@@ -222,6 +237,9 @@ public class FunctionPointAnalysisController {
         model.addAttribute("activeDelphiIterationsCount", activeDelphiIterationsCount);
         model.addAttribute("delphiEstimatedTotalHours", delphiEstimatedTotalHours);
         model.addAttribute("moduleDelphiEffortById", moduleDelphiEffortById);
+
+        model.addAttribute("delphiEstimatedCost", delphiEstimatedCost);
+        model.addAttribute("transformationEstimatedCost", transformationEstimatedCost);
 
         model.addAttribute("requirementsList", requirementsPageResult.getContent());
         model.addAttribute("requirementsPage", requirementsPageResult);

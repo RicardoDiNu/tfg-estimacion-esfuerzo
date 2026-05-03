@@ -37,6 +37,30 @@
                     </p>
                 </div>
 
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.hourlyRate}">
+                        Coste por hora
+                    </h6>
+
+                    <p class="card-text mb-0" th:if="${project.hourlyRate != null}">
+        <span th:text="${#numbers.formatDecimal(project.hourlyRate, 1, 2)}">
+            0.00
+        </span>
+                        <span th:text="${project.currencyCode != null and !#strings.isEmpty(project.currencyCode) ? project.currencyCode : 'EUR'}">
+            EUR
+        </span>
+                        <span th:text="#{project.field.hourlyRate.unit}">
+            / hora
+        </span>
+                    </p>
+
+                    <p class="card-text mb-0 text-muted"
+                       th:unless="${project.hourlyRate != null}"
+                       th:text="#{project.field.hourlyRate.notDefined}">
+                        No definido
+                    </p>
+                </div>
+
                 <div>
                     <h6 class="text-muted" th:text="#{project.field.createdAt}">Fecha de creación</h6>
                     <p class="card-text mb-0"
@@ -107,6 +131,17 @@
                                     <span th:text="${#numbers.formatDecimal(activeFunctionPointDelphi.maximumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
                                     <span th:text="#{project.details.effort.hoursUnit}">h</span>
                                 </small>
+
+                                <p class="card-text mb-1"
+                                   th:if="${functionPointDelphiEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointDelphiEstimatedCost, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="${project.currencyCode}">
+                                        EUR
+                                    </strong>
+                                </p>
+
                             </div>
 
                             <div th:unless="${activeFunctionPointDelphi != null and activeFunctionPointDelphi.regressionIntercept != null}"
@@ -167,6 +202,17 @@
                 </span>
             </span>
                                 </small>
+
+
+                                <p class="card-text mb-1"
+                                        th:if="${functionPointTransformationEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointTransformationEstimatedCost, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="${project.currencyCode}">
+                                        EUR
+                                    </strong>
+                                </p>
                             </div>
                         </div>
                     </div>

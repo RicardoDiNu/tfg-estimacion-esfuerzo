@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,6 +35,12 @@ public class EstimationProject {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private User owner;
+
+    @Column(precision = 12, scale = 2)
+    private BigDecimal hourlyRate;
+
+    @Column(nullable = false, length = 3)
+    private String currencyCode = "EUR";
 
     public EstimationProject(String name, String description) {
         this.name = name;

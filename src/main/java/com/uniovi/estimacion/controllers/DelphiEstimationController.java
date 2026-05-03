@@ -8,6 +8,7 @@ import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.services.analysis.SizeAnalysisProvider;
 import com.uniovi.estimacion.services.analysis.SizeAnalysisProviderRegistry;
+import com.uniovi.estimacion.services.costs.CostCalculationService;
 import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
 import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
@@ -22,6 +23,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ public class DelphiEstimationController {
     private final DelphiEstimationValidator delphiEstimationValidator;
     private final DelphiIterationValidator delphiIterationValidator;
     private final SizeAnalysisProviderRegistry sizeAnalysisProviderRegistry;
+    private final CostCalculationService costCalculationService;
 
     @GetMapping("/access")
     public String accessDelphi(@PathVariable Long projectId,
@@ -189,6 +192,7 @@ public class DelphiEstimationController {
         boolean hasFinalCalibration = delphiEstimationService.isFinished(estimation);
         boolean canAddIteration = !hasFinalCalibration;
         Double totalEstimatedHours = null;
+        BigDecimal totalEstimatedCost = null;
 
         if (hasFinalCalibration) {
             for (EstimationModule module : modulesList) {
@@ -204,6 +208,15 @@ public class DelphiEstimationController {
 
             totalEstimatedHours =
                     delphiEstimationService.calculateTotalEstimatedEffortHours(estimation, moduleSizeById);
+
+
+            if (totalEstimatedHours != null) {
+                totalEstimatedCost =
+                        costCalculationService.calculateCost(
+                                totalEstimatedHours,
+                                project.getHourlyRate()
+                        );
+            }
         }
 
         model.addAttribute("project", project);
@@ -216,6 +229,7 @@ public class DelphiEstimationController {
         model.addAttribute("moduleSizeById", moduleSizeById);
         model.addAttribute("moduleEstimatedEffortById", moduleEstimatedEffortById);
         model.addAttribute("totalEstimatedHours", totalEstimatedHours);
+        model.addAttribute("totalEstimatedCost", totalEstimatedCost);
         model.addAttribute("hasFinalCalibration", hasFinalCalibration);
         model.addAttribute("canAddIteration", canAddIteration);
 

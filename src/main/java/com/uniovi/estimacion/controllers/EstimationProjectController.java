@@ -5,6 +5,8 @@ import com.uniovi.estimacion.entities.effortconversions.transformationfunctions.
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.services.analysis.FunctionPointSizeAnalysisProvider;
+import com.uniovi.estimacion.services.costs.CostCalculationService;
 import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
 import com.uniovi.estimacion.services.effortconversions.TransformationFunctionService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
@@ -13,7 +15,6 @@ import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationSer
 import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.validators.projects.EstimationProjectValidator;
-import com.uniovi.estimacion.services.analysis.FunctionPointSizeAnalysisProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +24,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.LinkedHashMap;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +42,7 @@ public class EstimationProjectController {
     private final EstimationModuleService estimationModuleService;
     private final FunctionPointSizeAnalysisProvider functionPointSizeAnalysisProvider;
     private final TransformationFunctionService transformationFunctionService;
+    private final CostCalculationService costCalculationService;
 
     @GetMapping
     public String listProjects(Model model, Pageable pageable) {
@@ -74,12 +76,14 @@ public class EstimationProjectController {
             return redirectToList();
         }
 
+        EstimationProject project = optionalProject.get();
+
         Optional<FunctionPointAnalysis> optionalFunctionPointAnalysis =
                 functionPointAnalysisService.findDetailedByProjectId(projectId);
 
         boolean hasFunctionPointAnalysis = optionalFunctionPointAnalysis.isPresent();
 
-        model.addAttribute("project", optionalProject.get());
+        model.addAttribute("project", project);
         model.addAttribute("hasFunctionPointAnalysis", hasFunctionPointAnalysis);
         model.addAttribute("hasUseCasePointAnalysis", false);
 
@@ -88,6 +92,8 @@ public class EstimationProjectController {
         Double functionPointDelphiEstimatedTotalHours = null;
         TransformationFunctionConversion activeFunctionPointTransformationConversion = null;
         Double functionPointTransformationEstimatedHours = null;
+        BigDecimal functionPointDelphiEstimatedCost = null;
+        BigDecimal functionPointTransformationEstimatedCost = null;
 
         if (hasFunctionPointAnalysis) {
             FunctionPointAnalysis functionPointAnalysis = optionalFunctionPointAnalysis.get();
@@ -118,6 +124,12 @@ public class EstimationProjectController {
                                     activeFunctionPointDelphi,
                                     moduleSizeById
                             );
+
+                    functionPointDelphiEstimatedCost =
+                            costCalculationService.calculateCost(
+                                    functionPointDelphiEstimatedTotalHours,
+                                    project.getHourlyRate()
+                            );
                 }
             }
 
@@ -132,6 +144,12 @@ public class EstimationProjectController {
                                 activeFunctionPointTransformationConversion,
                                 functionPointAnalysis.getCalculatedSizeValue()
                         );
+
+                functionPointTransformationEstimatedCost =
+                        costCalculationService.calculateCost(
+                                functionPointTransformationEstimatedHours,
+                                project.getHourlyRate()
+                        );
             }
         }
 
@@ -140,6 +158,8 @@ public class EstimationProjectController {
         model.addAttribute("functionPointDelphiEstimatedTotalHours", functionPointDelphiEstimatedTotalHours);
         model.addAttribute("activeFunctionPointTransformationConversion", activeFunctionPointTransformationConversion);
         model.addAttribute("functionPointTransformationEstimatedHours", functionPointTransformationEstimatedHours);
+        model.addAttribute("functionPointDelphiEstimatedCost", functionPointDelphiEstimatedCost);
+        model.addAttribute("functionPointTransformationEstimatedCost", functionPointTransformationEstimatedCost);
         model.addAttribute("functionPointTechniqueCode",
                 optionalFunctionPointAnalysis
                         .map(FunctionPointAnalysis::getTechniqueCode)
@@ -150,7 +170,11 @@ public class EstimationProjectController {
 
     @GetMapping("/add")
     public String getAddForm(Model model) {
-        model.addAttribute("project", new EstimationProject());
+        EstimationProject project = new EstimationProject();
+        project.setCurrencyCode("EUR");
+
+        model.addAttribute("project", project);
+
         return "project/add";
     }
 
@@ -181,7 +205,13 @@ public class EstimationProjectController {
             return redirectToList();
         }
 
-        model.addAttribute("project", optionalProject.get());
+        EstimationProject project = optionalProject.get();
+
+        if (project.getCurrencyCode() == null || project.getCurrencyCode().trim().isEmpty()) {
+            project.setCurrencyCode("EUR");
+        }
+
+        model.addAttribute("project", project);
         model.addAttribute("returnTo", returnTo);
         model.addAttribute("page", page);
 

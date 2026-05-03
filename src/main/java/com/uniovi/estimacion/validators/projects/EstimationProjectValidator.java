@@ -6,6 +6,8 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import java.math.BigDecimal;
+
 @Component
 public class EstimationProjectValidator implements Validator {
 
@@ -34,6 +36,17 @@ public class EstimationProjectValidator implements Validator {
             if (description.length() > 1000) {
                 errors.rejectValue("description", "Error.project.description.length");
             }
+        }
+
+        if (project.getHourlyRate() != null
+                && project.getHourlyRate().compareTo(BigDecimal.ZERO) < 0) {
+            errors.rejectValue("hourlyRate", "project.validation.hourlyRate.negative");
+        }
+
+        if (project.getCurrencyCode() != null
+                && !project.getCurrencyCode().trim().isEmpty()
+                && project.getCurrencyCode().trim().length() != 3) {
+            errors.rejectValue("currencyCode", "project.validation.currencyCode.invalid");
         }
     }
 }

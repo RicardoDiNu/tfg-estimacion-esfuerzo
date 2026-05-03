@@ -6,6 +6,7 @@ import com.uniovi.estimacion.entities.effortconversions.transformationfunctions.
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.services.analysis.SizeAnalysisProvider;
 import com.uniovi.estimacion.services.analysis.SizeAnalysisProviderRegistry;
+import com.uniovi.estimacion.services.costs.CostCalculationService;
 import com.uniovi.estimacion.services.effortconversions.TransformationFunctionService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.validators.effortconversions.TransformationFunctionValidator;
@@ -17,6 +18,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +31,7 @@ public class TransformationFunctionController {
     private final SizeAnalysisProviderRegistry sizeAnalysisProviderRegistry;
     private final TransformationFunctionService transformationFunctionService;
     private final TransformationFunctionValidator transformationFunctionValidator;
+    private final CostCalculationService costCalculationService;
 
     @GetMapping("/access")
     public String accessTransformationFunction(@PathVariable Long projectId,
@@ -216,6 +219,12 @@ public class TransformationFunctionController {
         Double estimatedEffortHours =
                 transformationFunctionService.calculateEstimatedEffortHours(conversion, currentSize);
 
+        BigDecimal estimatedCost =
+                costCalculationService.calculateCost(
+                        estimatedEffortHours,
+                        project.getHourlyRate()
+                );
+
         model.addAttribute("project", project);
         model.addAttribute("analysis", analysis);
         model.addAttribute("conversion", conversion);
@@ -224,6 +233,7 @@ public class TransformationFunctionController {
                 getSourceAnalysisProvider(sourceTechniqueCode).getDetailsPath(projectId));
         model.addAttribute("currentSize", currentSize);
         model.addAttribute("estimatedEffortHours", estimatedEffortHours);
+        model.addAttribute("estimatedCost", estimatedCost);
 
         return "effortconversions/transformationfunctions/details";
     }

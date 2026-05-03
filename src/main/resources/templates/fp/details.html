@@ -373,6 +373,16 @@
                                     <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.maximumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
                                     <span th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</span>
                                 </small>
+
+                                <p class="card-text mb-1"
+                                   th:if="${delphiEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(delphiEstimatedCost, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="${project.currencyCode}">
+                                        EUR
+                                    </strong>
+                                </p>
                             </div>
                         </div>
 
@@ -444,6 +454,17 @@
             </span>
         </span>
                             </small>
+
+                            <p class="card-text mb-1"
+                               th:if="${transformationEstimatedCost != null}">
+                                <strong th:text="${#numbers.formatDecimal(transformationEstimatedCost, 1, 2)}">
+                                    0.00
+                                </strong>
+                                <strong th:text="${project.currencyCode}">
+                                    EUR
+                                </strong>
+                            </p>
+
                         </div>
 
                     </div>
