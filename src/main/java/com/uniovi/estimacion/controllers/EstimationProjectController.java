@@ -1,10 +1,12 @@
 package com.uniovi.estimacion.controllers;
 
 import com.uniovi.estimacion.entities.effortconversions.DelphiEstimation;
+import com.uniovi.estimacion.entities.effortconversions.transformationfunctions.TransformationFunctionConversion;
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
+import com.uniovi.estimacion.services.effortconversions.TransformationFunctionService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
@@ -38,6 +40,7 @@ public class EstimationProjectController {
     private final DelphiEstimationService delphiEstimationService;
     private final EstimationModuleService estimationModuleService;
     private final FunctionPointSizeAnalysisProvider functionPointSizeAnalysisProvider;
+    private final TransformationFunctionService transformationFunctionService;
 
     @GetMapping
     public String listProjects(Model model, Pageable pageable) {
@@ -83,6 +86,8 @@ public class EstimationProjectController {
         FunctionPointAnalysisSummary functionPointResults = null;
         DelphiEstimation activeFunctionPointDelphi = null;
         Double functionPointDelphiEstimatedTotalHours = null;
+        TransformationFunctionConversion activeFunctionPointTransformationConversion = null;
+        Double functionPointTransformationEstimatedHours = null;
 
         if (hasFunctionPointAnalysis) {
             FunctionPointAnalysis functionPointAnalysis = optionalFunctionPointAnalysis.get();
@@ -115,11 +120,26 @@ public class EstimationProjectController {
                             );
                 }
             }
+
+            Optional<TransformationFunctionConversion> optionalActiveTransformationConversion =
+                    transformationFunctionService.findActiveBySourceAnalysis(functionPointAnalysis);
+
+            if (optionalActiveTransformationConversion.isPresent()) {
+                activeFunctionPointTransformationConversion = optionalActiveTransformationConversion.get();
+
+                functionPointTransformationEstimatedHours =
+                        transformationFunctionService.calculateEstimatedEffortHours(
+                                activeFunctionPointTransformationConversion,
+                                functionPointAnalysis.getCalculatedSizeValue()
+                        );
+            }
         }
 
         model.addAttribute("functionPointResults", functionPointResults);
         model.addAttribute("activeFunctionPointDelphi", activeFunctionPointDelphi);
         model.addAttribute("functionPointDelphiEstimatedTotalHours", functionPointDelphiEstimatedTotalHours);
+        model.addAttribute("activeFunctionPointTransformationConversion", activeFunctionPointTransformationConversion);
+        model.addAttribute("functionPointTransformationEstimatedHours", functionPointTransformationEstimatedHours);
         model.addAttribute("functionPointTechniqueCode",
                 optionalFunctionPointAnalysis
                         .map(FunctionPointAnalysis::getTechniqueCode)

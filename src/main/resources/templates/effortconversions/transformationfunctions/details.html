@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container mt-4">
+        <div class="mb-4">
+            <h1 th:text="#{transformationFunction.details.title}">
+                Conversión por función de transformación
+            </h1>
+            <p class="text-muted" th:text="#{transformationFunction.details.subtitle}">
+                Resultado calculado a partir del tamaño actual del análisis.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{transformationFunction.details.function.title}">
+                Función aplicada
+            </div>
+
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong th:text="#{transformationFunction.field.name}">Nombre</strong>:
+                    <span th:text="${conversion.functionNameSnapshot}">Función</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{transformationFunction.field.formula}">Fórmula</strong>:
+                    <span>
+                        E =
+                        <span th:text="${#numbers.formatDecimal(conversion.interceptSnapshot, 1, 2)}">0.00</span>
+                        +
+                        <span th:text="${#numbers.formatDecimal(conversion.slopeSnapshot, 1, 2)}">0.00</span>
+                        ×
+                        <span th:text="${analysis.sizeUnitCode}">FP</span>
+                    </span>
+                </p>
+
+                <p class="mb-0">
+                    <strong th:text="#{transformationFunction.field.currentSize}">
+                        Tamaño actual
+                    </strong>:
+                    <span th:text="${#numbers.formatDecimal(currentSize, 1, 2)}">0.00</span>
+                    <span th:text="${analysis.sizeUnitCode}">FP</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{transformationFunction.details.result.title}">
+                Resultado
+            </div>
+
+            <div class="card-body">
+                <strong th:text="${#numbers.formatDecimal(estimatedEffortHours, 1, 2)}">
+                    0.00
+                </strong>
+                <strong th:text="#{transformationFunction.unit.hoursPerson}">
+                    H-Persona
+                </strong>
+            </div>
+        </div>
+
+        <div class="mt-4 mb-4">
+            <a class="btn btn-outline-primary mr-2"
+               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/select(
+                   projectId=${project.id},
+                   sourceTechniqueCode=${sourceTechniqueCode})}"
+               th:text="#{transformationFunction.details.action.change}">
+                Cambiar función
+            </a>
+
+            <a class="btn btn-danger mr-2"
+               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/{conversionId}/delete(
+                   projectId=${project.id},
+                   sourceTechniqueCode=${sourceTechniqueCode},
+                   conversionId=${conversion.id})}"
+               th:onclick="|return confirm('#{transformationFunction.confirm.deleteConversion}');|"
+               th:text="#{common.delete}">
+                Eliminar
+            </a>
+
+            <a class="btn btn-secondary"
+               th:href="${sourceAnalysisDetailsPath}"
+               th:text="#{common.back}">
+                Volver
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

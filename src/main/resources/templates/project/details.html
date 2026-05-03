@@ -116,15 +116,57 @@
                             </div>
                         </div>
 
-                        <!-- CONVERSIÓN FUNCIÓN PF -->
-                        <div>
-                            <h6 class="text-muted" th:text="#{project.details.fp.transformation.title}">
-                                Conversión a esfuerzo con función de transformación
+                        <div th:if="${hasFunctionPointAnalysis}" class="mt-3">
+                            <h6 class="text-muted"
+                                th:text="#{project.details.fp.transformation.title}">
+                                Conversión por función de transformación
                             </h6>
 
-                            <div class="alert alert-light border mb-0"
+                            <div th:if="${activeFunctionPointTransformationConversion == null}"
+                                 class="alert alert-light border mb-0"
                                  th:text="#{project.details.fp.transformation.empty}">
-                                Todavía no hay una conversión mediante función de transformación disponible.
+                                Todavía no hay una conversión por función de transformación para este análisis.
+                            </div>
+
+                            <div th:if="${activeFunctionPointTransformationConversion != null}"
+                                 class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointTransformationEstimatedHours, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="#{fp.delphi.hoursPersonUnit}">
+                                        Horas-Persona
+                                    </strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.transformation.function}">
+                Función aplicada
+            </span>:
+                                    <span th:text="${activeFunctionPointTransformationConversion.functionNameSnapshot}">
+                Matson, Barrett y Mellichamp (1994)
+            </span>
+                                </small>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.transformation.formula}">
+                Fórmula
+            </span>:
+                                    <span>
+                E =
+                <span th:text="${#numbers.formatDecimal(activeFunctionPointTransformationConversion.interceptSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                +
+                <span th:text="${#numbers.formatDecimal(activeFunctionPointTransformationConversion.slopeSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                ×
+                <span th:text="${activeFunctionPointTransformationConversion.sourceSizeUnitCode}">
+                    FP
+                </span>
+            </span>
+                                </small>
                             </div>
                         </div>
                     </div>

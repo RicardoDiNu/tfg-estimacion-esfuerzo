@@ -8,6 +8,7 @@ import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.requirements.UserRequirement;
 import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
+import com.uniovi.estimacion.services.effortconversions.TransformationFunctionService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
@@ -16,6 +17,8 @@ import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.requirements.UserRequirementService;
 import com.uniovi.estimacion.validators.functionpoints.FunctionPointAnalysisValidator;
 import com.uniovi.estimacion.validators.functionpoints.GeneralSystemCharacteristicsValidator;
+import com.uniovi.estimacion.entities.effortconversions.transformationfunctions.TransformationFunctionConversion;
+import com.uniovi.estimacion.services.effortconversions.TransformationFunctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +45,7 @@ public class FunctionPointAnalysisController {
     private final FunctionPointCalculationService functionPointCalculationService;
     private final EstimationModuleService estimationModuleService;
     private final DelphiEstimationService delphiEstimationService;
+    private final TransformationFunctionService transformationFunctionService;
 
     @GetMapping("/function-points/add")
     public String getCreateForm(@PathVariable Long projectId, Model model) {
@@ -188,6 +192,24 @@ public class FunctionPointAnalysisController {
         Page<TransactionalFunction> transactionalFunctionsPageResult =
                 functionPointAnalysisService.findTransactionalFunctionsPageByProjectId(projectId, PageRequest.of(transactionalFunctionsPage, 5));
 
+        Optional<TransformationFunctionConversion> optionalActiveTransformationConversion =
+                transformationFunctionService.findActiveBySourceAnalysis(analysis);
+
+        TransformationFunctionConversion activeTransformationConversion = null;
+        Double transformationEstimatedHours = null;
+
+        if (optionalActiveTransformationConversion.isPresent()) {
+            activeTransformationConversion = optionalActiveTransformationConversion.get();
+
+            transformationEstimatedHours =
+                    transformationFunctionService.calculateEstimatedEffortHours(
+                            activeTransformationConversion,
+                            analysis.getCalculatedSizeValue()
+                    );
+        }
+
+        model.addAttribute("activeTransformationConversion", activeTransformationConversion);
+        model.addAttribute("transformationEstimatedHours", transformationEstimatedHours);
         model.addAttribute("project", project);
         model.addAttribute("analysis", analysis);
         model.addAttribute("sourceTechniqueCode", analysis.getTechniqueCode());
