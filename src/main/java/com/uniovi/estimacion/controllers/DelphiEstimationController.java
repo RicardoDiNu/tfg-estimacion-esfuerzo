@@ -170,7 +170,7 @@ public class DelphiEstimationController {
         }
 
         if (optionalEstimation.isEmpty()
-                || !belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+                || !belongsToSourceAnalysis(optionalEstimation.get(), optionalAnalysis.get())) {
             return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
@@ -231,13 +231,19 @@ public class DelphiEstimationController {
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
         Optional<DelphiEstimation> optionalEstimation =
                 delphiEstimationService.findByIdAndProjectId(delphiEstimationId, projectId);
+        Optional<? extends SizeAnalysis> optionalAnalysis =
+                findSourceAnalysis(projectId, sourceTechniqueCode);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
         }
 
+        if (optionalAnalysis.isEmpty()) {
+            return redirectToSourceAnalysisAdd(projectId, sourceTechniqueCode);
+        }
+
         if (optionalEstimation.isEmpty()
-                || !belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+                || !belongsToSourceAnalysis(optionalEstimation.get(), optionalAnalysis.get())) {
             return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
@@ -272,13 +278,19 @@ public class DelphiEstimationController {
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
         Optional<DelphiEstimation> optionalEstimation =
                 delphiEstimationService.findByIdAndProjectId(delphiEstimationId, projectId);
+        Optional<? extends SizeAnalysis> optionalAnalysis =
+                findSourceAnalysis(projectId, sourceTechniqueCode);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
         }
 
+        if (optionalAnalysis.isEmpty()) {
+            return redirectToSourceAnalysisAdd(projectId, sourceTechniqueCode);
+        }
+
         if (optionalEstimation.isEmpty()
-                || !belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+                || !belongsToSourceAnalysis(optionalEstimation.get(), optionalAnalysis.get())) {
             return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
@@ -320,13 +332,16 @@ public class DelphiEstimationController {
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
         Optional<DelphiEstimation> optionalEstimation =
                 delphiEstimationService.findByIdAndProjectId(delphiEstimationId, projectId);
+        Optional<? extends SizeAnalysis> optionalAnalysis =
+                findSourceAnalysis(projectId, sourceTechniqueCode);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
         }
 
-        if (optionalEstimation.isPresent()
-                && belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+        if (optionalAnalysis.isPresent()
+                && optionalEstimation.isPresent()
+                && belongsToSourceAnalysis(optionalEstimation.get(), optionalAnalysis.get())) {
             delphiEstimationService.deleteByIdAndProjectId(delphiEstimationId, projectId);
         }
 
@@ -343,13 +358,19 @@ public class DelphiEstimationController {
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
         Optional<DelphiEstimation> optionalEstimation =
                 delphiEstimationService.findDetailedByIdAndProjectId(delphiEstimationId, projectId);
+        Optional<? extends SizeAnalysis> optionalAnalysis =
+                findSourceAnalysis(projectId, sourceTechniqueCode);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
         }
 
+        if (optionalAnalysis.isEmpty()) {
+            return redirectToSourceAnalysisAdd(projectId, sourceTechniqueCode);
+        }
+
         if (optionalEstimation.isEmpty()
-                || !belongsToSourceTechnique(optionalEstimation.get(), sourceTechniqueCode)) {
+                || !belongsToSourceAnalysis(optionalEstimation.get(), optionalAnalysis.get())) {
             return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
@@ -427,9 +448,13 @@ public class DelphiEstimationController {
         }
     }
 
-    private boolean belongsToSourceTechnique(DelphiEstimation estimation, String sourceTechniqueCode) {
-        return estimation.getSourceTechniqueCode() != null
-                && estimation.getSourceTechniqueCode().equals(sourceTechniqueCode);
+    private boolean belongsToSourceAnalysis(DelphiEstimation estimation, SizeAnalysis analysis) {
+        return estimation != null
+                && analysis != null
+                && estimation.getSourceAnalysisId() != null
+                && estimation.getSourceTechniqueCode() != null
+                && estimation.getSourceAnalysisId().equals(analysis.getId())
+                && estimation.getSourceTechniqueCode().equals(analysis.getTechniqueCode());
     }
 
     private SizeAnalysisProvider getSourceAnalysisProvider(String sourceTechniqueCode) {

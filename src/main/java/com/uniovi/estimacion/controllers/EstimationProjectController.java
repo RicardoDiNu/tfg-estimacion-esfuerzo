@@ -2,8 +2,6 @@ package com.uniovi.estimacion.controllers;
 
 import com.uniovi.estimacion.entities.effortconversions.DelphiEstimation;
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.functionpoints.functions.DataFunction;
-import com.uniovi.estimacion.entities.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
@@ -13,6 +11,7 @@ import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationSer
 import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.validators.projects.EstimationProjectValidator;
+import com.uniovi.estimacion.services.analysis.FunctionPointSizeAnalysisProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +37,7 @@ public class EstimationProjectController {
     private final EstimationProjectValidator estimationProjectValidator;
     private final DelphiEstimationService delphiEstimationService;
     private final EstimationModuleService estimationModuleService;
+    private final FunctionPointSizeAnalysisProvider functionPointSizeAnalysisProvider;
 
     @GetMapping
     public String listProjects(Model model, Pageable pageable) {
@@ -99,25 +99,14 @@ public class EstimationProjectController {
                 if (activeFunctionPointDelphi.getRegressionIntercept() != null
                         && activeFunctionPointDelphi.getRegressionSlope() != null) {
 
-                    List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(projectId);
-                    Map<Long, Double> moduleSizeById = new LinkedHashMap<>();
+                    List<EstimationModule> modulesList =
+                            estimationModuleService.findAllByProjectId(projectId);
 
-                    for (EstimationModule module : modulesList) {
-                        List<DataFunction> moduleDataFunctions =
-                                functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
-
-                        List<TransactionalFunction> moduleTransactionalFunctions =
-                                functionPointAnalysisService.findAllTransactionalFunctionsByModuleId(module.getId());
-
-                        FunctionPointAnalysisSummary moduleSummary =
-                                functionPointCalculationService.buildModuleSummary(
-                                        functionPointAnalysis,
-                                        moduleDataFunctions,
-                                        moduleTransactionalFunctions
-                                );
-
-                        moduleSizeById.put(module.getId(), moduleSummary.getAdjustedFunctionPoints());
-                    }
+                    Map<Long, Double> moduleSizeById =
+                            functionPointSizeAnalysisProvider.buildModuleSizeById(
+                                    functionPointAnalysis,
+                                    modulesList
+                            );
 
                     functionPointDelphiEstimatedTotalHours =
                             delphiEstimationService.calculateTotalEstimatedEffortHours(
@@ -131,6 +120,10 @@ public class EstimationProjectController {
         model.addAttribute("functionPointResults", functionPointResults);
         model.addAttribute("activeFunctionPointDelphi", activeFunctionPointDelphi);
         model.addAttribute("functionPointDelphiEstimatedTotalHours", functionPointDelphiEstimatedTotalHours);
+        model.addAttribute("functionPointTechniqueCode",
+                optionalFunctionPointAnalysis
+                        .map(FunctionPointAnalysis::getTechniqueCode)
+                        .orElse(null));
 
         return "project/details";
     }

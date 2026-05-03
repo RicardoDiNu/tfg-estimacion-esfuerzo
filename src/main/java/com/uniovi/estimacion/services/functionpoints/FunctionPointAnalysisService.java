@@ -351,7 +351,7 @@ public class FunctionPointAnalysisService {
     @Transactional
     public void recalculateAndDeleteDerivedEfforts(FunctionPointAnalysis analysis) {
         functionPointCalculationService.recalculateAnalysis(analysis);
-        effortResultsInvalidationCoordinator.deleteForFunctionPointAnalysis(analysis);
+        effortResultsInvalidationCoordinator.invalidateForSizeAnalysis(analysis);
     }
 
 

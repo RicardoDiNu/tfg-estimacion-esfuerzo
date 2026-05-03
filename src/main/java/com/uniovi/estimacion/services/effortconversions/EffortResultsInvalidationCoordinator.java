@@ -1,7 +1,6 @@
 package com.uniovi.estimacion.services.effortconversions;
 
 import com.uniovi.estimacion.entities.analysis.SizeAnalysis;
-import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,11 +12,11 @@ public class EffortResultsInvalidationCoordinator {
 
     private final DelphiEstimationService delphiEstimationService;
 
-    public void deleteForFunctionPointAnalysis(FunctionPointAnalysis analysis) {
-        delphiEstimationService.deleteAllBySourceAnalysis(analysis);
-    }
+    public void invalidateForSizeAnalysis(SizeAnalysis sourceAnalysis) {
+        if (sourceAnalysis == null || sourceAnalysis.getId() == null) {
+            return;
+        }
 
-    public void deleteForSizeAnalysis(SizeAnalysis analysis) {
-        delphiEstimationService.deleteAllBySourceAnalysis(analysis);
+        delphiEstimationService.deleteAllBySourceAnalysis(sourceAnalysis);
     }
 }

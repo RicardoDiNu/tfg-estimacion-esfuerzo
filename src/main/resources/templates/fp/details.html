@@ -308,15 +308,12 @@
 
                         <div class="mb-3">
                             <a class="btn btn-outline-primary"
-                               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/access(
-                                    projectId=${project.id},
-                                    sourceTechniqueCode=${analysis.techniqueCode}
-                                )}"
+                               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/access(projectId=${project.id}, sourceTechniqueCode=${analysis.techniqueCode})}"
                                th:text="${activeDelphiEstimation == null}
-                        ? #{fp.delphi.action.start}
-                        : (activeDelphiEstimation.regressionIntercept == null
-                            ? #{fp.delphi.action.continue}
-                            : #{fp.delphi.action.details})">
+        ? #{fp.delphi.action.start}
+        : (activeDelphiEstimation.regressionIntercept == null
+            ? #{fp.delphi.action.continue}
+            : #{fp.delphi.action.details})">
                                 Delphi
                             </a>
                         </div>

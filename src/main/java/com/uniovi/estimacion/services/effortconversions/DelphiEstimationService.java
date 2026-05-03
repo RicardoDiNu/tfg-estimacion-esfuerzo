@@ -235,15 +235,15 @@ public class DelphiEstimationService {
 
     @Transactional
     public void deleteAllBySourceAnalysis(SizeAnalysis sourceAnalysis) {
+        if (sourceAnalysis == null || sourceAnalysis.getId() == null) {
+            return;
+        }
+
         List<DelphiEstimation> estimations =
-                delphiEstimationRepository.findBySourceAnalysisIdAndSourceTechniqueCodeOrderByCreatedAtDesc(
+                delphiEstimationRepository.findAllBySourceAnalysisIdAndSourceTechniqueCode(
                         sourceAnalysis.getId(),
                         sourceAnalysis.getTechniqueCode()
                 );
-
-        if (estimations.isEmpty()) {
-            return;
-        }
 
         delphiEstimationRepository.deleteAll(estimations);
     }

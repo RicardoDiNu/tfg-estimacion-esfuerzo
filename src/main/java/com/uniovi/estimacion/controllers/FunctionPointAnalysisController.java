@@ -190,6 +190,7 @@ public class FunctionPointAnalysisController {
 
         model.addAttribute("project", project);
         model.addAttribute("analysis", analysis);
+        model.addAttribute("sourceTechniqueCode", analysis.getTechniqueCode());
         model.addAttribute("results", results);
         model.addAttribute("modulesList", modulesPageResult.getContent());
         model.addAttribute("modulesPage", modulesPageResult);
