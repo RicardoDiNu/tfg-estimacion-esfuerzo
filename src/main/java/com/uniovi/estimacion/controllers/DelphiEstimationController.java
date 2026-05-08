@@ -6,6 +6,7 @@ import com.uniovi.estimacion.entities.effortconversions.DelphiExpertEstimate;
 import com.uniovi.estimacion.entities.effortconversions.DelphiIteration;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.services.analysis.SizeAnalysisModuleResult;
 import com.uniovi.estimacion.services.analysis.SizeAnalysisProvider;
 import com.uniovi.estimacion.services.analysis.SizeAnalysisProviderRegistry;
 import com.uniovi.estimacion.services.costs.CostCalculationService;
@@ -35,7 +36,6 @@ import java.util.Optional;
 public class DelphiEstimationController {
 
     private final EstimationProjectService estimationProjectService;
-    private final EstimationModuleService estimationModuleService;
     private final DelphiEstimationService delphiEstimationService;
     private final DelphiEstimationValidator delphiEstimationValidator;
     private final DelphiIterationValidator delphiIterationValidator;
@@ -122,16 +122,12 @@ public class DelphiEstimationController {
         EstimationProject project = optionalProject.get();
         SizeAnalysis analysis = optionalAnalysis.get();
 
-        List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(projectId);
-        Map<Long, Double> moduleSizeById =
-                getSourceAnalysisProvider(sourceTechniqueCode).buildModuleSizeById(
-                        analysis,
-                        modulesList
-                );
+        List<SizeAnalysisModuleResult> moduleResults =
+                getSourceAnalysisProvider(sourceTechniqueCode).buildModuleResults(analysis);
 
         delphiEstimationValidator.validate(createForm, result);
 
-        if (!delphiEstimationService.canStartCalibration(moduleSizeById)) {
+        if (!delphiEstimationService.canStartCalibration(moduleResults)) {
             result.reject("delphi.validation.notEnoughModules");
         }
 
@@ -142,8 +138,7 @@ public class DelphiEstimationController {
 
         DelphiEstimation estimation = delphiEstimationService.createInitialEstimation(
                 analysis,
-                modulesList,
-                moduleSizeById,
+                moduleResults,
                 createForm.getAcceptableDeviationPercentage(),
                 createForm.getMaximumIterations(),
                 createForm.getExpertCount()
@@ -181,12 +176,8 @@ public class DelphiEstimationController {
         SizeAnalysis analysis = optionalAnalysis.get();
         DelphiEstimation estimation = optionalEstimation.get();
 
-        List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(projectId);
-        Map<Long, Double> moduleSizeById =
-                getSourceAnalysisProvider(sourceTechniqueCode).buildModuleSizeById(
-                        analysis,
-                        modulesList
-                );
+        List<SizeAnalysisModuleResult> moduleResults =
+                getSourceAnalysisProvider(sourceTechniqueCode).buildModuleResults(analysis);
 
         Map<Long, Double> moduleEstimatedEffortById = new LinkedHashMap<>();
         boolean hasFinalCalibration = delphiEstimationService.isFinished(estimation);
@@ -195,19 +186,19 @@ public class DelphiEstimationController {
         BigDecimal totalEstimatedCost = null;
 
         if (hasFinalCalibration) {
-            for (EstimationModule module : modulesList) {
-                Double moduleSize = moduleSizeById.get(module.getId());
+            for (SizeAnalysisModuleResult moduleResult : moduleResults) {
+                Double moduleSize = moduleResult.getSize();
 
                 if (moduleSize != null && moduleSize > 0) {
                     moduleEstimatedEffortById.put(
-                            module.getId(),
+                            moduleResult.getModuleId(),
                             delphiEstimationService.calculateEstimatedEffortHours(estimation, moduleSize)
                     );
                 }
             }
 
             totalEstimatedHours =
-                    delphiEstimationService.calculateTotalEstimatedEffortHours(estimation, moduleSizeById);
+                    delphiEstimationService.calculateTotalEstimatedEffortHours(estimation, moduleResults);
 
 
             if (totalEstimatedHours != null) {
@@ -225,8 +216,7 @@ public class DelphiEstimationController {
         model.addAttribute("sourceTechniqueCode", sourceTechniqueCode);
         model.addAttribute("sourceAnalysisDetailsPath",
                 getSourceAnalysisProvider(sourceTechniqueCode).getDetailsPath(projectId));
-        model.addAttribute("modulesList", modulesList);
-        model.addAttribute("moduleSizeById", moduleSizeById);
+        model.addAttribute("moduleResults", moduleResults);
         model.addAttribute("moduleEstimatedEffortById", moduleEstimatedEffortById);
         model.addAttribute("totalEstimatedHours", totalEstimatedHours);
         model.addAttribute("totalEstimatedCost", totalEstimatedCost);
@@ -414,21 +404,16 @@ public class DelphiEstimationController {
                                      String sourceTechniqueCode,
                                      DelphiEstimationCreateForm createForm,
                                      Model model) {
-        List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(project.getId());
-        Map<Long, Double> moduleSizeById =
-                getSourceAnalysisProvider(sourceTechniqueCode).buildModuleSizeById(
-                        analysis,
-                        modulesList
-                );
+        List<SizeAnalysisModuleResult> moduleResults =
+                getSourceAnalysisProvider(analysis.getTechniqueCode()).buildModuleResults(analysis);
 
         model.addAttribute("project", project);
         model.addAttribute("analysis", analysis);
         model.addAttribute("sourceTechniqueCode", sourceTechniqueCode);
         model.addAttribute("sourceAnalysisDetailsPath",
                 getSourceAnalysisProvider(sourceTechniqueCode).getDetailsPath(project.getId()));
-        model.addAttribute("modulesList", modulesList);
-        model.addAttribute("moduleSizeById", moduleSizeById);
-        model.addAttribute("canStartDelphi", delphiEstimationService.canStartCalibration(moduleSizeById));
+        model.addAttribute("moduleResults", moduleResults);
+        model.addAttribute("canStartDelphi", delphiEstimationService.canStartCalibration(moduleResults));
         model.addAttribute("createForm", createForm);
     }
 

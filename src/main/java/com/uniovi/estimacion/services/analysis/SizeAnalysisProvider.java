@@ -3,6 +3,7 @@ package com.uniovi.estimacion.services.analysis;
 import com.uniovi.estimacion.entities.analysis.SizeAnalysis;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,8 +16,23 @@ public interface SizeAnalysisProvider {
 
     Optional<? extends SizeAnalysis> findDetailedByProjectId(Long projectId);
 
-    Map<Long, Double> buildModuleSizeById(SizeAnalysis analysis,
-                                          List<EstimationModule> modulesList);
+    List<SizeAnalysisModuleResult> buildModuleResults(SizeAnalysis analysis);
+
+    default Map<Long, Double> buildModuleSizeById(SizeAnalysis analysis) {
+        Map<Long, Double> moduleSizeById = new LinkedHashMap<>();
+
+        for (SizeAnalysisModuleResult moduleResult : buildModuleResults(analysis)) {
+            moduleSizeById.put(moduleResult.getModuleId(), moduleResult.getSize());
+        }
+
+        return moduleSizeById;
+    }
+
+    @Deprecated
+    default Map<Long, Double> buildModuleSizeById(SizeAnalysis analysis,
+                                                  List<EstimationModule> modulesList) {
+        return buildModuleSizeById(analysis);
+    }
 
     String getDetailsPath(Long projectId);
 

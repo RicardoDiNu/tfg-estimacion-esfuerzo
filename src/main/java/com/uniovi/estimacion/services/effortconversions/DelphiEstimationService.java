@@ -6,6 +6,7 @@ import com.uniovi.estimacion.entities.effortconversions.DelphiExpertEstimate;
 import com.uniovi.estimacion.entities.effortconversions.DelphiIteration;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.repositories.effortconversions.DelphiEstimationRepository;
+import com.uniovi.estimacion.services.analysis.SizeAnalysisModuleResult;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
@@ -94,20 +95,27 @@ public class DelphiEstimationService {
 
     @Transactional
     public DelphiEstimation createInitialEstimation(SizeAnalysis sourceAnalysis,
-                                                    List<EstimationModule> projectModules,
-                                                    Map<Long, Double> moduleSizeById,
+                                                    List<SizeAnalysisModuleResult> moduleResults,
                                                     Double acceptableDeviationPercentage,
                                                     Integer maximumIterations,
                                                     Integer expertCount) {
         validateSourceAnalysis(sourceAnalysis);
-        validateInitialConfiguration(acceptableDeviationPercentage, maximumIterations, expertCount);
 
-        ModuleReference minimumModule = findMinimumModule(projectModules, moduleSizeById);
-        ModuleReference maximumModule = findMaximumModule(projectModules, moduleSizeById);
+        List<SizeAnalysisModuleResult> validModules = moduleResults.stream()
+                .filter(module -> module.getSize() != null && module.getSize() > 0)
+                .toList();
 
-        validateExtremeModules(minimumModule, maximumModule);
+        if (!canStartCalibration(validModules)) {
+            throw new IllegalArgumentException("No hay suficientes módulos válidos para iniciar Delphi.");
+        }
 
-        deactivatePreviousActiveEstimations(sourceAnalysis);
+        SizeAnalysisModuleResult minimumModule = validModules.stream()
+                .min(java.util.Comparator.comparingDouble(SizeAnalysisModuleResult::getSize))
+                .orElseThrow();
+
+        SizeAnalysisModuleResult maximumModule = validModules.stream()
+                .max(java.util.Comparator.comparingDouble(SizeAnalysisModuleResult::getSize))
+                .orElseThrow();
 
         DelphiEstimation estimation = new DelphiEstimation();
         estimation.setEstimationProject(sourceAnalysis.getEstimationProject());
@@ -117,13 +125,13 @@ public class DelphiEstimationService {
         estimation.setSourceSizeUnitCode(sourceAnalysis.getSizeUnitCode());
         estimation.setSourceProjectSizeSnapshot(sourceAnalysis.getCalculatedSizeValue());
 
-        estimation.setMinimumModuleId(minimumModule.moduleId());
-        estimation.setMinimumModuleNameSnapshot(minimumModule.moduleName());
-        estimation.setMinimumModuleSizeSnapshot(minimumModule.moduleSize());
+        estimation.setMinimumModuleId(minimumModule.getModuleId());
+        estimation.setMinimumModuleNameSnapshot(minimumModule.getModuleName());
+        estimation.setMinimumModuleSizeSnapshot(minimumModule.getSize());
 
-        estimation.setMaximumModuleId(maximumModule.moduleId());
-        estimation.setMaximumModuleNameSnapshot(maximumModule.moduleName());
-        estimation.setMaximumModuleSizeSnapshot(maximumModule.moduleSize());
+        estimation.setMaximumModuleId(maximumModule.getModuleId());
+        estimation.setMaximumModuleNameSnapshot(maximumModule.getModuleName());
+        estimation.setMaximumModuleSizeSnapshot(maximumModule.getSize());
 
         estimation.setAcceptableDeviationPercentage(acceptableDeviationPercentage);
         estimation.setMaximumIterations(maximumIterations);
@@ -259,6 +267,49 @@ public class DelphiEstimationService {
 
         delphiEstimationRepository.delete(optionalEstimation.get());
         return true;
+    }
+
+    public boolean canStartCalibration(List<SizeAnalysisModuleResult> moduleResults) {
+        List<SizeAnalysisModuleResult> validModules = moduleResults.stream()
+                .filter(module -> module.getSize() != null && module.getSize() > 0)
+                .toList();
+
+        if (validModules.size() < 2) {
+            return false;
+        }
+
+        double minimumSize = validModules.stream()
+                .mapToDouble(SizeAnalysisModuleResult::getSize)
+                .min()
+                .orElse(0.0);
+
+        double maximumSize = validModules.stream()
+                .mapToDouble(SizeAnalysisModuleResult::getSize)
+                .max()
+                .orElse(0.0);
+
+        return maximumSize > minimumSize;
+    }
+
+    public Double calculateTotalEstimatedEffortHours(DelphiEstimation estimation,
+                                                     List<SizeAnalysisModuleResult> moduleResults) {
+        if (estimation == null || moduleResults == null || moduleResults.isEmpty()) {
+            return null;
+        }
+
+        if (estimation.getRegressionIntercept() == null || estimation.getRegressionSlope() == null) {
+            return null;
+        }
+
+        double total = 0.0;
+
+        for (SizeAnalysisModuleResult moduleResult : moduleResults) {
+            if (moduleResult.getSize() != null && moduleResult.getSize() > 0) {
+                total += calculateEstimatedEffortHours(estimation, moduleResult.getSize());
+            }
+        }
+
+        return total;
     }
 
     private void initializeIterations(DelphiEstimation estimation) {

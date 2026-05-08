@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container mt-4">
+        <h1 class="mb-4" th:text="#{ucp.useCase.add.title}">
+            Añadir caso de uso
+        </h1>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{ucp.useCases.title}">
+                Casos de uso
+            </div>
+
+            <div class="card-body">
+                <form th:action="@{/projects/{projectId}/use-case-points/modules/{moduleId}/use-cases/add(
+                          projectId=${project.id},
+                          moduleId=${module.id})}"
+                      th:object="${useCaseForm}"
+                      method="post">
+
+                    <div class="mb-3">
+                        <h6 class="text-muted" th:text="#{ucp.module.field.name}">
+                            Módulo
+                        </h6>
+                        <p class="card-text mb-0" th:text="${module.name}">
+                            Módulo
+                        </p>
+                    </div>
+
+                    <div th:if="${actorsList == null or actorsList.isEmpty()}"
+                         class="alert alert-warning"
+                         th:text="#{ucp.useCase.noActors}">
+                        Debes crear al menos un actor antes de añadir casos de uso.
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name" th:text="#{ucp.useCase.field.name}">
+                            Nombre del caso de uso
+                        </label>
+                        <input id="name"
+                               type="text"
+                               class="form-control"
+                               th:field="*{name}"
+                               maxlength="150">
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('name')}"
+                             th:errors="*{name}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" th:text="#{ucp.useCase.field.description}">
+                            Descripción
+                        </label>
+                        <textarea id="description"
+                                  class="form-control"
+                                  rows="3"
+                                  th:field="*{description}"
+                                  maxlength="1000"></textarea>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('description')}"
+                             th:errors="*{description}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="actorIds" th:text="#{ucp.useCase.field.actors}">
+                            Actores
+                        </label>
+
+                        <select id="actorIds"
+                                class="form-control"
+                                th:field="*{actorIds}"
+                                multiple
+                                size="5">
+                            <option th:each="actor : ${actorsList}"
+                                    th:value="${actor.id}"
+                                    th:text="${actor.name + ' — ' + #messages.msg(actor.complexity.messageKey) + ' (' + actor.weight + ')'}">
+                                Actor
+                            </option>
+                        </select>
+
+                        <small class="form-text text-muted"
+                               th:text="#{ucp.useCase.help.actors}">
+                            Mantén pulsado Ctrl para seleccionar varios actores.
+                        </small>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('actorIds')}"
+                             th:errors="*{actorIds}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="triggerCondition" th:text="#{ucp.useCase.field.triggerCondition}">
+                            Condición de inicio
+                        </label>
+                        <textarea id="triggerCondition"
+                                  class="form-control"
+                                  rows="2"
+                                  th:field="*{triggerCondition}"
+                                  maxlength="1000"></textarea>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('triggerCondition')}"
+                             th:errors="*{triggerCondition}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="preconditions" th:text="#{ucp.useCase.field.preconditions}">
+                            Precondiciones
+                        </label>
+                        <textarea id="preconditions"
+                                  class="form-control"
+                                  rows="3"
+                                  th:field="*{preconditions}"
+                                  maxlength="2000"></textarea>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('preconditions')}"
+                             th:errors="*{preconditions}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="postconditions" th:text="#{ucp.useCase.field.postconditions}">
+                            Postcondiciones
+                        </label>
+                        <textarea id="postconditions"
+                                  class="form-control"
+                                  rows="3"
+                                  th:field="*{postconditions}"
+                                  maxlength="2000"></textarea>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('postconditions')}"
+                             th:errors="*{postconditions}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="normalFlow" th:text="#{ucp.useCase.field.normalFlow}">
+                            Flujo normal
+                        </label>
+                        <textarea id="normalFlow"
+                                  class="form-control"
+                                  rows="6"
+                                  th:field="*{normalFlow}"
+                                  maxlength="4000"></textarea>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('normalFlow')}"
+                             th:errors="*{normalFlow}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="alternativeFlows" th:text="#{ucp.useCase.field.alternativeFlows}">
+                            Flujos alternativos
+                        </label>
+                        <textarea id="alternativeFlows"
+                                  class="form-control"
+                                  rows="5"
+                                  th:field="*{alternativeFlows}"
+                                  maxlength="4000"></textarea>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('alternativeFlows')}"
+                             th:errors="*{alternativeFlows}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="exceptionFlows" th:text="#{ucp.useCase.field.exceptionFlows}">
+                            Excepciones
+                        </label>
+                        <textarea id="exceptionFlows"
+                                  class="form-control"
+                                  rows="3"
+                                  th:field="*{exceptionFlows}"
+                                  maxlength="2000"></textarea>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('exceptionFlows')}"
+                             th:errors="*{exceptionFlows}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transactionCount" th:text="#{ucp.useCase.field.transactionCount}">
+                            Número de transacciones
+                        </label>
+                        <input id="transactionCount"
+                               type="number"
+                               class="form-control"
+                               th:field="*{transactionCount}"
+                               min="1"
+                               max="999"
+                               step="1">
+
+                        <small class="form-text text-muted"
+                               th:text="#{ucp.useCase.help.transactionCount}">
+                            La complejidad se calculará automáticamente a partir de este valor.
+                        </small>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('transactionCount')}"
+                             th:errors="*{transactionCount}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit"
+                                class="btn btn-primary mr-2"
+                                th:disabled="${actorsList == null or actorsList.isEmpty()}"
+                                th:text="#{project.action.save}">
+                            Guardar
+                        </button>
+
+                        <a class="btn btn-secondary"
+                           th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}(
+                               projectId=${project.id},
+                               moduleId=${module.id})}"
+                           th:text="#{common.back}">
+                            Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

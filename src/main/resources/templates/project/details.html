@@ -225,10 +225,8 @@
                     <div class="card-header" th:text="#{project.details.ucp.title}">Análisis UCP</div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <a class="btn btn-outline-primary mr-2 disabled"
-                               href="#"
-                               tabindex="-1"
-                               aria-disabled="true"
+                            <a class="btn btn-outline-primary mr-2"
+                               th:href="@{/projects/{id}/use-case-points/access(id=${project.id})}"
                                th:text="${hasUseCasePointAnalysis} ? #{project.details.ucp.open} : #{project.details.ucp.create}">
                                 Análisis UCP
                             </a>
@@ -239,9 +237,23 @@
 
                             <div th:if="${hasUseCasePointAnalysis}" class="border rounded p-3 bg-light">
                                 <p class="card-text mb-1">
-                                    <strong>0.00</strong>
-                                    <span th:text="#{project.details.ucp.sizeUnit}">UCP</span>
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointResults.adjustedUseCasePoints, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="#{project.details.ucp.sizeUnit}">
+                                        UCP
+                                    </strong>
                                 </p>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{ucp.field.uaw}">Peso de actores no ajustado</span>:
+                                    <span th:text="${useCasePointResults.unadjustedActorWeight}">0</span>
+                                </small>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{ucp.field.uucw}">Peso de casos de uso no ajustado</span>:
+                                    <span th:text="${useCasePointResults.unadjustedUseCaseWeight}">0</span>
+                                </small>
                             </div>
 
                             <div th:unless="${hasUseCasePointAnalysis}"
@@ -257,7 +269,54 @@
                                 Conversión a esfuerzo Delphi
                             </h6>
 
-                            <div class="alert alert-light border mb-0"
+                            <div th:if="${activeUseCasePointDelphi != null and activeUseCasePointDelphi.regressionIntercept != null}"
+                                 class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointDelphiEstimatedTotalHours, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="#{project.details.effort.hoursUnit}">
+                                        h
+                                    </strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.delphi.minimumModuleEffort}">
+                Esfuerzo módulo mínimo
+            </span>:
+                                    <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.minimumModuleEstimatedEffortHours, 1, 2)}">
+                0.00
+            </span>
+                                    <span th:text="#{project.details.effort.hoursUnit}">
+                h
+            </span>
+                                </small>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.delphi.maximumModuleEffort}">
+                Esfuerzo módulo máximo
+            </span>:
+                                    <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.maximumModuleEstimatedEffortHours, 1, 2)}">
+                0.00
+            </span>
+                                    <span th:text="#{project.details.effort.hoursUnit}">
+                h
+            </span>
+                                </small>
+
+                                <p class="card-text mb-1"
+                                       th:if="${useCasePointDelphiEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointDelphiEstimatedCost, 1, 2)}">
+                0.00
+            </strong>
+                                    <strong th:text="${project.currencyCode}">
+                EUR
+            </strong>
+                                </p>
+                            </div>
+
+                            <div th:unless="${activeUseCasePointDelphi != null and activeUseCasePointDelphi.regressionIntercept != null}"
+                                 class="alert alert-light border mb-0"
                                  th:text="#{project.details.ucp.delphi.empty}">
                                 Todavía no hay una conversión Delphi finalizada disponible para UCP.
                             </div>
@@ -269,9 +328,61 @@
                                 Conversión a esfuerzo con función de transformación
                             </h6>
 
-                            <div class="alert alert-light border mb-0"
+                            <div th:if="${activeUseCasePointTransformationConversion == null}"
+                                 class="alert alert-light border mb-0"
                                  th:text="#{project.details.ucp.transformation.empty}">
                                 Todavía no hay una conversión mediante función de transformación disponible para UCP.
+                            </div>
+
+                            <div th:if="${activeUseCasePointTransformationConversion != null}"
+                                 class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointTransformationEstimatedHours, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="#{fp.delphi.hoursPersonUnit}">
+                                        Horas-Persona
+                                    </strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.transformation.function}">
+                Función aplicada
+            </span>:
+                                    <span th:text="${activeUseCasePointTransformationConversion.functionNameSnapshot}">
+                Función personalizada
+            </span>
+                                </small>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.transformation.formula}">
+                Fórmula
+            </span>:
+                                    <span>
+                E =
+                <span th:text="${#numbers.formatDecimal(activeUseCasePointTransformationConversion.interceptSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                +
+                <span th:text="${#numbers.formatDecimal(activeUseCasePointTransformationConversion.slopeSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                ×
+                <span th:text="${activeUseCasePointTransformationConversion.sourceSizeUnitCode}">
+                    UCP
+                </span>
+            </span>
+                                </small>
+
+                                <p class="card-text mb-1"
+                                       th:if="${useCasePointTransformationEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointTransformationEstimatedCost, 1, 2)}">
+                0.00
+            </strong>
+                                    <strong th:text="${project.currencyCode}">
+                EUR
+            </strong>
+                                </p>
                             </div>
                         </div>
                     </div>

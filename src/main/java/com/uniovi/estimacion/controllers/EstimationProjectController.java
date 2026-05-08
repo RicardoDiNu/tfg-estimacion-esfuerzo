@@ -5,7 +5,9 @@ import com.uniovi.estimacion.entities.effortconversions.transformationfunctions.
 import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.entities.usecasepoints.UseCasePointAnalysis;
 import com.uniovi.estimacion.services.analysis.FunctionPointSizeAnalysisProvider;
+import com.uniovi.estimacion.services.analysis.UseCasePointSizeAnalysisProvider;
 import com.uniovi.estimacion.services.costs.CostCalculationService;
 import com.uniovi.estimacion.services.effortconversions.DelphiEstimationService;
 import com.uniovi.estimacion.services.effortconversions.TransformationFunctionService;
@@ -14,6 +16,9 @@ import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisSummar
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
 import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
+import com.uniovi.estimacion.services.usecasepoints.UseCasePointAnalysisService;
+import com.uniovi.estimacion.services.usecasepoints.UseCasePointAnalysisSummary;
+import com.uniovi.estimacion.services.usecasepoints.UseCasePointCalculationService;
 import com.uniovi.estimacion.validators.projects.EstimationProjectValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -43,6 +48,9 @@ public class EstimationProjectController {
     private final FunctionPointSizeAnalysisProvider functionPointSizeAnalysisProvider;
     private final TransformationFunctionService transformationFunctionService;
     private final CostCalculationService costCalculationService;
+    private final UseCasePointAnalysisService useCasePointAnalysisService;
+    private final UseCasePointCalculationService useCasePointCalculationService;
+    private final UseCasePointSizeAnalysisProvider useCasePointSizeAnalysisProvider;
 
     @GetMapping
     public String listProjects(Model model, Pageable pageable) {
@@ -83,9 +91,14 @@ public class EstimationProjectController {
 
         boolean hasFunctionPointAnalysis = optionalFunctionPointAnalysis.isPresent();
 
+        Optional<UseCasePointAnalysis> optionalUseCasePointAnalysis =
+                useCasePointAnalysisService.findDetailedByProjectId(projectId);
+
+        boolean hasUseCasePointAnalysis = optionalUseCasePointAnalysis.isPresent();
+
         model.addAttribute("project", project);
         model.addAttribute("hasFunctionPointAnalysis", hasFunctionPointAnalysis);
-        model.addAttribute("hasUseCasePointAnalysis", false);
+        model.addAttribute("hasUseCasePointAnalysis", hasUseCasePointAnalysis);
 
         FunctionPointAnalysisSummary functionPointResults = null;
         DelphiEstimation activeFunctionPointDelphi = null;
@@ -153,6 +166,66 @@ public class EstimationProjectController {
             }
         }
 
+        UseCasePointAnalysisSummary useCasePointResults = null;
+
+        DelphiEstimation activeUseCasePointDelphi = null;
+        Double useCasePointDelphiEstimatedTotalHours = null;
+        BigDecimal useCasePointDelphiEstimatedCost = null;
+
+        TransformationFunctionConversion activeUseCasePointTransformationConversion = null;
+        Double useCasePointTransformationEstimatedHours = null;
+        BigDecimal useCasePointTransformationEstimatedCost = null;
+
+        if (hasUseCasePointAnalysis) {
+            UseCasePointAnalysis useCasePointAnalysis = optionalUseCasePointAnalysis.get();
+            useCasePointResults = useCasePointCalculationService.buildSummary(useCasePointAnalysis);
+
+            Optional<DelphiEstimation> optionalActiveUcpDelphi =
+                    delphiEstimationService.findDetailedActiveBySourceAnalysis(useCasePointAnalysis);
+
+            if (optionalActiveUcpDelphi.isPresent()) {
+                activeUseCasePointDelphi = optionalActiveUcpDelphi.get();
+
+                if (activeUseCasePointDelphi.getRegressionIntercept() != null
+                        && activeUseCasePointDelphi.getRegressionSlope() != null) {
+
+                    var moduleResults =
+                            useCasePointSizeAnalysisProvider.buildModuleResults(useCasePointAnalysis);
+
+                    useCasePointDelphiEstimatedTotalHours =
+                            delphiEstimationService.calculateTotalEstimatedEffortHours(
+                                    activeUseCasePointDelphi,
+                                    moduleResults
+                            );
+
+                    useCasePointDelphiEstimatedCost =
+                            costCalculationService.calculateCost(
+                                    useCasePointDelphiEstimatedTotalHours,
+                                    project.getHourlyRate()
+                            );
+                }
+            }
+
+            Optional<TransformationFunctionConversion> optionalActiveUcpTransformation =
+                    transformationFunctionService.findActiveBySourceAnalysis(useCasePointAnalysis);
+
+            if (optionalActiveUcpTransformation.isPresent()) {
+                activeUseCasePointTransformationConversion = optionalActiveUcpTransformation.get();
+
+                useCasePointTransformationEstimatedHours =
+                        transformationFunctionService.calculateEstimatedEffortHours(
+                                activeUseCasePointTransformationConversion,
+                                useCasePointAnalysis.getCalculatedSizeValue()
+                        );
+
+                useCasePointTransformationEstimatedCost =
+                        costCalculationService.calculateCost(
+                                useCasePointTransformationEstimatedHours,
+                                project.getHourlyRate()
+                        );
+            }
+        }
+
         model.addAttribute("functionPointResults", functionPointResults);
         model.addAttribute("activeFunctionPointDelphi", activeFunctionPointDelphi);
         model.addAttribute("functionPointDelphiEstimatedTotalHours", functionPointDelphiEstimatedTotalHours);
@@ -164,6 +237,18 @@ public class EstimationProjectController {
                 optionalFunctionPointAnalysis
                         .map(FunctionPointAnalysis::getTechniqueCode)
                         .orElse(null));
+        model.addAttribute("useCasePointResults", useCasePointResults);
+        model.addAttribute("useCasePointTechniqueCode",
+                optionalUseCasePointAnalysis
+                        .map(UseCasePointAnalysis::getTechniqueCode)
+                        .orElse(null));
+        model.addAttribute("activeUseCasePointDelphi", activeUseCasePointDelphi);
+        model.addAttribute("useCasePointDelphiEstimatedTotalHours", useCasePointDelphiEstimatedTotalHours);
+        model.addAttribute("useCasePointDelphiEstimatedCost", useCasePointDelphiEstimatedCost);
+
+        model.addAttribute("activeUseCasePointTransformationConversion", activeUseCasePointTransformationConversion);
+        model.addAttribute("useCasePointTransformationEstimatedHours", useCasePointTransformationEstimatedHours);
+        model.addAttribute("useCasePointTransformationEstimatedCost", useCasePointTransformationEstimatedCost);
 
         return "project/details";
     }

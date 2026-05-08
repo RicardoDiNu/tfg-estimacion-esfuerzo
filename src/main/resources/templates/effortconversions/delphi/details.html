@@ -208,18 +208,28 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="module : ${modulesList}">
-                            <td th:text="${module.name}">Módulo</td>
-                            <td>
-                                <span th:text="${#numbers.formatDecimal(moduleSizeById[module.id], 1, 2)}">0.00</span>
-                                <span th:text="${sizeUnitLabel}">PF</span>
+                        <tr th:each="moduleResult : ${moduleResults}">
+                            <td th:text="${moduleResult.moduleName}">
+                                Módulo
                             </td>
+
                             <td>
-                                <span th:if="${moduleEstimatedEffortById[module.id] != null}"
-                                      th:text="${#numbers.formatDecimal(moduleEstimatedEffortById[module.id], 1, 2)} + ' ' + #{fp.delphi.hoursPersonUnit}">
-                                    0.00 H-Persona
+                                <span th:text="${#numbers.formatDecimal(moduleResult.size, 1, 2)}">
+                                    0.00
                                 </span>
-                                <span th:if="${moduleEstimatedEffortById[module.id] == null}">-</span>
+                                <span th:text="${estimation.sourceSizeUnitCode}">
+                                    UCP
+                                </span>
+                            </td>
+
+                            <td>
+                                <span th:if="${moduleEstimatedEffortById[moduleResult.moduleId] != null}"
+                                      th:text="${#numbers.formatDecimal(moduleEstimatedEffortById[moduleResult.moduleId], 1, 2)}">
+                                    0.00
+                                </span>
+                                <span th:unless="${moduleEstimatedEffortById[moduleResult.moduleId] != null}">
+                                    -
+                                </span>
                             </td>
                         </tr>
                         </tbody>

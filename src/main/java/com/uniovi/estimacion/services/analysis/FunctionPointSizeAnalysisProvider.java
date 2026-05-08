@@ -10,9 +10,11 @@ import com.uniovi.estimacion.entities.projects.EstimationModule;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
+import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ public class FunctionPointSizeAnalysisProvider implements SizeAnalysisProvider {
 
     private final FunctionPointAnalysisService functionPointAnalysisService;
     private final FunctionPointCalculationService functionPointCalculationService;
+    private final EstimationModuleService estimationModuleService;
 
     @Override
     public String getTechniqueCode() {
@@ -38,6 +41,41 @@ public class FunctionPointSizeAnalysisProvider implements SizeAnalysisProvider {
     @Override
     public Optional<? extends SizeAnalysis> findDetailedByProjectId(Long projectId) {
         return functionPointAnalysisService.findDetailedByProjectId(projectId);
+    }
+
+    @Override
+    public List<SizeAnalysisModuleResult> buildModuleResults(SizeAnalysis analysis) {
+        if (!(analysis instanceof FunctionPointAnalysis functionPointAnalysis)) {
+            throw new IllegalArgumentException("El análisis recibido no es un análisis de Puntos Función.");
+        }
+
+        Long projectId = functionPointAnalysis.getEstimationProject().getId();
+        List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(projectId);
+
+        List<SizeAnalysisModuleResult> moduleResults = new ArrayList<>();
+
+        for (EstimationModule module : modulesList) {
+            List<DataFunction> moduleDataFunctions =
+                    functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
+
+            List<TransactionalFunction> moduleTransactionalFunctions =
+                    functionPointAnalysisService.findAllTransactionalFunctionsByModuleId(module.getId());
+
+            FunctionPointAnalysisSummary moduleSummary =
+                    functionPointCalculationService.buildModuleSummary(
+                            functionPointAnalysis,
+                            moduleDataFunctions,
+                            moduleTransactionalFunctions
+                    );
+
+            moduleResults.add(new SizeAnalysisModuleResult(
+                    module.getId(),
+                    module.getName(),
+                    moduleSummary.getAdjustedFunctionPoints()
+            ));
+        }
+
+        return moduleResults;
     }
 
     @Override

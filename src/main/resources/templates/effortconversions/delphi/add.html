@@ -41,13 +41,13 @@
         <div class="card mb-4">
             <div class="card-header" th:text="#{delphi.add.modules.title}">Módulos y tamaños</div>
             <div class="card-body">
-                <div th:if="${modulesList == null or modulesList.isEmpty()}"
+                <div th:if="${moduleResults == null or moduleResults.isEmpty()}"
                      class="alert alert-light border mb-0"
                      th:text="#{delphi.add.modules.empty}">
                     No hay módulos registrados.
                 </div>
 
-                <div class="table-responsive" th:if="${modulesList != null and !modulesList.isEmpty()}">
+                <div class="table-responsive" th:if="${moduleResults != null and !moduleResults.isEmpty()}">
                     <table class="table table-hover">
                         <thead>
                         <tr>
@@ -56,11 +56,17 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="module : ${modulesList}">
-                            <td th:text="${module.name}">Módulo</td>
+                        <tr th:each="moduleResult : ${moduleResults}">
+                            <td th:text="${moduleResult.moduleName}">
+                                Módulo
+                            </td>
                             <td>
-                                <span th:text="${#numbers.formatDecimal(moduleSizeById[module.id], 1, 2)}">0.00</span>
-                                <span th:text="${sizeUnitLabel}">PF</span>
+                                <span th:text="${#numbers.formatDecimal(moduleResult.size, 1, 2)}">
+                                    0.00
+                                </span>
+                                <span th:text="${analysis.sizeUnitCode}">
+                                    UCP
+                                </span>
                             </td>
                         </tr>
                         </tbody>
