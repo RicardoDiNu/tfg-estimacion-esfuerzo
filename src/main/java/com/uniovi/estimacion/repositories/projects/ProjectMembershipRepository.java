@@ -29,6 +29,10 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
 
     void deleteByProjectIdAndWorkerId(Long projectId, Long workerId);
 
+    boolean existsByWorkerId(Long workerId);
+
+    void deleteByWorkerId(Long workerId);
+
     @EntityGraph(attributePaths = {"project", "worker"})
     Page<ProjectMembership> findByWorkerUsernameOrderByProjectIdAsc(String username, Pageable pageable);
 

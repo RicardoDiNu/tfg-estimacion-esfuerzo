@@ -59,6 +59,7 @@ public class UserService {
         user.setEmail(normalize(form.getEmail()));
         user.setPassword(passwordEncoder.encode(form.getPassword()));
         user.setRole(UserRole.ROLE_PROJECT_MANAGER);
+        user.setProjectManager(null);
         user.setEnabled(true);
 
         return userRepository.save(user);

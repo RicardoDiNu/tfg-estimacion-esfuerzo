@@ -14,4 +14,6 @@ public interface EstimationProjectRepository extends JpaRepository<EstimationPro
     Page<EstimationProject> findByOwnerUsernameOrderByIdAsc(String username, Pageable pageable);
 
     Optional<EstimationProject> findByIdAndOwnerUsername(Long id, String username);
+
+    boolean existsByOwnerId(Long ownerId);
 }

@@ -41,6 +41,34 @@
                 </div>
             </li>
 
+            <li class="nav-item dropdown"
+                sec:authorize="hasAnyAuthority('ROLE_ADMIN','ROLE_PROJECT_MANAGER','ROLE_USER')">
+                <a class="nav-link dropdown-toggle"
+                   href="#"
+                   id="usersMenu"
+                   role="button"
+                   data-toggle="dropdown"
+                   aria-haspopup="true"
+                   aria-expanded="false"
+                   th:text="#{nav.users}">
+                    Usuarios
+                </a>
+
+                <div class="dropdown-menu" aria-labelledby="usersMenu">
+                    <a class="dropdown-item"
+                       th:href="@{/users}"
+                       th:text="#{nav.users.list}">
+                        Ver usuarios
+                    </a>
+
+                    <a class="dropdown-item"
+                       th:href="@{/users/add}"
+                       th:text="#{nav.users.add}">
+                        Crear usuario
+                    </a>
+                </div>
+            </li>
+
             <li class="nav-item">
                 <a class="nav-link" th:href="@{/help}" th:text="#{nav.help}">
                     Ayuda
@@ -103,6 +131,12 @@
                 </a>
 
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userMenu">
+                    <a class="dropdown-item"
+                       th:href="@{/account}"
+                       th:text="#{nav.account}">
+                        Mi cuenta
+                    </a>
+
                     <a class="dropdown-item"
                        id="logout"
                        th:href="@{/logout}"

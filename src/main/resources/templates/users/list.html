@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container-fluid fp-analysis-container">
+        <h1 class="mb-4" th:text="#{user.management.list.title}">
+            Usuarios
+        </h1>
+
+        <div class="card mb-4" id="users-container" th:fragment="usersSection">
+            <div class="card-header" th:text="#{user.management.list.header}">
+                Gestión de usuarios
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/users/add}"
+                       th:text="#{user.management.action.add}">
+                        Crear usuario
+                    </a>
+                </div>
+
+                <div th:if="${usersList == null or usersList.isEmpty()}"
+                     class="alert alert-light border mb-0"
+                     th:text="#{user.management.list.empty}">
+                    No hay usuarios disponibles.
+                </div>
+
+                <div class="table-responsive"
+                     th:if="${usersList != null and !usersList.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{user.management.field.username}">Usuario</th>
+                            <th th:text="#{user.management.field.email}">Email</th>
+                            <th th:text="#{user.management.field.role}">Rol</th>
+                            <th th:text="#{user.management.field.projectManager}">Jefe asociado</th>
+                            <th class="text-right"></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="user : ${usersList}">
+                            <td th:text="${user.username}">usuario</td>
+
+                            <td th:text="${user.email}">email</td>
+
+                            <td th:text="${#messages.msg('user.role.' + user.role.name())}">
+                                Rol
+                            </td>
+
+                            <td>
+                                <span th:if="${user.projectManager == null}">-</span>
+                                <span th:if="${user.projectManager != null}"
+                                      th:text="${user.projectManager.username}">
+                                    jefe
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                       th:href="@{/users/{userId}/edit(userId=${user.id})}"
+                                       th:text="#{project.action.edit}">
+                                        Editar
+                                    </a>
+
+                                    <a class="btn btn-sm btn-outline-danger mb-2"
+                                       th:href="@{/users/{userId}/delete(userId=${user.id})}"
+                                       th:onclick="|return confirm('#{user.management.confirm.delete}');|"
+                                       th:text="#{project.action.delete}">
+                                        Eliminar
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-center mt-4" th:if="${usersPage.totalPages > 1}">
+                    <ul class="pagination justify-content-center mb-0">
+
+                        <li class="page-item" th:classappend="${usersPage.number == 0} ? 'disabled'">
+                            <a class="page-link users-page-link"
+                               th:href="@{/users/update(page=0)}"
+                               th:attr="data-browser-url=@{/users(page=0)}"
+                               th:text="#{pagination.first}">
+                                Primera
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${usersPage.number - 1 >= 0}">
+                            <a class="page-link users-page-link"
+                               th:href="@{/users/update(page=${usersPage.number - 1})}"
+                               th:attr="data-browser-url=@{/users(page=${usersPage.number - 1})}"
+                               th:text="${usersPage.number}">
+                                1
+                            </a>
+                        </li>
+
+                        <li class="page-item active">
+                            <a class="page-link users-page-link"
+                               th:href="@{/users/update(page=${usersPage.number})}"
+                               th:attr="data-browser-url=@{/users(page=${usersPage.number})}"
+                               th:text="${usersPage.number + 1}">
+                                2
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${usersPage.number + 1 <= usersPage.totalPages - 1}">
+                            <a class="page-link users-page-link"
+                               th:href="@{/users/update(page=${usersPage.number + 1})}"
+                               th:attr="data-browser-url=@{/users(page=${usersPage.number + 1})}"
+                               th:text="${usersPage.number + 2}">
+                                3
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${usersPage.number == usersPage.totalPages - 1} ? 'disabled'">
+                            <a class="page-link users-page-link"
+                               th:href="@{/users/update(page=${usersPage.totalPages - 1})}"
+                               th:attr="data-browser-url=@{/users(page=${usersPage.totalPages - 1})}"
+                               th:text="#{pagination.last}">
+                                Última
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<script th:src="@{/js/users-pagination.js}"></script>
+
+</body>
+</html>

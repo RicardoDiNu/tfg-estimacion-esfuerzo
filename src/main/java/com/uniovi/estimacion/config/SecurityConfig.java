@@ -1,5 +1,6 @@
 package com.uniovi.estimacion.config;
 
+import com.uniovi.estimacion.entities.users.UserRole;
 import com.uniovi.estimacion.services.users.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +24,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Páginas públicas, autenticación y recursos estáticos
                         .requestMatchers(
                                 "/",
                                 "/about",
@@ -39,28 +39,26 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
-                        // 2. Flujo público de estimación temporal / anónima
-                        .requestMatchers(
-                                "/estimate/**"
-                        ).permitAll()
+                        .requestMatchers("/admin/**")
+                        .hasAuthority(UserRole.ROLE_ADMIN.getAuthority())
 
-                        // 3. Rutas solo para admin
-                        .requestMatchers(
-                                "/admin/**",
-                                "/users/**"
-                        ).hasAuthority("UserRole.ROLE_ADMIN.getAuthority()")
+                        .requestMatchers("/users/**")
+                        .hasAnyAuthority(
+                                UserRole.ROLE_ADMIN.getAuthority(),
+                                UserRole.ROLE_PROJECT_MANAGER.getAuthority(),
+                                UserRole.ROLE_USER.getAuthority()
+                        )
 
-                        // 4. Zona autenticada normal
                         .requestMatchers(
-                                "/projects/**"
+                                "/projects/**",
+                                "/account/**"
                         ).authenticated()
 
-                        // 5. Lo demás, autenticado por defecto
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
+                        .defaultSuccessUrl("/projects", true)
                         .permitAll()
                 )
                 .logout(logout -> logout

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container-fluid fp-analysis-container">
+        <h1 class="mb-4" th:text="#{user.management.edit.title}">
+            Editar usuario
+        </h1>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{user.management.edit.header}">
+                Datos del usuario
+            </div>
+
+            <div class="card-body">
+                <form th:action="@{/users/{userId}/edit(userId=${userForm.id})}"
+                      th:object="${userForm}"
+                      method="post">
+
+                    <input type="hidden" th:field="*{id}">
+
+                    <div th:if="${#fields.hasGlobalErrors()}"
+                         class="alert alert-danger">
+                        <p th:each="error : ${#fields.globalErrors()}"
+                           th:text="${error}">
+                            Error
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username" th:text="#{user.management.field.username}">
+                            Usuario
+                        </label>
+                        <input id="username"
+                               type="text"
+                               class="form-control"
+                               th:field="*{username}">
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('username')}"
+                             th:errors="*{username}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" th:text="#{user.management.field.email}">
+                            Email
+                        </label>
+                        <input id="email"
+                               type="email"
+                               class="form-control"
+                               th:field="*{email}">
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('email')}"
+                             th:errors="*{email}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" th:text="#{user.management.field.newPassword}">
+                            Nueva contraseña
+                        </label>
+                        <input id="password"
+                               type="password"
+                               class="form-control"
+                               th:field="*{password}">
+                        <small class="form-text text-muted"
+                               th:text="#{user.management.help.passwordEdit}">
+                            Deja este campo vacío si no quieres cambiar la contraseña.
+                        </small>
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('password')}"
+                             th:errors="*{password}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="passwordConfirm" th:text="#{user.management.field.passwordConfirm}">
+                            Confirmar contraseña
+                        </label>
+                        <input id="passwordConfirm"
+                               type="password"
+                               class="form-control"
+                               th:field="*{passwordConfirm}">
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('passwordConfirm')}"
+                             th:errors="*{passwordConfirm}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label th:text="#{user.management.field.role}">
+                            Rol
+                        </label>
+                        <p class="form-control-plaintext"
+                           th:text="${#messages.msg('user.role.' + editedUser.role.name())}">
+                            Rol
+                        </p>
+                    </div>
+
+                    <div class="form-group"
+                         th:if="${editedUser.role != null and editedUser.role.name() == 'ROLE_PROJECT_WORKER'}">
+                        <label th:text="#{user.management.field.projectManager}">
+                            Jefe asociado
+                        </label>
+
+                        <p class="form-control-plaintext">
+        <span th:if="${editedUser.projectManager == null}">
+            -
+        </span>
+
+                            <span th:if="${editedUser.projectManager != null}"
+                                  th:text="${editedUser.projectManager.username}">
+            jefe
+        </span>
+                        </p>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary mr-2"
+                            th:text="#{user.management.action.save}">
+                        Guardar
+                    </button>
+
+                    <a class="btn btn-secondary"
+                       th:href="@{/users}"
+                       th:text="#{common.back}">
+                        Volver
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>
