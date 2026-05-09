@@ -3,7 +3,7 @@ package com.uniovi.estimacion.services.users;
 import com.uniovi.estimacion.entities.users.User;
 import com.uniovi.estimacion.entities.users.UserRole;
 import com.uniovi.estimacion.repositories.users.UserRepository;
-import com.uniovi.estimacion.web.forms.auth.SignUpForm;
+import com.uniovi.estimacion.web.forms.users.SignUpForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

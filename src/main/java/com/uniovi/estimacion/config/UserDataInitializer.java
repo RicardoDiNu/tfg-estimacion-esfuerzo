@@ -4,7 +4,7 @@ import com.uniovi.estimacion.entities.users.UserRole;
 import com.uniovi.estimacion.services.users.UserService;
 import com.uniovi.estimacion.common.codes.SizeTechniqueCodes;
 import com.uniovi.estimacion.common.codes.SizeUnitCodes;
-import com.uniovi.estimacion.services.effortconversions.TransformationFunctionService;
+import com.uniovi.estimacion.services.effortconversions.transformationfunctions.TransformationFunctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

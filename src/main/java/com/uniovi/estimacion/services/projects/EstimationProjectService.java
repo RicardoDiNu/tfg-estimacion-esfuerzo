@@ -1,12 +1,12 @@
 package com.uniovi.estimacion.services.projects;
 
-import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.users.User;
-import com.uniovi.estimacion.repositories.functionpoints.FunctionPointAnalysisRepository;
-import com.uniovi.estimacion.repositories.projects.EstimationModuleRepository;
+import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointAnalysisRepository;
+import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.EstimationModuleRepository;
 import com.uniovi.estimacion.repositories.projects.EstimationProjectRepository;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
+import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.users.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

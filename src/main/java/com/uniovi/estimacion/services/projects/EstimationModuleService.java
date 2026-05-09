@@ -1,16 +1,14 @@
 package com.uniovi.estimacion.services.projects;
 
-import com.uniovi.estimacion.entities.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.projects.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
-import com.uniovi.estimacion.repositories.functionpoints.FunctionPointAnalysisRepository;
-import com.uniovi.estimacion.repositories.projects.EstimationModuleRepository;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointCalculationService;
+import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointAnalysisRepository;
+import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.EstimationModuleRepository;
+import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
