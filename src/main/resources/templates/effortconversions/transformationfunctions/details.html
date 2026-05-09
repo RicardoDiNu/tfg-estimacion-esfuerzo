@@ -8,6 +8,32 @@
 
 <main class="app-content">
     <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:if="${sourceTechniqueCode == 'FUNCTION_POINTS'}"
+                       th:href="@{/projects/{pid}/function-points(pid=${project.id})}"
+                       th:text="#{fp.details.title}">Análisis PF</a>
+                    <a th:if="${sourceTechniqueCode == 'USE_CASE_POINTS'}"
+                       th:href="@{/projects/{pid}/use-case-points(pid=${project.id})}"
+                       th:text="#{ucp.details.title}">Análisis UCP</a>
+                    <span th:if="${sourceTechniqueCode != 'FUNCTION_POINTS' and sourceTechniqueCode != 'USE_CASE_POINTS'}"
+                          th:text="#{breadcrumb.sizeAnalysis}">Análisis de tamaño</span>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/select(projectId=${project.id},sourceTechniqueCode=${sourceTechniqueCode})}"
+                       th:text="#{breadcrumb.selectTransformationFunction}">Seleccionar función de transformación</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.transformationFunction}">Función de transformación</li>
+            </ol>
+        </nav>
+
         <div class="mb-4">
             <h1 th:text="#{transformationFunction.details.title}">
                 Conversión por función de transformación

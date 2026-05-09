@@ -134,3 +134,19 @@ body.app-page {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.app-breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.app-breadcrumb .breadcrumb-item a {
+    text-decoration: none;
+}
+
+.app-breadcrumb .breadcrumb-item.active {
+    color: #6c757d;
+    font-weight: 500;
+}

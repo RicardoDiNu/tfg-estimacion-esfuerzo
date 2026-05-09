@@ -7,6 +7,18 @@
 
 <main class="app-content">
     <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editProject}">Editar proyecto</li>
+            </ol>
+        </nav>
+
         <h1 th:text="#{project.edit.title}">Editar proyecto</h1>
 
         <form method="post"

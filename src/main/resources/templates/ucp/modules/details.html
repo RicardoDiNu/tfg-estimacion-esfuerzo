@@ -8,6 +8,21 @@
 
 <main class="app-content">
     <div class="container-fluid fp-analysis-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/use-case-points(projectId=${project.id})}" th:text="#{ucp.details.title}">Análisis UCP</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${module.name}">Módulo</li>
+            </ol>
+        </nav>
+
         <h1 class="mb-4" th:text="#{ucp.module.details.title}">
             Detalle del módulo UCP
         </h1>

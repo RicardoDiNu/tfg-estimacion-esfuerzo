@@ -8,6 +8,24 @@
 
 <main class="app-content">
     <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/use-case-points(projectId=${project.id})}" th:text="#{ucp.details.title}">Análisis UCP</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}(projectId=${project.id},moduleId=${module.id})}" th:text="${module.name}">Módulo</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editModule}">Editar módulo</li>
+            </ol>
+        </nav>
+
         <h1 class="mb-4" th:text="#{ucp.module.edit.title}">
             Editar módulo UCP
         </h1>

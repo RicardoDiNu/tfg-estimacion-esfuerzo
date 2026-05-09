@@ -7,6 +7,12 @@
 
 <main class="app-content">
     <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.projects}">Proyectos</li>
+            </ol>
+        </nav>
+
         <div class="mb-4">
             <h1 class="mb-3" th:text="#{project.list.title}">Proyectos</h1>
             <a class="btn btn-primary" th:if="${canCreateProjects}" th:href="@{/projects/add}" th:text="#{project.add.button}">Nuevo proyecto</a>

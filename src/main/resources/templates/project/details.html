@@ -7,6 +7,23 @@
 
 <main class="app-content">
     <div class="container-fluid fp-analysis-container">
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{nav.projects}">
+                        Proyectos
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item active"
+                    aria-current="page"
+                    th:text="${project.name}">
+                    Proyecto
+                </li>
+            </ol>
+        </nav>
+
         <h1 class="mb-4" th:text="#{project.details.title}">Detalle del proyecto de estimación</h1>
 
         <!-- RESUMEN DEL PROYECTO -->

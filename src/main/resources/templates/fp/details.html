@@ -7,6 +7,30 @@
 
 <main class="app-content">
     <div class="container-fluid fp-analysis-container">
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{nav.projects}">
+                        Proyectos
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}"
+                       th:text="${project.name}">
+                        Proyecto
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item active"
+                    aria-current="page"
+                    th:text="#{fp.details.title}">
+                    Análisis PF
+                </li>
+            </ol>
+        </nav>
+
         <h1 class="mb-4" th:text="#{fp.details.title}">Análisis PF</h1>
 
         <!-- CONTEXTO DEL ANÁLISIS -->

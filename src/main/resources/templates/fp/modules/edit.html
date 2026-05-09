@@ -7,6 +7,24 @@
 
 <main class="app-content">
     <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}" th:text="#{fp.details.title}">Análisis PF</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/function-points/modules/{moduleId}(projectId=${project.id},moduleId=${module.id})}" th:text="${module.name}">Módulo</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editModule}">Editar módulo</li>
+            </ol>
+        </nav>
+
         <h1 th:text="#{fp.modules.edit.title}">Editar módulo</h1>
         <p th:text="#{fp.modules.edit.subtitle}">Modifica los datos básicos del módulo</p>
 

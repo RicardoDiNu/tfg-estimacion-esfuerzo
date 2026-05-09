@@ -8,6 +8,27 @@
 
 <main class="app-content">
     <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/use-case-points(projectId=${project.id})}" th:text="#{ucp.details.title}">Análisis UCP</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}(projectId=${project.id},moduleId=${module.id})}" th:text="${module.name}">Módulo</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}/use-cases/{useCaseId}(projectId=${project.id},moduleId=${module.id},useCaseId=${useCase.id})}" th:text="${useCase.name}">Caso de uso</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editUseCase}">Editar caso de uso</li>
+            </ol>
+        </nav>
+
         <h1 class="mb-4" th:text="#{ucp.useCase.edit.title}">
             Editar caso de uso
         </h1>

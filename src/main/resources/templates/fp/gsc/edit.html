@@ -7,6 +7,21 @@
 
 <main class="app-content">
     <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}" th:text="#{fp.details.title}">Análisis PF</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editGsc}">Editar GSC</li>
+            </ol>
+        </nav>
+
         <h1 th:text="#{fp.gsc.edit.title}">Editar características generales del sistema</h1>
         <p th:text="#{fp.gsc.edit.subtitle}">Asigna un valor de 0 a 5 a cada característica</p>
 
