@@ -11,6 +11,7 @@ import com.uniovi.estimacion.services.sizeanalyses.SizeAnalysisProviderRegistry;
 import com.uniovi.estimacion.services.costs.CostCalculationService;
 import com.uniovi.estimacion.services.effortconversions.delphi.DelphiEstimationService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
+import com.uniovi.estimacion.services.projects.ProjectAuthorizationService;
 import com.uniovi.estimacion.validators.effortconversions.delphi.DelphiEstimationValidator;
 import com.uniovi.estimacion.validators.effortconversions.delphi.DelphiIterationValidator;
 import com.uniovi.estimacion.web.forms.effortconversions.delphi.DelphiEstimationCreateForm;
@@ -39,6 +40,7 @@ public class DelphiEstimationController {
     private final DelphiIterationValidator delphiIterationValidator;
     private final SizeAnalysisProviderRegistry sizeAnalysisProviderRegistry;
     private final CostCalculationService costCalculationService;
+    private final ProjectAuthorizationService projectAuthorizationService;
 
     @GetMapping("/access")
     public String accessDelphi(@PathVariable Long projectId,
@@ -83,6 +85,10 @@ public class DelphiEstimationController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canManageEffortConversions(projectId)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToSourceAnalysisAdd(projectId, sourceTechniqueCode);
         }
@@ -111,6 +117,10 @@ public class DelphiEstimationController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageEffortConversions(projectId)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -220,6 +230,8 @@ public class DelphiEstimationController {
         model.addAttribute("totalEstimatedCost", totalEstimatedCost);
         model.addAttribute("hasFinalCalibration", hasFinalCalibration);
         model.addAttribute("canAddIteration", canAddIteration);
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
 
         return "effortconversions/delphi/details";
     }
@@ -238,6 +250,10 @@ public class DelphiEstimationController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageEffortConversions(projectId)) {
+            return redirectToDelphiDetails(projectId, sourceTechniqueCode, delphiEstimationId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -285,6 +301,10 @@ public class DelphiEstimationController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageEffortConversions(projectId)) {
+            return redirectToDelphiDetails(projectId, sourceTechniqueCode, delphiEstimationId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -339,6 +359,10 @@ public class DelphiEstimationController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageEffortConversions(projectId)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
         if (optionalAnalysis.isPresent()

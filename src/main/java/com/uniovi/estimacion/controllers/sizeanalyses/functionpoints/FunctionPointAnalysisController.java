@@ -60,6 +60,10 @@ public class FunctionPointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canManageProject(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
+        }
+
         if (functionPointAnalysisService.findByProjectId(projectId).isPresent()) {
             return redirectToFunctionPointDetails(projectId);
         }
@@ -79,6 +83,10 @@ public class FunctionPointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageProject(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
         }
 
         if (functionPointAnalysisService.findByProjectId(projectId).isPresent()) {
@@ -338,6 +346,10 @@ public class FunctionPointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToFunctionPointAdd(projectId);
         }
@@ -361,6 +373,10 @@ public class FunctionPointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -519,6 +535,10 @@ public class FunctionPointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToFunctionPointAdd(projectId);
         }
@@ -541,6 +561,10 @@ public class FunctionPointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -571,6 +595,10 @@ public class FunctionPointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return "redirect:/projects";
+        }
+
+        if (!projectAuthorizationService.canManageProject(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
         }
 
         functionPointAnalysisService.deleteByProjectId(projectId);

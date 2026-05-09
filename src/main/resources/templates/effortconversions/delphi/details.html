@@ -127,7 +127,7 @@
                     </table>
                 </div>
 
-                <div class="mt-3" th:if="${canAddIteration}">
+                <div class="mt-3" th:if="${canAddIteration and canManageEffortConversions}">
                     <a class="btn btn-outline-primary"
                        th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/iterations/add(
                         projectId=${project.id},
@@ -260,6 +260,7 @@
 
         <div class="mt-4">
             <a class="btn btn-danger mr-2"
+               th:if="${canManageEffortConversions}"
                th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/delete(
                 projectId=${project.id},
                 sourceTechniqueCode=${sourceTechniqueCode},

@@ -79,6 +79,7 @@
 
         <div class="mt-4 mb-4">
             <a class="btn btn-outline-primary mr-2"
+               th:if="${canManageEffortConversions}"
                th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/select(
                    projectId=${project.id},
                    sourceTechniqueCode=${sourceTechniqueCode})}"
@@ -87,6 +88,7 @@
             </a>
 
             <a class="btn btn-danger mr-2"
+               th:if="${canManageEffortConversions}"
                th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/{conversionId}/delete(
                    projectId=${project.id},
                    sourceTechniqueCode=${sourceTechniqueCode},

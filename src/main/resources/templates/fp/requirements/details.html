@@ -39,6 +39,7 @@
                 </div>
 
                 <a class="btn btn-outline-primary mr-2"
+                   th:if="${canEditEstimationData}"
                    th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/edit/{requirementId}(
                        projectId=${project.id},
                        moduleId=${module.id},
@@ -56,7 +57,7 @@
                     <div class="card-header" th:text="#{requirement.decompose.dataFunctions}">Funciones de datos derivadas</div>
                     <div class="card-body">
 
-                        <div class="mb-3">
+                        <div class="mb-3" th:if="${canEditEstimationData}">
                             <a class="btn btn-outline-primary"
                                th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/add(
                                    projectId=${project.id},
@@ -91,7 +92,7 @@
                                     <td th:text="${dataFunction.name}">Clientes</td>
                                     <td th:text="${#messages.msg('fp.complexity.' + #strings.toLowerCase(dataFunction.complexity.name()))}">Media</td>
                                     <td th:text="${dataFunction.weight}">10</td>
-                                    <td>
+                                    <td th:if="${canEditEstimationData}">
                                         <div class="d-flex flex-wrap gap-2">
                                             <a class="btn btn-sm btn-outline-secondary mr-2 mb-2"
                                                th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/edit/{dataFunctionId}(
@@ -239,7 +240,7 @@
                     <div class="card-header" th:text="#{requirement.decompose.transactionalFunctions}">Funciones transaccionales derivadas</div>
                     <div class="card-body">
 
-                        <div class="mb-3">
+                        <div class="mb-3" th:if="${canEditEstimationData}">
                             <a class="btn btn-outline-primary"
                                th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/add(
                                    projectId=${project.id},
@@ -274,7 +275,7 @@
                                     <td th:text="${transactionalFunction.name}">Alta cliente</td>
                                     <td th:text="${#messages.msg('fp.complexity.' + #strings.toLowerCase(transactionalFunction.complexity.name()))}">Media</td>
                                     <td th:text="${transactionalFunction.weight}">4</td>
-                                    <td>
+                                    <td th:if="${canEditEstimationData}">
                                         <div class="d-flex flex-wrap gap-2">
                                             <a class="btn btn-sm btn-outline-secondary mr-2 mb-2"
                                                th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/edit/{transactionalFunctionId}(
@@ -419,6 +420,7 @@
 
         <div class="mt-4">
             <a class="btn btn-danger mr-2"
+               th:if="${canEditEstimationData}"
                th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/delete/{requirementId}(
                    projectId=${project.id},
                    moduleId=${module.id},

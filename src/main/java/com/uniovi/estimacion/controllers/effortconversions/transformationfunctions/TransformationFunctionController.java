@@ -9,6 +9,7 @@ import com.uniovi.estimacion.services.sizeanalyses.SizeAnalysisProviderRegistry;
 import com.uniovi.estimacion.services.costs.CostCalculationService;
 import com.uniovi.estimacion.services.effortconversions.transformationfunctions.TransformationFunctionService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
+import com.uniovi.estimacion.services.projects.ProjectAuthorizationService;
 import com.uniovi.estimacion.validators.effortconversions.transformationfunctions.TransformationFunctionValidator;
 import com.uniovi.estimacion.web.forms.effortconversions.transformationfunctions.TransformationFunctionConversionForm;
 import com.uniovi.estimacion.web.forms.effortconversions.transformationfunctions.TransformationFunctionForm;
@@ -32,6 +33,7 @@ public class TransformationFunctionController {
     private final TransformationFunctionService transformationFunctionService;
     private final TransformationFunctionValidator transformationFunctionValidator;
     private final CostCalculationService costCalculationService;
+    private final ProjectAuthorizationService projectAuthorizationService;
 
     @GetMapping("/access")
     public String accessTransformationFunction(@PathVariable Long projectId,
@@ -72,6 +74,10 @@ public class TransformationFunctionController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canManageEffortConversions(projectId)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToSourceAnalysisAdd(projectId, sourceTechniqueCode);
         }
@@ -101,6 +107,10 @@ public class TransformationFunctionController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageEffortConversions(projectId)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -148,6 +158,10 @@ public class TransformationFunctionController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageEffortConversions(projectId)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -234,6 +248,8 @@ public class TransformationFunctionController {
         model.addAttribute("currentSize", currentSize);
         model.addAttribute("estimatedEffortHours", estimatedEffortHours);
         model.addAttribute("estimatedCost", estimatedCost);
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
 
         return "effortconversions/transformationfunctions/details";
     }
@@ -251,6 +267,10 @@ public class TransformationFunctionController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageEffortConversions(projectId)) {
+            return redirectToSourceAnalysisDetails(projectId, sourceTechniqueCode);
         }
 
         if (optionalAnalysis.isPresent()

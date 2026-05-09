@@ -98,6 +98,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canManageProject(projectId)) {
+            return redirectToDetails(projectId);
+        }
+
         Optional<UseCasePointAnalysis> optionalAnalysis =
                 useCasePointAnalysisService.findDetailedByProjectId(projectId);
 
@@ -121,6 +125,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageProject(projectId)) {
+            return redirectToDetails(projectId);
         }
 
         Optional<UseCasePointAnalysis> optionalAnalysis =
@@ -323,6 +331,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToAdd(projectId);
         }
@@ -351,6 +363,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -385,6 +401,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToAdd(projectId);
         }
@@ -411,6 +431,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -517,6 +541,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToAdd(projectId);
         }
@@ -554,6 +582,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToAdd(projectId);
         }
@@ -589,6 +621,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         useCasePointAnalysisService.deleteModule(projectId, moduleId);
 
         return redirectToDetails(projectId);
@@ -604,6 +640,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -632,6 +672,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -663,6 +707,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -702,6 +750,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToAdd(projectId);
         }
@@ -737,6 +789,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
+        }
+
         useCasePointAnalysisService.deleteActor(projectId, actorId);
 
         return redirectToDetails(projectId);
@@ -755,6 +811,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -791,6 +851,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -842,6 +906,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToAdd(projectId);
         }
@@ -882,6 +950,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -928,6 +1000,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         useCasePointAnalysisService.deleteUseCase(projectId, moduleId, useCaseId);
 
         return redirectToModuleDetails(projectId, moduleId);
@@ -943,6 +1019,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -973,6 +1053,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
         }
 
         if (optionalAnalysis.isEmpty()) {
@@ -1007,6 +1091,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToAdd(projectId);
         }
@@ -1037,6 +1125,10 @@ public class UseCasePointAnalysisController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToDetails(projectId);
+        }
+
         if (optionalAnalysis.isEmpty()) {
             return redirectToAdd(projectId);
         }
@@ -1064,6 +1156,10 @@ public class UseCasePointAnalysisController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canManageProject(projectId)) {
+            return redirectToDetails(projectId);
         }
 
         useCasePointAnalysisService.deleteByProjectId(projectId);

@@ -11,6 +11,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.U
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
+import com.uniovi.estimacion.services.projects.ProjectAuthorizationService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.UserRequirementService;
 import com.uniovi.estimacion.validators.sizeanalyses.functionpoints.DataFunctionValidator;
 import com.uniovi.estimacion.validators.sizeanalyses.functionpoints.TransactionalFunctionValidator;
@@ -34,6 +35,7 @@ public class UserRequirementController {
     private final FunctionPointModuleService functionPointModuleService;
     private final UserRequirementService userRequirementService;
     private final FunctionPointAnalysisService functionPointAnalysisService;
+    private final ProjectAuthorizationService projectAuthorizationService;
     private final UserRequirementValidator userRequirementValidator;
     private final DataFunctionValidator dataFunctionValidator;
     private final TransactionalFunctionValidator transactionalFunctionValidator;
@@ -87,6 +89,9 @@ public class UserRequirementController {
         model.addAttribute("transactionalFunctionsList", transactionalFunctionsPageResult.getContent());
         model.addAttribute("transactionalFunctionsPage", transactionalFunctionsPageResult);
 
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
         return "fp/requirements/details";
     }
 
@@ -127,6 +132,8 @@ public class UserRequirementController {
         model.addAttribute("dataFunctionsPage", dataFunctionsPageResult);
         model.addAttribute("requirementsPage", requirementsPage);
         model.addAttribute("transactionalFunctionsCurrentPage", transactionalFunctionsPage);
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
 
         return "fp/requirements/details :: dataFunctionsSection";
     }
@@ -168,6 +175,8 @@ public class UserRequirementController {
         model.addAttribute("transactionalFunctionsPage", transactionalFunctionsPageResult);
         model.addAttribute("requirementsPage", requirementsPage);
         model.addAttribute("dataFunctionsCurrentPage", dataFunctionsPage);
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
 
         return "fp/requirements/details :: transactionalFunctionsSection";
     }
@@ -183,6 +192,10 @@ public class UserRequirementController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
         }
 
         if (functionPointAnalysisService.findDetailedByProjectId(projectId).isEmpty()) {
@@ -213,6 +226,10 @@ public class UserRequirementController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
         }
 
         if (optionalModule.isEmpty()) {
@@ -250,6 +267,10 @@ public class UserRequirementController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         if (optionalModule.isEmpty()) {
             return redirectToFunctionPointDetails(projectId);
         }
@@ -279,6 +300,10 @@ public class UserRequirementController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
         }
 
         if (optionalModule.isEmpty()) {
@@ -318,6 +343,10 @@ public class UserRequirementController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         if (optionalModule.isEmpty()) {
             return redirectToFunctionPointDetails(projectId);
         }
@@ -343,6 +372,10 @@ public class UserRequirementController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
         }
 
         if (optionalModule.isEmpty()) {
@@ -379,6 +412,10 @@ public class UserRequirementController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
         }
 
         if (optionalModule.isEmpty()) {
@@ -421,6 +458,10 @@ public class UserRequirementController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
+        }
+
         if (optionalModule.isEmpty()) {
             return redirectToFunctionPointDetails(projectId);
         }
@@ -455,6 +496,10 @@ public class UserRequirementController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
         }
 
         if (optionalModule.isEmpty()) {
@@ -500,6 +545,10 @@ public class UserRequirementController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
+        }
+
         if (optionalModule.isEmpty()) {
             return redirectToFunctionPointDetails(projectId);
         }
@@ -537,6 +586,10 @@ public class UserRequirementController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
         }
 
         if (optionalModule.isEmpty()) {
@@ -583,6 +636,10 @@ public class UserRequirementController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
+        }
+
         if (optionalModule.isEmpty()) {
             return redirectToFunctionPointDetails(projectId);
         }
@@ -620,6 +677,10 @@ public class UserRequirementController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
         }
 
         if (optionalModule.isEmpty()) {
@@ -663,6 +724,10 @@ public class UserRequirementController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
+        }
+
         if (optionalModule.isEmpty()) {
             return redirectToFunctionPointDetails(projectId);
         }
@@ -689,6 +754,10 @@ public class UserRequirementController {
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
+        }
+
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToRequirementDetails(projectId, moduleId, requirementId);
         }
 
         if (optionalModule.isEmpty()) {
