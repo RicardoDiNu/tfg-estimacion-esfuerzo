@@ -9,7 +9,7 @@
     <div class="container">
         <div class="mb-4">
             <h1 class="mb-3" th:text="#{project.list.title}">Proyectos</h1>
-            <a class="btn btn-primary" th:href="@{/projects/add}" th:text="#{project.add.button}">Nuevo proyecto</a>
+            <a class="btn btn-primary" th:if="${canCreateProjects}" th:href="@{/projects/add}" th:text="#{project.add.button}">Nuevo proyecto</a>
         </div>
 
         <div id="projects-container" th:fragment="projectsSection">
@@ -46,6 +46,7 @@
                                th:text="#{project.action.details}">Ver detalle</a>
 
                             <a class="btn btn-sm btn-outline-danger"
+                               th:if="${manageableProjectIds.contains(project.id)}"
                                th:href="@{/projects/delete/{projectId}(projectId=${project.id}, page=${projectsPage.number})}"
                                th:onclick="|return confirm('#{project.confirm.delete}');|"
                                th:text="#{project.action.delete}">Eliminar</a>

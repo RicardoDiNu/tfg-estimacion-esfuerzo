@@ -46,7 +46,7 @@ public class UserService {
         user.setUsername(normalize(username));
         user.setEmail(normalize(email));
         user.setPassword(passwordEncoder.encode(rawPassword));
-        user.setRole(role != null ? role : UserRole.ROLE_USER);
+        user.setRole(role != null ? role : UserRole.ROLE_PROJECT_MANAGER);
         user.setEnabled(true);
 
         return userRepository.save(user);
@@ -58,7 +58,7 @@ public class UserService {
         user.setUsername(normalize(form.getUsername()));
         user.setEmail(normalize(form.getEmail()));
         user.setPassword(passwordEncoder.encode(form.getPassword()));
-        user.setRole(UserRole.ROLE_USER);
+        user.setRole(UserRole.ROLE_PROJECT_MANAGER);
         user.setEnabled(true);
 
         return userRepository.save(user);

@@ -8,6 +8,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.actors.UseCaseA
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.actors.UseCaseActorComplexity;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.modules.UseCasePointModule;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.usecases.UseCaseEntry;
+import com.uniovi.estimacion.services.projects.ProjectAuthorizationService;
 import com.uniovi.estimacion.services.sizeanalyses.SizeAnalysisModuleResult;
 import com.uniovi.estimacion.services.sizeanalyses.usecasepoints.UseCasePointSizeAnalysisProvider;
 import com.uniovi.estimacion.services.costs.CostCalculationService;
@@ -64,6 +65,7 @@ public class UseCasePointAnalysisController {
     private final TransformationFunctionService transformationFunctionService;
     private final CostCalculationService costCalculationService;
     private final UseCasePointSizeAnalysisProvider useCasePointSizeAnalysisProvider;
+    private final ProjectAuthorizationService projectAuthorizationService;
 
     private static final int UCP_PAGE_SIZE = 5;
 
@@ -274,6 +276,15 @@ public class UseCasePointAnalysisController {
         model.addAttribute("analysis", analysis);
         model.addAttribute("results", results);
 
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
+
         model.addAttribute("moduleUnadjustedSizeById", moduleUnadjustedSizeById);
         model.addAttribute("moduleAdjustedSizeById", moduleAdjustedSizeById);
 
@@ -478,6 +489,15 @@ public class UseCasePointAnalysisController {
         model.addAttribute("useCasesPage", useCasesPage);
         model.addAttribute("moduleUnadjustedSize", moduleUnadjustedSize);
         model.addAttribute("moduleAdjustedSize", moduleAdjustedSize);
+
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
 
         return "ucp/modules/details";
     }
@@ -1118,6 +1138,15 @@ public class UseCasePointAnalysisController {
         model.addAttribute("actorsPage", actorsPage);
         model.addAttribute("modulesPage", modulesPage);
 
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
+
         return "ucp/details :: actorsSection";
     }
 
@@ -1178,6 +1207,15 @@ public class UseCasePointAnalysisController {
         model.addAttribute("moduleUnadjustedSizeById", moduleUnadjustedSizeById);
         model.addAttribute("moduleAdjustedSizeById", moduleAdjustedSizeById);
 
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
+
         return "ucp/details :: modulesSection";
     }
 
@@ -1209,6 +1247,15 @@ public class UseCasePointAnalysisController {
         model.addAttribute("module", optionalModule.get());
         model.addAttribute("useCasesList", useCasesPage.getContent());
         model.addAttribute("useCasesPage", useCasesPage);
+
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
 
         return "ucp/modules/details :: useCasesSection";
     }

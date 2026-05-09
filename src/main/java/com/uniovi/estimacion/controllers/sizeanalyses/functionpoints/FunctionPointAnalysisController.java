@@ -10,6 +10,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.U
 import com.uniovi.estimacion.services.costs.CostCalculationService;
 import com.uniovi.estimacion.services.effortconversions.delphi.DelphiEstimationService;
 import com.uniovi.estimacion.services.effortconversions.transformationfunctions.TransformationFunctionService;
+import com.uniovi.estimacion.services.projects.ProjectAuthorizationService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointCalculationService;
@@ -48,6 +49,7 @@ public class FunctionPointAnalysisController {
     private final DelphiEstimationService delphiEstimationService;
     private final TransformationFunctionService transformationFunctionService;
     private final CostCalculationService costCalculationService;
+    private final ProjectAuthorizationService projectAuthorizationService;
 
     @GetMapping("/function-points/add")
     public String getCreateForm(@PathVariable Long projectId, Model model) {
@@ -232,6 +234,15 @@ public class FunctionPointAnalysisController {
         model.addAttribute("modulesPage", modulesPageResult);
         model.addAttribute("moduleResultsMap", moduleResultsMap);
 
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
+
         model.addAttribute("activeDelphiEstimation", optionalActiveDelphi.orElse(null));
         model.addAttribute("activeDelphiIterationsCount", activeDelphiIterationsCount);
         model.addAttribute("delphiEstimatedTotalHours", delphiEstimatedTotalHours);
@@ -303,6 +314,15 @@ public class FunctionPointAnalysisController {
         model.addAttribute("modulesList", modulesPageResult.getContent());
         model.addAttribute("modulesPage", modulesPageResult);
         model.addAttribute("moduleResultsMap", moduleResultsMap);
+
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
 
         return "fp/details :: modulesSection";
     }
@@ -396,6 +416,15 @@ public class FunctionPointAnalysisController {
         model.addAttribute("dataFunctionsCurrentPage", dataFunctionsPage);
         model.addAttribute("transactionalFunctionsCurrentPage", transactionalFunctionsPage);
 
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
+
         return "fp/details :: requirementsSection";
     }
 
@@ -427,6 +456,15 @@ public class FunctionPointAnalysisController {
         model.addAttribute("requirementsCurrentPage", requirementsPage);
         model.addAttribute("transactionalFunctionsCurrentPage", transactionalFunctionsPage);
 
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
+
         return "fp/details :: dataFunctionsSection";
     }
 
@@ -457,6 +495,15 @@ public class FunctionPointAnalysisController {
         model.addAttribute("transactionalFunctionsPage", transactionalFunctionsPageResult);
         model.addAttribute("requirementsCurrentPage", requirementsPage);
         model.addAttribute("dataFunctionsCurrentPage", dataFunctionsPage);
+
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
 
         return "fp/details :: transactionalFunctionsSection";
     }

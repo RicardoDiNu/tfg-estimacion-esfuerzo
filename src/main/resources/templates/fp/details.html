@@ -15,6 +15,7 @@
             <div class="card-body">
                 <div class="mb-3">
                     <a class="btn btn-outline-primary"
+                       th:if="${canEditEstimationData}"
                        th:href="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}"
                        th:text="#{fp.details.editAnalysis}">
                         Editar análisis
@@ -48,6 +49,7 @@
 
                 <div class="mb-3">
                     <a class="btn btn-outline-primary"
+                       th:if="${canEditEstimationData}"
                        th:href="@{/projects/{projectId}/function-points/modules/add(projectId=${project.id})}"
                        th:text="#{fp.modules.add}">
                         Añadir módulo
@@ -87,6 +89,7 @@
                                     </a>
 
                                     <a class="btn btn-sm btn-outline-danger mb-2"
+                                       th:if="${canEditEstimationData}"
                                        th:href="@{/projects/{projectId}/function-points/modules/delete/{moduleId}(
                                            projectId=${project.id},
                                            moduleId=${module.id},
@@ -184,6 +187,7 @@
 
                         <div class="mb-3">
                             <a class="btn btn-outline-primary"
+                               th:if="${canEditEstimationData}"
                                th:href="@{/projects/{projectId}/function-points/gsc/edit(projectId=${project.id})}"
                                th:text="#{fp.gsc.edit.button}">
                                 Editar GSC
@@ -308,6 +312,7 @@
 
                         <div class="mb-3">
                             <a class="btn btn-outline-primary"
+                               th:if="${canManageEffortConversions}"
                                th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/access(projectId=${project.id}, sourceTechniqueCode=${analysis.techniqueCode})}"
                                th:text="${activeDelphiEstimation == null}
         ? #{fp.delphi.action.start}
@@ -399,6 +404,7 @@
 
                         <div class="mb-3">
                             <a class="btn btn-outline-primary"
+                               th:if="${canManageEffortConversions}"
                                th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/access(
                    projectId=${project.id},
                    sourceTechniqueCode=${analysis.techniqueCode})}"
@@ -474,6 +480,7 @@
 
         <div class="mt-4">
             <a class="btn btn-danger mr-2"
+               th:if="${canManageProject}"
                th:href="@{/projects/{projectId}/function-points/delete(projectId=${project.id})}"
                th:onclick="|return confirm('#{fp.confirm.deleteAnalysis}');|"
                th:text="#{project.action.delete}">

@@ -19,7 +19,7 @@
             </div>
 
             <div class="card-body">
-                <div class="mb-3">
+                <div class="mb-3" th:if="${canEditEstimationData == true}">
                     <a class="btn btn-outline-primary"
                        th:href="@{/projects/{projectId}/use-case-points/edit(projectId=${project.id})}"
                        th:text="#{ucp.details.editAnalysis}">
@@ -60,7 +60,7 @@
             </div>
 
             <div class="card-body">
-                <div class="mb-3">
+                <div class="mb-3" th:if="${canEditEstimationData == true}">
                     <a class="btn btn-outline-primary"
                        th:href="@{/projects/{projectId}/use-case-points/actors/add(projectId=${project.id})}"
                        th:text="#{ucp.actor.action.add}">
@@ -94,6 +94,7 @@
                             <td>
                                 <div class="d-flex flex-wrap gap-2">
                                     <a class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                       th:if="${canEditEstimationData == true}"
                                        th:href="@{/projects/{projectId}/use-case-points/actors/{actorId}/edit(
                                            projectId=${project.id},
                                            actorId=${actor.id})}"
@@ -102,6 +103,7 @@
                                     </a>
 
                                     <a class="btn btn-sm btn-outline-danger mb-2"
+                                       th:if="${canEditEstimationData == true}"
                                        th:href="@{/projects/{projectId}/use-case-points/actors/{actorId}/delete(
                                            projectId=${project.id},
                                            actorId=${actor.id})}"
@@ -206,7 +208,7 @@
             </div>
 
             <div class="card-body">
-                <div class="mb-3">
+                <div class="mb-3" th:if="${canEditEstimationData == true}">
                     <a class="btn btn-outline-primary"
                        th:href="@{/projects/{projectId}/use-case-points/modules/add(projectId=${project.id})}"
                        th:text="#{ucp.module.action.add}">
@@ -237,37 +239,38 @@
                             <td th:text="${module.name}">Módulo</td>
 
                             <td>
-                        <span th:text="${#numbers.formatDecimal(moduleUnadjustedSizeById[module.id], 1, 2)}">
-                            0.00
-                        </span>
+                                <span th:text="${#numbers.formatDecimal(moduleUnadjustedSizeById[module.id], 1, 2)}">
+                                    0.00
+                                </span>
                                 <span th:text="#{project.details.ucp.sizeUnit}">
-                            UCP
-                        </span>
+                                    UCP
+                                </span>
                             </td>
 
                             <td>
-                        <span th:text="${#numbers.formatDecimal(moduleAdjustedSizeById[module.id], 1, 2)}">
-                            0.00
-                        </span>
+                                <span th:text="${#numbers.formatDecimal(moduleAdjustedSizeById[module.id], 1, 2)}">
+                                    0.00
+                                </span>
                                 <span th:text="#{project.details.ucp.sizeUnit}">
-                            UCP
-                        </span>
+                                    UCP
+                                </span>
                             </td>
 
                             <td>
                                 <div class="d-flex flex-wrap gap-2">
                                     <a class="btn btn-sm btn-outline-primary mr-2 mb-2"
                                        th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}(
-                                   projectId=${project.id},
-                                   moduleId=${module.id})}"
+                                           projectId=${project.id},
+                                           moduleId=${module.id})}"
                                        th:text="#{project.action.details}">
                                         Ver detalle
                                     </a>
 
                                     <a class="btn btn-sm btn-outline-danger mb-2"
+                                       th:if="${canEditEstimationData == true}"
                                        th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}/delete(
-                                   projectId=${project.id},
-                                   moduleId=${module.id})}"
+                                           projectId=${project.id},
+                                           moduleId=${module.id})}"
                                        th:onclick="|return confirm('#{ucp.module.confirm.delete}');|"
                                        th:text="#{project.action.delete}">
                                         Eliminar
@@ -285,13 +288,13 @@
                         <li class="page-item" th:classappend="${modulesPage.number == 0} ? 'disabled'">
                             <a class="page-link ucp-modules-page-link"
                                th:href="@{/projects/{projectId}/use-case-points/modules/update(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=0)}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=0)}"
                                th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=0)}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=0)}"
                                th:text="#{pagination.first}">
                                 Primera
                             </a>
@@ -300,13 +303,13 @@
                         <li class="page-item" th:if="${modulesPage.number - 1 >= 0}">
                             <a class="page-link ucp-modules-page-link"
                                th:href="@{/projects/{projectId}/use-case-points/modules/update(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=${modulesPage.number - 1})}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number - 1})}"
                                th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=${modulesPage.number - 1})}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number - 1})}"
                                th:text="${modulesPage.number}">
                                 1
                             </a>
@@ -315,13 +318,13 @@
                         <li class="page-item active">
                             <a class="page-link ucp-modules-page-link"
                                th:href="@{/projects/{projectId}/use-case-points/modules/update(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=${modulesPage.number})}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number})}"
                                th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=${modulesPage.number})}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number})}"
                                th:text="${modulesPage.number + 1}">
                                 2
                             </a>
@@ -330,13 +333,13 @@
                         <li class="page-item" th:if="${modulesPage.number + 1 <= modulesPage.totalPages - 1}">
                             <a class="page-link ucp-modules-page-link"
                                th:href="@{/projects/{projectId}/use-case-points/modules/update(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=${modulesPage.number + 1})}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number + 1})}"
                                th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=${modulesPage.number + 1})}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number + 1})}"
                                th:text="${modulesPage.number + 2}">
                                 3
                             </a>
@@ -345,13 +348,13 @@
                         <li class="page-item" th:classappend="${modulesPage.number == modulesPage.totalPages - 1} ? 'disabled'">
                             <a class="page-link ucp-modules-page-link"
                                th:href="@{/projects/{projectId}/use-case-points/modules/update(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=${modulesPage.totalPages - 1})}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.totalPages - 1})}"
                                th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
-                           projectId=${project.id},
-                           actorsPage=${actorsPage.number},
-                           modulesPage=${modulesPage.totalPages - 1})}"
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.totalPages - 1})}"
                                th:text="#{pagination.last}">
                                 Última
                             </a>
@@ -364,7 +367,6 @@
 
         <!-- FACTORES -->
         <div class="row mb-4">
-            <!-- FACTORES TÉCNICOS -->
             <div class="col-12 col-lg-6 mb-4 mb-lg-0">
                 <div class="card h-100">
                     <div class="card-header" th:text="#{ucp.technicalFactors.title}">
@@ -372,7 +374,7 @@
                     </div>
 
                     <div class="card-body">
-                        <div class="mb-3">
+                        <div class="mb-3" th:if="${canEditEstimationData == true}">
                             <a class="btn btn-outline-primary"
                                th:href="@{/projects/{projectId}/use-case-points/technical-factors/edit(projectId=${project.id})}"
                                th:text="#{project.action.edit}">
@@ -403,7 +405,6 @@
                 </div>
             </div>
 
-            <!-- FACTORES AMBIENTALES -->
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
                     <div class="card-header" th:text="#{ucp.environmentalFactors.title}">
@@ -411,7 +412,7 @@
                     </div>
 
                     <div class="card-body">
-                        <div class="mb-3">
+                        <div class="mb-3" th:if="${canEditEstimationData == true}">
                             <a class="btn btn-outline-primary"
                                th:href="@{/projects/{projectId}/use-case-points/environmental-factors/edit(projectId=${project.id})}"
                                th:text="#{project.action.edit}">
@@ -445,7 +446,6 @@
 
         <!-- RESULTADOS + CONVERSIONES -->
         <div class="row">
-            <!-- RESULTADOS -->
             <div class="col-12 col-lg-6">
                 <div class="card mb-4">
                     <div class="card-header" th:text="#{ucp.results.title}">
@@ -456,9 +456,7 @@
                         <div class="row">
                             <div class="col-12 col-sm-6 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.uaw}">
-                                        UAW
-                                    </h6>
+                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.uaw}">UAW</h6>
                                     <p class="card-text mb-0 fp-result-value"
                                        th:text="${results.unadjustedActorWeight}">
                                         0
@@ -468,9 +466,7 @@
 
                             <div class="col-12 col-sm-6 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.uucw}">
-                                        UUCW
-                                    </h6>
+                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.uucw}">UUCW</h6>
                                     <p class="card-text mb-0 fp-result-value"
                                        th:text="${results.unadjustedUseCaseWeight}">
                                         0
@@ -480,9 +476,7 @@
 
                             <div class="col-12 col-sm-6 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.tcf}">
-                                        TCF
-                                    </h6>
+                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.tcf}">TCF</h6>
                                     <p class="card-text mb-0 fp-result-value"
                                        th:text="${#numbers.formatDecimal(results.technicalComplexityFactor, 1, 2)}">
                                         0.00
@@ -492,9 +486,7 @@
 
                             <div class="col-12 col-sm-6 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.ecf}">
-                                        ECF
-                                    </h6>
+                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.ecf}">ECF</h6>
                                     <p class="card-text mb-0 fp-result-value"
                                        th:text="${#numbers.formatDecimal(results.environmentalComplexityFactor, 1, 2)}">
                                         0.00
@@ -525,14 +517,13 @@
 
             <!-- CONVERSIONES -->
             <div class="col-12 col-lg-6">
-                <!-- CONVERSIÓN DELPHI -->
                 <div class="card mb-4">
                     <div class="card-header" th:text="#{project.details.ucp.delphi.title}">
                         Conversión a esfuerzo Delphi
                     </div>
 
                     <div class="card-body">
-                        <div class="mb-3">
+                        <div class="mb-3" th:if="${canManageEffortConversions == true}">
                             <a class="btn btn-outline-primary"
                                th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/access(
                                    projectId=${project.id},
@@ -654,14 +645,13 @@
                     </div>
                 </div>
 
-                <!-- CONVERSIÓN FUNCIÓN -->
                 <div class="card mb-4">
                     <div class="card-header" th:text="#{project.details.ucp.transformation.title}">
                         Conversión a esfuerzo con función de transformación
                     </div>
 
                     <div class="card-body">
-                        <div class="mb-3">
+                        <div class="mb-3" th:if="${canManageEffortConversions == true}">
                             <a class="btn btn-outline-primary"
                                th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/access(
                                    projectId=${project.id},
@@ -743,6 +733,7 @@
         <!-- ACCIONES -->
         <div class="mt-4">
             <a class="btn btn-danger mr-2"
+               th:if="${canManageProject == true}"
                th:href="@{/projects/{projectId}/use-case-points/delete(projectId=${project.id})}"
                th:onclick="|return confirm('#{ucp.confirm.deleteAnalysis}');|"
                th:text="#{project.action.delete}">

@@ -46,6 +46,6 @@ public class AuthController {
         var createdUser = userService.registerUser(signUpForm);
         securityService.autoLogin(createdUser.getUsername(), signUpForm.getPassword(), request);
 
-        return "redirect:/home";
+        return "redirect:/";
     }
 }

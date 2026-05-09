@@ -6,6 +6,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointA
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.UseCasePointAnalysis;
+import com.uniovi.estimacion.services.projects.ProjectAuthorizationService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointSizeAnalysisProvider;
 import com.uniovi.estimacion.services.sizeanalyses.usecasepoints.UseCasePointSizeAnalysisProvider;
 import com.uniovi.estimacion.services.costs.CostCalculationService;
@@ -33,6 +34,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/projects")
@@ -51,6 +54,7 @@ public class EstimationProjectController {
     private final UseCasePointAnalysisService useCasePointAnalysisService;
     private final UseCasePointCalculationService useCasePointCalculationService;
     private final UseCasePointSizeAnalysisProvider useCasePointSizeAnalysisProvider;
+    private final ProjectAuthorizationService projectAuthorizationService;
 
     @GetMapping
     public String listProjects(Model model, Pageable pageable) {
@@ -58,6 +62,8 @@ public class EstimationProjectController {
 
         model.addAttribute("projectsList", projectsPage.getContent());
         model.addAttribute("projectsPage", projectsPage);
+        model.addAttribute("canCreateProjects", projectAuthorizationService.canCreateProjects());
+        model.addAttribute("manageableProjectIds", buildManageableProjectIds(projectsPage.getContent()));
 
         return "project/list";
     }
@@ -71,6 +77,8 @@ public class EstimationProjectController {
 
         model.addAttribute("projectsList", projectsPage.getContent());
         model.addAttribute("projectsPage", projectsPage);
+        model.addAttribute("canCreateProjects", projectAuthorizationService.canCreateProjects());
+        model.addAttribute("manageableProjectIds", buildManageableProjectIds(projectsPage.getContent()));
 
         return "project/list :: projectsSection";
     }
@@ -226,6 +234,14 @@ public class EstimationProjectController {
             }
         }
 
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
         model.addAttribute("functionPointResults", functionPointResults);
         model.addAttribute("activeFunctionPointDelphi", activeFunctionPointDelphi);
         model.addAttribute("functionPointDelphiEstimatedTotalHours", functionPointDelphiEstimatedTotalHours);
@@ -255,6 +271,9 @@ public class EstimationProjectController {
 
     @GetMapping("/add")
     public String getAddForm(Model model) {
+        if (!projectAuthorizationService.canCreateProjects()) {
+            return redirectToList();
+        }
         EstimationProject project = new EstimationProject();
         project.setCurrencyCode("EUR");
 
@@ -284,7 +303,7 @@ public class EstimationProjectController {
                               @RequestParam(name = "page", required = false) Integer page,
                               Model model) {
         Optional<EstimationProject> optionalProject =
-                estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
+                estimationProjectService.findManageableByIdForCurrentUser(projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToList();
@@ -355,6 +374,13 @@ public class EstimationProjectController {
         }
 
         return "redirect:/projects/" + projectId + "/function-points/add";
+    }
+
+    private Set<Long> buildManageableProjectIds(List<EstimationProject> projects) {
+        return projects.stream()
+                .filter(project -> projectAuthorizationService.canManageProject(project.getId()))
+                .map(EstimationProject::getId)
+                .collect(Collectors.toSet());
     }
 
     private String redirectToList() {

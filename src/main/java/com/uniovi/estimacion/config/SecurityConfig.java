@@ -48,7 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/admin/**",
                                 "/users/**"
-                        ).hasAuthority("ROLE_ADMIN")
+                        ).hasAuthority("UserRole.ROLE_ADMIN.getAuthority()")
 
                         // 4. Zona autenticada normal
                         .requestMatchers(
@@ -60,7 +60,7 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/projects", true)
+                        .defaultSuccessUrl("/", true)
                         .permitAll()
                 )
                 .logout(logout -> logout

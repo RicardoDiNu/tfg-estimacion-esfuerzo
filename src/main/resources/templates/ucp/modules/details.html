@@ -18,7 +18,7 @@
             </div>
 
             <div class="card-body">
-                <div class="mb-3">
+                <div class="mb-3" th:if="${canEditEstimationData == true}">
                     <a class="btn btn-outline-primary mr-2"
                        th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}/edit(
                            projectId=${project.id},
@@ -98,7 +98,7 @@
             </div>
 
             <div class="card-body">
-                <div class="mb-3">
+                <div class="mb-3" th:if="${canEditEstimationData == true}">
                     <a class="btn btn-outline-primary"
                        th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}/use-cases/add(
                            projectId=${project.id},
@@ -164,6 +164,7 @@
                                     </a>
 
                                     <a class="btn btn-sm btn-outline-danger mb-2"
+                                       th:if="${canEditEstimationData == true}"
                                        th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}/use-cases/{useCaseId}/delete(
                                            projectId=${project.id},
                                            moduleId=${module.id},

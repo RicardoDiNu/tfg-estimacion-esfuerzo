@@ -15,9 +15,16 @@
             <div class="card-body">
                 <div class="mb-3">
                     <a class="btn btn-outline-primary mr-2"
+                       th:if="${canManageProject}"
                        th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='details')}"
                        th:text="#{project.action.edit}">
                         Editar
+                    </a>
+                    <a class="btn btn-outline-primary mr-2"
+                       th:if="${canManageProject}"
+                       th:href="@{/projects/{projectId}/memberships(projectId=${project.id})}"
+                       th:text="#{project.membership.action.manage}">
+                        Gestionar trabajadores
                     </a>
                 </div>
 
@@ -80,6 +87,7 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <a class="btn btn-outline-primary mr-2"
+                               th:if="${hasFunctionPointAnalysis or canManageProject}"
                                th:href="@{/projects/{id}/function-points/access(id=${project.id})}"
                                th:text="${hasFunctionPointAnalysis} ? #{project.details.fp.open} : #{project.details.fp.create}">
                                 Análisis PF
@@ -226,6 +234,7 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <a class="btn btn-outline-primary mr-2"
+                               th:if="${hasUseCasePointAnalysis or canManageProject}"
                                th:href="@{/projects/{id}/use-case-points/access(id=${project.id})}"
                                th:text="${hasUseCasePointAnalysis} ? #{project.details.ucp.open} : #{project.details.ucp.create}">
                                 Análisis UCP
@@ -393,6 +402,7 @@
         <!-- ACCIONES FINALES -->
         <div class="mt-4 mb-4">
             <a class="btn btn-danger mr-2"
+               th:if="${canManageProject}"A
                th:href="@{/projects/delete/{id}(id=${project.id})}"
                th:text="#{project.action.delete}"
                th:onclick="|return confirm('#{project.confirm.delete}');|">

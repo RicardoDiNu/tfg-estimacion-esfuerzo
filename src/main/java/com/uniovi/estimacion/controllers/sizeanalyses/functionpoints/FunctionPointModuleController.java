@@ -1,16 +1,17 @@
 package com.uniovi.estimacion.controllers.sizeanalyses.functionpoints;
 
+import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
-import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
+import com.uniovi.estimacion.services.projects.EstimationProjectService;
+import com.uniovi.estimacion.services.projects.ProjectAuthorizationService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointCalculationService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointModuleService;
-import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.UserRequirementService;
 import com.uniovi.estimacion.validators.sizeanalyses.functionpoints.FunctionPointModuleValidator;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,8 @@ import java.util.Optional;
 public class FunctionPointModuleController {
 
     private final EstimationProjectService estimationProjectService;
+    private final ProjectAuthorizationService projectAuthorizationService;
+
     private final FunctionPointAnalysisService functionPointAnalysisService;
     private final FunctionPointModuleService functionPointModuleService;
     private final FunctionPointModuleValidator functionPointModuleValidator;
@@ -45,12 +48,17 @@ public class FunctionPointModuleController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
+        }
+
         if (functionPointAnalysisService.findByProjectId(projectId).isEmpty()) {
             return redirectToFunctionPointAccess(projectId);
         }
 
         model.addAttribute("project", optionalProject.get());
         model.addAttribute("module", new FunctionPointModule());
+        addAuthorizationAttributes(model, projectId);
 
         return "fp/modules/add";
     }
@@ -67,6 +75,10 @@ public class FunctionPointModuleController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToFunctionPointDetails(projectId);
+        }
+
         if (functionPointAnalysisService.findByProjectId(projectId).isEmpty()) {
             return redirectToFunctionPointAccess(projectId);
         }
@@ -76,6 +88,7 @@ public class FunctionPointModuleController {
         if (result.hasErrors()) {
             model.addAttribute("project", optionalProject.get());
             model.addAttribute("module", module);
+            addAuthorizationAttributes(model, projectId);
             return "fp/modules/add";
         }
 
@@ -148,6 +161,8 @@ public class FunctionPointModuleController {
         model.addAttribute("dataFunctionsCurrentPage", dataFunctionsPageResult.getNumber());
         model.addAttribute("transactionalFunctionsCurrentPage", transactionalFunctionsPageResult.getNumber());
 
+        addAuthorizationAttributes(model, projectId);
+
         return "fp/modules/details";
     }
 
@@ -164,12 +179,17 @@ public class FunctionPointModuleController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         if (optionalModule.isEmpty()) {
             return redirectToFunctionPointDetails(projectId);
         }
 
         model.addAttribute("project", optionalProject.get());
         model.addAttribute("module", optionalModule.get());
+        addAuthorizationAttributes(model, projectId);
 
         return "fp/modules/edit";
     }
@@ -187,12 +207,17 @@ public class FunctionPointModuleController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         functionPointModuleValidator.validate(formModule, result);
 
         if (result.hasErrors()) {
             model.addAttribute("project", optionalProject.get());
             formModule.setId(moduleId);
             model.addAttribute("module", formModule);
+            addAuthorizationAttributes(model, projectId);
             return "fp/modules/edit";
         }
 
@@ -215,7 +240,12 @@ public class FunctionPointModuleController {
             return redirectToProjects();
         }
 
+        if (!projectAuthorizationService.canEditEstimationData(projectId)) {
+            return redirectToModuleDetails(projectId, moduleId);
+        }
+
         functionPointModuleService.deleteByIdWithContents(projectId, moduleId);
+
         return redirectToFunctionPointDetails(projectId);
     }
 
@@ -248,6 +278,8 @@ public class FunctionPointModuleController {
         model.addAttribute("requirementsPage", requirementsPageResult);
         model.addAttribute("dataFunctionsCurrentPage", dataFunctionsPage);
         model.addAttribute("transactionalFunctionsCurrentPage", transactionalFunctionsPage);
+
+        addAuthorizationAttributes(model, projectId);
 
         return "fp/modules/details :: requirementsSection";
     }
@@ -282,6 +314,8 @@ public class FunctionPointModuleController {
         model.addAttribute("requirementsCurrentPage", requirementsPage);
         model.addAttribute("transactionalFunctionsCurrentPage", transactionalFunctionsPage);
 
+        addAuthorizationAttributes(model, projectId);
+
         return "fp/modules/details :: dataFunctionsSection";
     }
 
@@ -315,7 +349,20 @@ public class FunctionPointModuleController {
         model.addAttribute("requirementsCurrentPage", requirementsPage);
         model.addAttribute("dataFunctionsCurrentPage", dataFunctionsPage);
 
+        addAuthorizationAttributes(model, projectId);
+
         return "fp/modules/details :: transactionalFunctionsSection";
+    }
+
+    private void addAuthorizationAttributes(Model model, Long projectId) {
+        model.addAttribute("canManageProject",
+                projectAuthorizationService.canManageProject(projectId));
+
+        model.addAttribute("canEditEstimationData",
+                projectAuthorizationService.canEditEstimationData(projectId));
+
+        model.addAttribute("canManageEffortConversions",
+                projectAuthorizationService.canManageEffortConversions(projectId));
     }
 
     private String redirectToProjects() {
@@ -333,5 +380,4 @@ public class FunctionPointModuleController {
     private String redirectToModuleDetails(Long projectId, Long moduleId) {
         return "redirect:/projects/" + projectId + "/function-points/modules/" + moduleId;
     }
-
 }
