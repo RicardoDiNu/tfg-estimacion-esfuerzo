@@ -6,10 +6,9 @@ import com.uniovi.estimacion.entities.sizeanalyses.SizeAnalysis;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.services.sizeanalyses.SizeAnalysisModuleResult;
 import com.uniovi.estimacion.services.sizeanalyses.SizeAnalysisProvider;
-import com.uniovi.estimacion.services.projects.EstimationModuleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,7 @@ public class FunctionPointSizeAnalysisProvider implements SizeAnalysisProvider {
 
     private final FunctionPointAnalysisService functionPointAnalysisService;
     private final FunctionPointCalculationService functionPointCalculationService;
-    private final EstimationModuleService estimationModuleService;
+    private final FunctionPointModuleService functionPointModuleService;
 
     @Override
     public String getTechniqueCode() {
@@ -49,11 +48,11 @@ public class FunctionPointSizeAnalysisProvider implements SizeAnalysisProvider {
         }
 
         Long projectId = functionPointAnalysis.getEstimationProject().getId();
-        List<EstimationModule> modulesList = estimationModuleService.findAllByProjectId(projectId);
+        List<FunctionPointModule> modulesList = functionPointModuleService.findAllByProjectId(projectId);
 
         List<SizeAnalysisModuleResult> moduleResults = new ArrayList<>();
 
-        for (EstimationModule module : modulesList) {
+        for (FunctionPointModule module : modulesList) {
             List<DataFunction> moduleDataFunctions =
                     functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
 
@@ -79,14 +78,14 @@ public class FunctionPointSizeAnalysisProvider implements SizeAnalysisProvider {
 
     @Override
     public Map<Long, Double> buildModuleSizeById(SizeAnalysis analysis,
-                                                 List<EstimationModule> modulesList) {
+                                                 List<FunctionPointModule> modulesList) {
         if (!(analysis instanceof FunctionPointAnalysis functionPointAnalysis)) {
             throw new IllegalArgumentException("El análisis recibido no es un análisis de Puntos Función.");
         }
 
         Map<Long, Double> moduleSizeById = new LinkedHashMap<>();
 
-        for (EstimationModule module : modulesList) {
+        for (FunctionPointModule module : modulesList) {
             List<DataFunction> moduleDataFunctions =
                     functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
 

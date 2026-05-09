@@ -1,6 +1,7 @@
 package com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements;
 
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
@@ -25,8 +26,8 @@ public class UserRequirement {
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "estimation_module_id", nullable = false)
-    private EstimationModule estimationModule;
+    @JoinColumn(name = "function_point_module_id", nullable = false)
+    private FunctionPointModule functionPointModule;
 
     @Column(length = 50, nullable = false)
     private String identifier;
@@ -59,7 +60,18 @@ public class UserRequirement {
     }
 
     @Transient
+    public FunctionPointAnalysis getFunctionPointAnalysis() {
+        return functionPointModule != null
+                ? functionPointModule.getFunctionPointAnalysis()
+                : null;
+    }
+
+    @Transient
     public EstimationProject getEstimationProject() {
-        return estimationModule != null ? estimationModule.getEstimationProject() : null;
+        FunctionPointAnalysis analysis = getFunctionPointAnalysis();
+
+        return analysis != null
+                ? analysis.getEstimationProject()
+                : null;
     }
 }

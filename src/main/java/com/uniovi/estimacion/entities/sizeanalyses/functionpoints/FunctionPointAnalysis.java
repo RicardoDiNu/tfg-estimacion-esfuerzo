@@ -7,6 +7,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.Data
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +42,9 @@ public class FunctionPointAnalysis extends AbstractSizeAnalysis {
     private Double adjustedFunctionPoints = 0.0;
 
     @OneToMany(mappedBy = "functionPointAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FunctionPointModule> modules = new ArrayList<>();
+
+    @OneToMany(mappedBy = "functionPointAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DataFunction> dataFunctions = new ArrayList<>();
 
     @OneToMany(mappedBy = "functionPointAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -52,6 +56,16 @@ public class FunctionPointAnalysis extends AbstractSizeAnalysis {
     public FunctionPointAnalysis(EstimationProject estimationProject, String systemBoundaryDescription) {
         setEstimationProject(estimationProject);
         this.systemBoundaryDescription = systemBoundaryDescription;
+    }
+
+    public void addModule(FunctionPointModule module) {
+        module.setFunctionPointAnalysis(this);
+        this.modules.add(module);
+    }
+
+    public void removeModule(FunctionPointModule module) {
+        this.modules.remove(module);
+        module.setFunctionPointAnalysis(null);
     }
 
     @Override

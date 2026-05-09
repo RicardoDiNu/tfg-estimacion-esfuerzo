@@ -4,9 +4,11 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointA
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.users.User;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointAnalysisRepository;
-import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.EstimationModuleRepository;
+import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointModuleRepository;
 import com.uniovi.estimacion.repositories.projects.EstimationProjectRepository;
+import com.uniovi.estimacion.repositories.sizeanalyses.usecasepoints.UseCasePointAnalysisRepository;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
+import com.uniovi.estimacion.services.sizeanalyses.usecasepoints.UseCasePointAnalysisService;
 import com.uniovi.estimacion.services.users.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,9 +25,10 @@ import java.util.Optional;
 public class EstimationProjectService {
 
     private final EstimationProjectRepository estimationProjectRepository;
-    private final EstimationModuleRepository estimationModuleRepository;
     private final FunctionPointAnalysisRepository functionPointAnalysisRepository;
     private final FunctionPointAnalysisService functionPointAnalysisService;
+    private final UseCasePointAnalysisRepository useCasePointAnalysisRepository;
+    private final UseCasePointAnalysisService useCasePointAnalysisService;
     private final CurrentUserService currentUserService;
 
     public Page<EstimationProject> findPageForCurrentUser(Pageable pageable) {
@@ -94,16 +97,13 @@ public class EstimationProjectService {
             return false;
         }
 
-        Optional<FunctionPointAnalysis> optionalAnalysis =
-                functionPointAnalysisRepository.findByEstimationProjectId(projectId);
-
-        if (optionalAnalysis.isPresent()) {
+        if (functionPointAnalysisRepository.findByEstimationProjectId(projectId).isPresent()) {
             functionPointAnalysisService.deleteByProjectId(projectId);
         }
 
-        estimationModuleRepository.deleteAll(
-                estimationModuleRepository.findByEstimationProjectIdOrderByIdAsc(projectId)
-        );
+        if (useCasePointAnalysisRepository.findByEstimationProjectId(projectId).isPresent()) {
+            useCasePointAnalysisService.deleteByProjectId(projectId);
+        }
 
         estimationProjectRepository.delete(optionalProject.get());
         estimationProjectRepository.flush();

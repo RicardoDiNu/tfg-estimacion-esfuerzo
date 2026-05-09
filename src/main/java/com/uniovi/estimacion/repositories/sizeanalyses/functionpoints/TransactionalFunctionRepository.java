@@ -10,13 +10,38 @@ import java.util.List;
 
 public interface TransactionalFunctionRepository extends JpaRepository<TransactionalFunction, Long> {
 
-    @EntityGraph(attributePaths = "userRequirement")
-    Page<TransactionalFunction> findByFunctionPointAnalysisEstimationProjectIdOrderByIdAsc(Long projectId, Pageable pageable);
+    @EntityGraph(attributePaths = {
+            "userRequirement",
+            "userRequirement.functionPointModule"
+    })
+    Page<TransactionalFunction> findByFunctionPointAnalysisEstimationProjectIdOrderByIdAsc(
+            Long projectId,
+            Pageable pageable
+    );
 
-    @EntityGraph(attributePaths = "userRequirement")
-    Page<TransactionalFunction> findByUserRequirementIdOrderByIdAsc(Long requirementId, Pageable pageable);
+    @EntityGraph(attributePaths = {
+            "userRequirement",
+            "userRequirement.functionPointModule"
+    })
+    Page<TransactionalFunction> findByUserRequirementIdOrderByIdAsc(
+            Long requirementId,
+            Pageable pageable
+    );
 
-    Page<TransactionalFunction> findByUserRequirementEstimationModuleIdOrderByIdAsc(Long moduleId, Pageable pageable);
+    @EntityGraph(attributePaths = {
+            "userRequirement",
+            "userRequirement.functionPointModule"
+    })
+    Page<TransactionalFunction> findByUserRequirementFunctionPointModuleIdOrderByIdAsc(
+            Long moduleId,
+            Pageable pageable
+    );
 
-    List<TransactionalFunction> findByUserRequirementEstimationModuleIdOrderByIdAsc(Long moduleId);
+    @EntityGraph(attributePaths = {
+            "userRequirement",
+            "userRequirement.functionPointModule"
+    })
+    List<TransactionalFunction> findByUserRequirementFunctionPointModuleIdOrderByIdAsc(
+            Long moduleId
+    );
 }

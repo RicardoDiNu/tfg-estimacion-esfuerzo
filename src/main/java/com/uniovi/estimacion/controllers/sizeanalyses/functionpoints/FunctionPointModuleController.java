@@ -3,16 +3,16 @@ package com.uniovi.estimacion.controllers.sizeanalyses.functionpoints;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointCalculationService;
-import com.uniovi.estimacion.services.projects.EstimationModuleService;
+import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.UserRequirementService;
-import com.uniovi.estimacion.validators.sizeanalyses.functionpoints.EstimationModuleValidator;
+import com.uniovi.estimacion.validators.sizeanalyses.functionpoints.FunctionPointModuleValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,12 +27,12 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/projects/{projectId}/function-points/modules")
 @RequiredArgsConstructor
-public class EstimationModuleController {
+public class FunctionPointModuleController {
 
     private final EstimationProjectService estimationProjectService;
     private final FunctionPointAnalysisService functionPointAnalysisService;
-    private final EstimationModuleService estimationModuleService;
-    private final EstimationModuleValidator estimationModuleValidator;
+    private final FunctionPointModuleService functionPointModuleService;
+    private final FunctionPointModuleValidator functionPointModuleValidator;
     private final UserRequirementService userRequirementService;
     private final FunctionPointCalculationService functionPointCalculationService;
 
@@ -50,14 +50,14 @@ public class EstimationModuleController {
         }
 
         model.addAttribute("project", optionalProject.get());
-        model.addAttribute("module", new EstimationModule());
+        model.addAttribute("module", new FunctionPointModule());
 
         return "fp/modules/add";
     }
 
     @PostMapping("/add")
     public String addModule(@PathVariable Long projectId,
-                            @ModelAttribute("module") EstimationModule module,
+                            @ModelAttribute("module") FunctionPointModule module,
                             BindingResult result,
                             Model model) {
         Optional<EstimationProject> optionalProject =
@@ -71,7 +71,7 @@ public class EstimationModuleController {
             return redirectToFunctionPointAccess(projectId);
         }
 
-        estimationModuleValidator.validate(module, result);
+        functionPointModuleValidator.validate(module, result);
 
         if (result.hasErrors()) {
             model.addAttribute("project", optionalProject.get());
@@ -79,8 +79,8 @@ public class EstimationModuleController {
             return "fp/modules/add";
         }
 
-        EstimationModule savedModule =
-                estimationModuleService.createForProject(optionalProject.get(), module);
+        FunctionPointModule savedModule =
+                functionPointModuleService.createForProject(optionalProject.get(), module);
 
         return redirectToModuleDetails(projectId, savedModule.getId());
     }
@@ -96,8 +96,8 @@ public class EstimationModuleController {
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
         Optional<FunctionPointAnalysis> optionalAnalysis =
                 functionPointAnalysisService.findDetailedByProjectId(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -157,8 +157,8 @@ public class EstimationModuleController {
                               Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -177,7 +177,7 @@ public class EstimationModuleController {
     @PostMapping("/{moduleId}/edit")
     public String editModule(@PathVariable Long projectId,
                              @PathVariable Long moduleId,
-                             @ModelAttribute("module") EstimationModule formModule,
+                             @ModelAttribute("module") FunctionPointModule formModule,
                              BindingResult result,
                              Model model) {
         Optional<EstimationProject> optionalProject =
@@ -187,7 +187,7 @@ public class EstimationModuleController {
             return redirectToProjects();
         }
 
-        estimationModuleValidator.validate(formModule, result);
+        functionPointModuleValidator.validate(formModule, result);
 
         if (result.hasErrors()) {
             model.addAttribute("project", optionalProject.get());
@@ -196,7 +196,7 @@ public class EstimationModuleController {
             return "fp/modules/edit";
         }
 
-        boolean updated = estimationModuleService.updateBasicData(projectId, moduleId, formModule);
+        boolean updated = functionPointModuleService.updateBasicData(projectId, moduleId, formModule);
 
         if (!updated) {
             return redirectToFunctionPointDetails(projectId);
@@ -215,7 +215,7 @@ public class EstimationModuleController {
             return redirectToProjects();
         }
 
-        estimationModuleService.deleteByIdWithContents(projectId, moduleId);
+        functionPointModuleService.deleteByIdWithContents(projectId, moduleId);
         return redirectToFunctionPointDetails(projectId);
     }
 
@@ -228,8 +228,8 @@ public class EstimationModuleController {
                                             Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -261,8 +261,8 @@ public class EstimationModuleController {
                                              Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -294,8 +294,8 @@ public class EstimationModuleController {
                                                       Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();

@@ -4,7 +4,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.SizeAnalysis;
 import com.uniovi.estimacion.entities.effortconversions.delphi.DelphiEstimation;
 import com.uniovi.estimacion.entities.effortconversions.delphi.DelphiExpertEstimate;
 import com.uniovi.estimacion.entities.effortconversions.delphi.DelphiIteration;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.repositories.effortconversions.delphi.DelphiEstimationRepository;
 import com.uniovi.estimacion.services.effortconversions.LinearEffortModel;
 import com.uniovi.estimacion.services.sizeanalyses.SizeAnalysisModuleResult;
@@ -341,7 +341,7 @@ public class DelphiEstimationService {
         delphiEstimationRepository.saveAll(previousEstimations);
     }
 
-    private ModuleReference findMinimumModule(List<EstimationModule> projectModules,
+    private ModuleReference findMinimumModule(List<FunctionPointModule> projectModules,
                                               Map<Long, Double> moduleSizeById) {
         return projectModules.stream()
                 .map(module -> toModuleReference(module, moduleSizeById))
@@ -352,7 +352,7 @@ public class DelphiEstimationService {
                 ));
     }
 
-    private ModuleReference findMaximumModule(List<EstimationModule> projectModules,
+    private ModuleReference findMaximumModule(List<FunctionPointModule> projectModules,
                                               Map<Long, Double> moduleSizeById) {
         return projectModules.stream()
                 .map(module -> toModuleReference(module, moduleSizeById))
@@ -363,7 +363,7 @@ public class DelphiEstimationService {
                 ));
     }
 
-    private ModuleReference toModuleReference(EstimationModule module,
+    private ModuleReference toModuleReference(FunctionPointModule module,
                                               Map<Long, Double> moduleSizeById) {
         Double moduleSize = moduleSizeById.get(module.getId());
 

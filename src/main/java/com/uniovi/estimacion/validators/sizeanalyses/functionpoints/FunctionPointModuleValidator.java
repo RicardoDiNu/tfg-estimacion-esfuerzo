@@ -1,22 +1,22 @@
 package com.uniovi.estimacion.validators.sizeanalyses.functionpoints;
 
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
 @Component
-public class EstimationModuleValidator implements Validator {
+public class FunctionPointModuleValidator implements Validator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return EstimationModule.class.equals(clazz);
+        return FunctionPointModule.class.equals(clazz);
     }
 
     @Override
     public void validate(Object target, Errors errors) {
-        EstimationModule module = (EstimationModule) target;
+        FunctionPointModule module = (FunctionPointModule) target;
 
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "Error.empty");
 

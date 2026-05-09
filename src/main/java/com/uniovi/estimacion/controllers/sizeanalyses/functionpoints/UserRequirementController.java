@@ -5,11 +5,11 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.Data
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunctionType;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunctionType;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
-import com.uniovi.estimacion.services.projects.EstimationModuleService;
+import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.UserRequirementService;
 import com.uniovi.estimacion.validators.sizeanalyses.functionpoints.DataFunctionValidator;
@@ -31,7 +31,7 @@ import java.util.Optional;
 public class UserRequirementController {
 
     private final EstimationProjectService estimationProjectService;
-    private final EstimationModuleService estimationModuleService;
+    private final FunctionPointModuleService functionPointModuleService;
     private final UserRequirementService userRequirementService;
     private final FunctionPointAnalysisService functionPointAnalysisService;
     private final UserRequirementValidator userRequirementValidator;
@@ -48,8 +48,8 @@ public class UserRequirementController {
                                         Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
 
@@ -100,8 +100,8 @@ public class UserRequirementController {
                                              Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
 
@@ -141,8 +141,8 @@ public class UserRequirementController {
                                                       Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
 
@@ -178,8 +178,8 @@ public class UserRequirementController {
                              Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -208,8 +208,8 @@ public class UserRequirementController {
                                  Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -241,8 +241,8 @@ public class UserRequirementController {
                               Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findByIdAndModuleId(requirementId, moduleId);
 
@@ -274,8 +274,8 @@ public class UserRequirementController {
                                   Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -311,8 +311,8 @@ public class UserRequirementController {
                                     @RequestParam(name = "requirementsPage", defaultValue = "0") int requirementsPage) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
 
         if (optionalProject.isEmpty()) {
             return redirectToProjects();
@@ -336,8 +336,8 @@ public class UserRequirementController {
                                          Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
 
@@ -372,8 +372,8 @@ public class UserRequirementController {
                                   Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
 
@@ -412,8 +412,8 @@ public class UserRequirementController {
                                                   Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
 
@@ -448,8 +448,8 @@ public class UserRequirementController {
                                            Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
 
@@ -489,8 +489,8 @@ public class UserRequirementController {
                                                          Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
         Optional<DataFunction> optionalDataFunction =
@@ -528,8 +528,8 @@ public class UserRequirementController {
                                                     Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
         Optional<DataFunction> optionalDataFunction =
@@ -572,8 +572,8 @@ public class UserRequirementController {
                                                                   Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
         Optional<TransactionalFunction> optionalTransactionalFunction =
@@ -611,8 +611,8 @@ public class UserRequirementController {
                                                              Model model) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findDetailedByIdAndModuleId(requirementId, moduleId);
         Optional<TransactionalFunction> optionalTransactionalFunction =
@@ -654,8 +654,8 @@ public class UserRequirementController {
                                      @PathVariable Long dataFunctionId) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findByIdAndModuleId(requirementId, moduleId);
 
@@ -682,8 +682,8 @@ public class UserRequirementController {
                                               @PathVariable Long transactionalFunctionId) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
-        Optional<EstimationModule> optionalModule =
-                estimationModuleService.findByIdAndProjectId(moduleId, projectId);
+        Optional<FunctionPointModule> optionalModule =
+                functionPointModuleService.findByIdAndProjectId(moduleId, projectId);
         Optional<UserRequirement> optionalRequirement =
                 userRequirementService.findByIdAndModuleId(requirementId, moduleId);
 

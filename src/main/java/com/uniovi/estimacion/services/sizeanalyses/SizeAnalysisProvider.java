@@ -1,7 +1,7 @@
 package com.uniovi.estimacion.services.sizeanalyses;
 
 import com.uniovi.estimacion.entities.sizeanalyses.SizeAnalysis;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +30,7 @@ public interface SizeAnalysisProvider {
 
     @Deprecated
     default Map<Long, Double> buildModuleSizeById(SizeAnalysis analysis,
-                                                  List<EstimationModule> modulesList) {
+                                                  List<FunctionPointModule> modulesList) {
         return buildModuleSizeById(analysis);
     }
 

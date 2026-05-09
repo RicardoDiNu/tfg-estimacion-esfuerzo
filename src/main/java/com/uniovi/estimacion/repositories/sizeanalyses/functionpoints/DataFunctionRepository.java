@@ -10,13 +10,38 @@ import java.util.List;
 
 public interface DataFunctionRepository extends JpaRepository<DataFunction, Long> {
 
-    @EntityGraph(attributePaths = "userRequirement")
-    Page<DataFunction> findByFunctionPointAnalysisEstimationProjectIdOrderByIdAsc(Long projectId, Pageable pageable);
+    @EntityGraph(attributePaths = {
+            "userRequirement",
+            "userRequirement.functionPointModule"
+    })
+    Page<DataFunction> findByFunctionPointAnalysisEstimationProjectIdOrderByIdAsc(
+            Long projectId,
+            Pageable pageable
+    );
 
-    @EntityGraph(attributePaths = "userRequirement")
-    Page<DataFunction> findByUserRequirementIdOrderByIdAsc(Long requirementId, Pageable pageable);
+    @EntityGraph(attributePaths = {
+            "userRequirement",
+            "userRequirement.functionPointModule"
+    })
+    Page<DataFunction> findByUserRequirementIdOrderByIdAsc(
+            Long requirementId,
+            Pageable pageable
+    );
 
-    Page<DataFunction> findByUserRequirementEstimationModuleIdOrderByIdAsc(Long moduleId, Pageable pageable);
+    @EntityGraph(attributePaths = {
+            "userRequirement",
+            "userRequirement.functionPointModule"
+    })
+    Page<DataFunction> findByUserRequirementFunctionPointModuleIdOrderByIdAsc(
+            Long moduleId,
+            Pageable pageable
+    );
 
-    List<DataFunction> findByUserRequirementEstimationModuleIdOrderByIdAsc(Long moduleId);
+    @EntityGraph(attributePaths = {
+            "userRequirement",
+            "userRequirement.functionPointModule"
+    })
+    List<DataFunction> findByUserRequirementFunctionPointModuleIdOrderByIdAsc(
+            Long moduleId
+    );
 }

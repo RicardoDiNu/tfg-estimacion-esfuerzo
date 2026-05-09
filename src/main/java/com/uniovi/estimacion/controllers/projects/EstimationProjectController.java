@@ -3,7 +3,7 @@ package com.uniovi.estimacion.controllers.projects;
 import com.uniovi.estimacion.entities.effortconversions.delphi.DelphiEstimation;
 import com.uniovi.estimacion.entities.effortconversions.transformationfunctions.TransformationFunctionConversion;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.UseCasePointAnalysis;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointSizeAnalysisProvider;
@@ -14,7 +14,7 @@ import com.uniovi.estimacion.services.effortconversions.transformationfunctions.
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointCalculationService;
-import com.uniovi.estimacion.services.projects.EstimationModuleService;
+import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.sizeanalyses.usecasepoints.UseCasePointAnalysisService;
 import com.uniovi.estimacion.services.sizeanalyses.usecasepoints.UseCasePointAnalysisSummary;
@@ -44,7 +44,7 @@ public class EstimationProjectController {
     private final FunctionPointCalculationService functionPointCalculationService;
     private final EstimationProjectValidator estimationProjectValidator;
     private final DelphiEstimationService delphiEstimationService;
-    private final EstimationModuleService estimationModuleService;
+    private final FunctionPointModuleService functionPointModuleService;
     private final FunctionPointSizeAnalysisProvider functionPointSizeAnalysisProvider;
     private final TransformationFunctionService transformationFunctionService;
     private final CostCalculationService costCalculationService;
@@ -123,8 +123,8 @@ public class EstimationProjectController {
                 if (activeFunctionPointDelphi.getRegressionIntercept() != null
                         && activeFunctionPointDelphi.getRegressionSlope() != null) {
 
-                    List<EstimationModule> modulesList =
-                            estimationModuleService.findAllByProjectId(projectId);
+                    List<FunctionPointModule> modulesList =
+                            functionPointModuleService.findAllByProjectId(projectId);
 
                     Map<Long, Double> moduleSizeById =
                             functionPointSizeAnalysisProvider.buildModuleSizeById(

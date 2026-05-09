@@ -11,7 +11,7 @@ import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.DataFuncti
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointAnalysisRepository;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.TransactionalFunctionRepository;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.UserRequirementRepository;
-import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.EstimationModuleRepository;
+import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointModuleRepository;
 import com.uniovi.estimacion.services.effortconversions.delphi.EffortResultsInvalidationCoordinator;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
@@ -33,7 +33,7 @@ public class FunctionPointAnalysisService {
     private final TransactionalFunctionRepository transactionalFunctionRepository;
     private final UserRequirementRepository userRequirementRepository;
     private final FunctionPointCalculationService functionPointCalculationService;
-    private final EstimationModuleRepository estimationModuleRepository;
+    private final FunctionPointModuleRepository functionPointModuleRepository;
     private final EffortResultsInvalidationCoordinator effortResultsInvalidationCoordinator;
 
     public Optional<FunctionPointAnalysis> findByProjectId(Long projectId) {
@@ -150,7 +150,7 @@ public class FunctionPointAnalysisService {
         Optional<FunctionPointAnalysis> optionalAnalysis =
                 functionPointAnalysisRepository.findByEstimationProjectId(projectId);
         Optional<UserRequirement> optionalRequirement =
-                userRequirementRepository.findByIdAndEstimationModuleEstimationProjectId(requirementId, projectId);
+                userRequirementRepository.findByIdAndFunctionPointModuleFunctionPointAnalysisEstimationProjectId(requirementId, projectId);
 
         if (optionalAnalysis.isEmpty() || optionalRequirement.isEmpty()) {
             return false;
@@ -177,7 +177,7 @@ public class FunctionPointAnalysisService {
         Optional<FunctionPointAnalysis> optionalAnalysis =
                 functionPointAnalysisRepository.findByEstimationProjectId(projectId);
         Optional<UserRequirement> optionalRequirement =
-                userRequirementRepository.findByIdAndEstimationModuleEstimationProjectId(requirementId, projectId);
+                userRequirementRepository.findByIdAndFunctionPointModuleFunctionPointAnalysisEstimationProjectId(requirementId, projectId);
 
         if (optionalAnalysis.isEmpty() || optionalRequirement.isEmpty()) {
             return false;
@@ -354,7 +354,7 @@ public class FunctionPointAnalysisService {
 
     public Page<DataFunction> findDataFunctionsPageByModuleId(Long moduleId, Pageable pageable) {
         Page<DataFunction> page =
-                dataFunctionRepository.findByUserRequirementEstimationModuleIdOrderByIdAsc(moduleId, pageable);
+                dataFunctionRepository.findByUserRequirementFunctionPointModuleIdOrderByIdAsc(moduleId, pageable);
 
         page.getContent().forEach(this::initializeDataFunctionReferences);
         return page;
@@ -362,7 +362,7 @@ public class FunctionPointAnalysisService {
 
     public Page<TransactionalFunction> findTransactionalFunctionsPageByModuleId(Long moduleId, Pageable pageable) {
         Page<TransactionalFunction> page =
-                transactionalFunctionRepository.findByUserRequirementEstimationModuleIdOrderByIdAsc(moduleId, pageable);
+                transactionalFunctionRepository.findByUserRequirementFunctionPointModuleIdOrderByIdAsc(moduleId, pageable);
 
         page.getContent().forEach(this::initializeTransactionalFunctionReferences);
         return page;
@@ -370,7 +370,7 @@ public class FunctionPointAnalysisService {
 
     public List<DataFunction> findAllDataFunctionsByModuleId(Long moduleId) {
         List<DataFunction> dataFunctions =
-                dataFunctionRepository.findByUserRequirementEstimationModuleIdOrderByIdAsc(moduleId);
+                dataFunctionRepository.findByUserRequirementFunctionPointModuleIdOrderByIdAsc(moduleId);
 
         dataFunctions.forEach(this::initializeDataFunctionReferences);
         return dataFunctions;
@@ -378,7 +378,7 @@ public class FunctionPointAnalysisService {
 
     public List<TransactionalFunction> findAllTransactionalFunctionsByModuleId(Long moduleId) {
         List<TransactionalFunction> transactionalFunctions =
-                transactionalFunctionRepository.findByUserRequirementEstimationModuleIdOrderByIdAsc(moduleId);
+                transactionalFunctionRepository.findByUserRequirementFunctionPointModuleIdOrderByIdAsc(moduleId);
 
         transactionalFunctions.forEach(this::initializeTransactionalFunctionReferences);
         return transactionalFunctions;
@@ -400,8 +400,8 @@ public class FunctionPointAnalysisService {
         if (dataFunction.getUserRequirement() != null) {
             Hibernate.initialize(dataFunction.getUserRequirement());
 
-            if (dataFunction.getUserRequirement().getEstimationModule() != null) {
-                Hibernate.initialize(dataFunction.getUserRequirement().getEstimationModule());
+            if (dataFunction.getUserRequirement().getFunctionPointModule() != null) {
+                Hibernate.initialize(dataFunction.getUserRequirement().getFunctionPointModule());
             }
         }
     }
@@ -410,8 +410,8 @@ public class FunctionPointAnalysisService {
         if (transactionalFunction.getUserRequirement() != null) {
             Hibernate.initialize(transactionalFunction.getUserRequirement());
 
-            if (transactionalFunction.getUserRequirement().getEstimationModule() != null) {
-                Hibernate.initialize(transactionalFunction.getUserRequirement().getEstimationModule());
+            if (transactionalFunction.getUserRequirement().getFunctionPointModule() != null) {
+                Hibernate.initialize(transactionalFunction.getUserRequirement().getFunctionPointModule());
             }
         }
     }

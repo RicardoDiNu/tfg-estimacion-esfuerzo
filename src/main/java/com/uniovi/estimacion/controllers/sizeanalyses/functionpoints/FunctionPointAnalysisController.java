@@ -4,7 +4,7 @@ import com.uniovi.estimacion.entities.effortconversions.delphi.DelphiEstimation;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.EstimationModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
 import com.uniovi.estimacion.services.costs.CostCalculationService;
@@ -13,7 +13,7 @@ import com.uniovi.estimacion.services.effortconversions.transformationfunctions.
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisSummary;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointCalculationService;
-import com.uniovi.estimacion.services.projects.EstimationModuleService;
+import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointModuleService;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.UserRequirementService;
 import com.uniovi.estimacion.validators.sizeanalyses.functionpoints.FunctionPointAnalysisValidator;
@@ -44,7 +44,7 @@ public class FunctionPointAnalysisController {
     private final FunctionPointAnalysisValidator functionPointAnalysisValidator;
     private final GeneralSystemCharacteristicsValidator generalSystemCharacteristicsValidator;
     private final FunctionPointCalculationService functionPointCalculationService;
-    private final EstimationModuleService estimationModuleService;
+    private final FunctionPointModuleService functionPointModuleService;
     private final DelphiEstimationService delphiEstimationService;
     private final TransformationFunctionService transformationFunctionService;
     private final CostCalculationService costCalculationService;
@@ -124,16 +124,16 @@ public class FunctionPointAnalysisController {
 
         FunctionPointAnalysisSummary results = functionPointCalculationService.buildSummary(analysis);
 
-        List<EstimationModule> allModules =
-                estimationModuleService.findAllByProjectId(projectId);
+        List<FunctionPointModule> allModules =
+                functionPointModuleService.findAllByProjectId(projectId);
 
-        Page<EstimationModule> modulesPageResult =
-                estimationModuleService.findPageByProjectId(projectId, PageRequest.of(modulesPage, 5));
+        Page<FunctionPointModule> modulesPageResult =
+                functionPointModuleService.findPageByProjectId(projectId, PageRequest.of(modulesPage, 5));
 
         Map<Long, FunctionPointAnalysisSummary> moduleResultsMap = new LinkedHashMap<>();
         Map<Long, Double> moduleSizeById = new LinkedHashMap<>();
 
-        for (EstimationModule module : allModules) {
+        for (FunctionPointModule module : allModules) {
             List<DataFunction> moduleDataFunctions =
                     functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
 
@@ -274,15 +274,15 @@ public class FunctionPointAnalysisController {
 
         FunctionPointAnalysis analysis = optionalAnalysis.get();
 
-        List<EstimationModule> allModules =
-                estimationModuleService.findAllByProjectId(projectId);
+        List<FunctionPointModule> allModules =
+                functionPointModuleService.findAllByProjectId(projectId);
 
-        Page<EstimationModule> modulesPageResult =
-                estimationModuleService.findPageByProjectId(projectId, PageRequest.of(modulesPage, 5));
+        Page<FunctionPointModule> modulesPageResult =
+                functionPointModuleService.findPageByProjectId(projectId, PageRequest.of(modulesPage, 5));
 
         Map<Long, FunctionPointAnalysisSummary> moduleResultsMap = new LinkedHashMap<>();
 
-        for (EstimationModule module : modulesPageResult.getContent()) {
+        for (FunctionPointModule module : modulesPageResult.getContent()) {
             List<DataFunction> moduleDataFunctions =
                     functionPointAnalysisService.findAllDataFunctionsByModuleId(module.getId());
 
