@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1 class="mb-4" th:text="#{about.title}">
+            Acerca de
+        </h1>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{about.project.title}">
+                Sobre el proyecto
+            </div>
+
+            <div class="card-body">
+                <p th:text="#{about.project.text1}">
+                    Esta aplicación permite estimar tamaño, esfuerzo y coste de proyectos software.
+                </p>
+
+                <p class="mb-0" th:text="#{about.project.text2}">
+                    El sistema está desarrollado como Trabajo Fin de Grado.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{about.features.title}">
+                Técnicas incluidas
+            </div>
+
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li th:text="#{about.features.fp}">
+                        Estimación de tamaño mediante Puntos Función.
+                    </li>
+                    <li th:text="#{about.features.ucp}">
+                        Estimación de tamaño mediante Use Case Points.
+                    </li>
+                    <li th:text="#{about.features.delphi}">
+                        Conversión de tamaño a esfuerzo mediante Delphi.
+                    </li>
+                    <li th:text="#{about.features.transformation}">
+                        Conversión de tamaño a esfuerzo mediante funciones de transformación.
+                    </li>
+                    <li th:text="#{about.features.cost}">
+                        Estimación de coste a partir de horas-persona y tarifa por hora.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{about.academic.title}">
+                Información académica
+            </div>
+
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong th:text="#{about.academic.author.label}">Autor</strong>:
+                    <span th:text="#{about.academic.author.value}">Ricardo Díaz Núñez</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{about.academic.degree.label}">Titulación</strong>:
+                    <span th:text="#{about.academic.degree.value}">Ingeniería del Software</span>
+                </p>
+
+                <p class="mb-0">
+                    <strong th:text="#{about.academic.work.label}">Trabajo</strong>:
+                    <span th:text="#{about.academic.work.value}">Trabajo Fin de Grado</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

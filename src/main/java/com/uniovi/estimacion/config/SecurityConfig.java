@@ -23,15 +23,20 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Recursos públicos y autenticación
+                        // 1. Páginas públicas, autenticación y recursos estáticos
                         .requestMatchers(
                                 "/",
+                                "/about",
+                                "/help",
                                 "/login",
                                 "/signup",
                                 "/logout",
+                                "/error",
+                                "/favicon.ico",
                                 "/css/**",
                                 "/js/**",
-                                "/images/**"
+                                "/images/**",
+                                "/webjars/**"
                         ).permitAll()
 
                         // 2. Flujo público de estimación temporal / anónima
@@ -47,7 +52,6 @@ public class SecurityConfig {
 
                         // 4. Zona autenticada normal
                         .requestMatchers(
-                                "/home",
                                 "/projects/**"
                         ).authenticated()
 
@@ -56,7 +60,7 @@ public class SecurityConfig {
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/home", true)
+                        .defaultSuccessUrl("/projects", true)
                         .permitAll()
                 )
                 .logout(logout -> logout

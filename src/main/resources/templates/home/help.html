@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <h1 class="mb-4" th:text="#{help.title}">
+            Ayuda
+        </h1>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.workflow.title}">
+                Flujo recomendado
+            </div>
+
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li th:text="#{help.workflow.step1}">
+                        Crear un proyecto de estimación.
+                    </li>
+                    <li th:text="#{help.workflow.step2}">
+                        Definir una técnica de tamaño: Puntos Función o UCP.
+                    </li>
+                    <li th:text="#{help.workflow.step3}">
+                        Completar los datos del análisis.
+                    </li>
+                    <li th:text="#{help.workflow.step4}">
+                        Crear una conversión a esfuerzo mediante Delphi o función de transformación.
+                    </li>
+                    <li th:text="#{help.workflow.step5}">
+                        Revisar el esfuerzo y, si existe tarifa por hora, el coste estimado.
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.projects.title}">
+                Proyectos
+            </div>
+
+            <div class="card-body">
+                <p class="mb-0" th:text="#{help.projects.text}">
+                    Cada estimación parte de un proyecto. En él se puede indicar nombre, descripción y una tarifa por hora opcional para calcular costes.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.size.title}">
+                Técnicas de tamaño
+            </div>
+
+            <div class="card-body">
+                <h5 th:text="#{help.size.fp.title}">
+                    Puntos Función
+                </h5>
+                <p th:text="#{help.size.fp.text}">
+                    Permite estimar el tamaño funcional a partir de funciones de datos, funciones transaccionales y características generales del sistema.
+                </p>
+
+                <h5 th:text="#{help.size.ucp.title}">
+                    Use Case Points
+                </h5>
+                <p class="mb-0" th:text="#{help.size.ucp.text}">
+                    Permite estimar el tamaño a partir de actores, casos de uso, factores técnicos y factores ambientales.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.effort.title}">
+                Conversión a esfuerzo
+            </div>
+
+            <div class="card-body">
+                <h5 th:text="#{help.effort.delphi.title}">
+                    Delphi
+                </h5>
+                <p th:text="#{help.effort.delphi.text}">
+                    Utiliza estimaciones de expertos sobre módulos de menor y mayor tamaño para obtener una función lineal de esfuerzo.
+                </p>
+
+                <h5 th:text="#{help.effort.transformation.title}">
+                    Funciones de transformación
+                </h5>
+                <p class="mb-0" th:text="#{help.effort.transformation.text}">
+                    Permiten aplicar una fórmula lineal del tipo E = a + b × tamaño para convertir tamaño en horas-persona.
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.cost.title}">
+                Coste
+            </div>
+
+            <div class="card-body">
+                <p class="mb-0" th:text="#{help.cost.text}">
+                    Si el proyecto tiene configurada una tarifa por hora, el sistema calcula automáticamente el coste estimado multiplicando las horas-persona por dicha tarifa.
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

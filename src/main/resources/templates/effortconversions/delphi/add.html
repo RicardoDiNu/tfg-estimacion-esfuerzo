@@ -132,11 +132,11 @@
                        type="number"
                        class="form-control"
                        th:field="*{expertCount}"
-                       min="3"
+                       min="2"
                        step="1">
                 <small class="form-text text-muted"
                        th:text="#{delphi.field.expertCount.help}">
-                    Número de expertos que participarán en cada iteración. El mínimo permitido es 3.
+                    Número de expertos que participarán en cada iteración. El mínimo recomendable es 3.
                 </small>
                 <span class="text-danger"
                       th:if="${#fields.hasErrors('expertCount')}"

@@ -8,7 +8,7 @@ import org.springframework.validation.Validator;
 @Component
 public class DelphiEstimationValidator implements Validator {
 
-    private static final int MINIMUM_EXPERT_COUNT = 3;
+    private static final int MINIMUM_EXPERT_COUNT = 2;
 
     @Override
     public boolean supports(Class<?> clazz) {

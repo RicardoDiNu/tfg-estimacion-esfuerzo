@@ -1,5 +1,27 @@
 <footer th:fragment="footer" class="footer app-footer mt-auto">
-    <div class="container">
-        <p class="mb-0" th:text="#{footer.text}">TFG - Sistema de estimación en proyectos software</p>
+    <div class="container text-center">
+        <p class="mb-1">
+            <span th:text="#{footer.project}">
+                Sistema para Estimación de Esfuerzos de Proyectos de Software
+            </span>
+        </p>
+
+        <p class="mb-0 small">
+            <span th:text="#{footer.academic}">
+                Trabajo Fin de Grado · Ingeniería del Software
+            </span>
+            <span> </span>
+        </p>
+
+        <p class="mb-0 small">
+            <span th:text="#{footer.copyright}">
+                © 2026 Ricardo Díaz Núñez
+            </span>
+            <span> · </span>
+            <a th:href="'mailto:' + #{footer.email}"
+               th:text="#{footer.email}">
+                correo@ejemplo.com
+            </a>
+        </p>
     </div>
 </footer>
