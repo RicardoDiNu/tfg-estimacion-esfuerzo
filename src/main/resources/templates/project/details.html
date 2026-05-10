@@ -54,6 +54,17 @@
                 </div>
 
                 <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.projectManager}">
+                        Jefe de proyecto
+                    </h6>
+
+                    <p class="card-text mb-0"
+                       th:text="${project.owner != null ? project.owner.username : '-'}">
+                        jefe
+                    </p>
+                </div>
+
+                <div class="mb-3">
                     <h6 class="text-muted" th:text="#{project.field.description}">Descripción</h6>
                     <p class="card-text mb-0"
                        th:text="${project.description != null and !#strings.isEmpty(project.description) ? project.description : '-'}">

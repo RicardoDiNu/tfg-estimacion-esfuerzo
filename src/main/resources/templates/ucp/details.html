@@ -744,6 +744,12 @@
 
         <!-- ACCIONES -->
         <div class="mt-4">
+            <a class="btn btn-primary mr-2"
+               th:href="@{/projects/{projectId}/use-case-points/report/pdf(projectId=${project.id})}"
+               th:text="#{ucp.report.generate.button}">
+                Generar informe
+            </a>
+
             <a class="btn btn-danger mr-2"
                th:if="${canManageProject == true}"
                th:href="@{/projects/{projectId}/use-case-points/delete(projectId=${project.id})}"

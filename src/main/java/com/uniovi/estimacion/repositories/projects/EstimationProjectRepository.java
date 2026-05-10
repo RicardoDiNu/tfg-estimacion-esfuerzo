@@ -3,6 +3,7 @@ package com.uniovi.estimacion.repositories.projects;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -13,6 +14,11 @@ public interface EstimationProjectRepository extends JpaRepository<EstimationPro
 
     Page<EstimationProject> findByOwnerUsernameOrderByIdAsc(String username, Pageable pageable);
 
+    @Override
+    @EntityGraph(attributePaths = "owner")
+    Optional<EstimationProject> findById(Long id);
+
+    @EntityGraph(attributePaths = "owner")
     Optional<EstimationProject> findByIdAndOwnerUsername(Long id, String username);
 
     boolean existsByOwnerId(Long ownerId);

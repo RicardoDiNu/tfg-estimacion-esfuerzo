@@ -232,6 +232,13 @@
             <span th:text="${project.name}">Proyecto</span>
         </p>
 
+        <p>
+            <span class="field-label" th:text="#{fp.report.pdf.projectManager}">Jefe de proyecto:</span>
+            <span th:text="${project.owner != null ? project.owner.username : '-'}">
+        jefe
+    </span>
+        </p>
+
         <p th:if="${project.description != null and !#strings.isEmpty(project.description)}">
             <span class="field-label" th:text="#{fp.report.pdf.description}">Descripción:</span>
             <span th:text="${project.description}">Descripción del proyecto</span>
