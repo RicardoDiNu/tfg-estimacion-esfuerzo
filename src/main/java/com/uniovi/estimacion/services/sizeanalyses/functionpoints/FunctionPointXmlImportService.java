@@ -3,11 +3,7 @@ package com.uniovi.estimacion.services.sizeanalyses.functionpoints;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunctionType;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.FunctionPointComplexity;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunctionType;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.*;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicType;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
@@ -15,13 +11,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.U
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointFunctionType;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointWeightMatrixEntry;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointAnalysisRepository;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointAnalysisXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointDataFunctionXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointGscXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointModuleXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointRequirementXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointTransactionalFunctionXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointWeightMatrixEntryXmlDto;
+import com.uniovi.estimacion.web.dtos.xml.functionpoints.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -29,12 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor

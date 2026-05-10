@@ -4,6 +4,9 @@ import com.uniovi.estimacion.entities.effortconversions.delphi.DelphiEstimation;
 import com.uniovi.estimacion.entities.effortconversions.transformationfunctions.TransformationFunctionConversion;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
 import com.uniovi.estimacion.services.costs.CostCalculationService;
 import com.uniovi.estimacion.services.effortconversions.delphi.DelphiEstimationService;
@@ -11,27 +14,21 @@ import com.uniovi.estimacion.services.effortconversions.transformationfunctions.
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.reports.PdfReportRendererService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.*;
-import com.uniovi.estimacion.web.forms.sizeanalyses.functionpoints.FunctionPointWeightMatrixForm;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.web.dtos.reports.functionpoints.FunctionPointModuleReportRow;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import com.uniovi.estimacion.web.forms.sizeanalyses.functionpoints.FunctionPointWeightMatrixForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 @RequestMapping("/projects/{projectId}/function-points/report")

@@ -1,10 +1,10 @@
 package com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements;
 
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

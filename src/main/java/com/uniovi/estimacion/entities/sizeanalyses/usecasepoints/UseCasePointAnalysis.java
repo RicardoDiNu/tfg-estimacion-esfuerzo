@@ -2,13 +2,13 @@ package com.uniovi.estimacion.entities.sizeanalyses.usecasepoints;
 
 import com.uniovi.estimacion.common.codes.SizeTechniqueCodes;
 import com.uniovi.estimacion.common.codes.SizeUnitCodes;
-import com.uniovi.estimacion.entities.sizeanalyses.AbstractSizeAnalysis;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.entities.sizeanalyses.AbstractSizeAnalysis;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.actors.UseCaseActor;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.factors.EnvironmentalFactorAssessment;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.factors.TechnicalFactorAssessment;
-import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.usecases.UseCaseEntry;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.modules.UseCasePointModule;
+import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.usecases.UseCaseEntry;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

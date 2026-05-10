@@ -2,11 +2,11 @@ package com.uniovi.estimacion.entities.sizeanalyses.functionpoints;
 
 import com.uniovi.estimacion.common.codes.SizeTechniqueCodes;
 import com.uniovi.estimacion.common.codes.SizeUnitCodes;
+import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.AbstractSizeAnalysis;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
-import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointWeightMatrixEntry;
 import jakarta.persistence.*;

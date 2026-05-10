@@ -8,11 +8,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.Functi
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
 import com.uniovi.estimacion.services.projects.EstimationProjectService;
 import com.uniovi.estimacion.services.projects.ProjectAuthorizationService;
-import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
-import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisSummary;
-import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointCalculationService;
-import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointModuleService;
-import com.uniovi.estimacion.services.sizeanalyses.functionpoints.UserRequirementService;
+import com.uniovi.estimacion.services.sizeanalyses.functionpoints.*;
 import com.uniovi.estimacion.validators.sizeanalyses.functionpoints.FunctionPointModuleValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

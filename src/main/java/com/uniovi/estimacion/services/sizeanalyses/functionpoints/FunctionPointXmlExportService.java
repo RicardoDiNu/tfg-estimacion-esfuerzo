@@ -9,24 +9,14 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.Functi
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointWeightMatrixEntry;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointAnalysisRepository;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointAnalysisXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointDataFunctionXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointGscXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointModuleXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointRequirementXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointTransactionalFunctionXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.functionpoints.FunctionPointWeightMatrixEntryXmlDto;
+import com.uniovi.estimacion.web.dtos.xml.functionpoints.*;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor

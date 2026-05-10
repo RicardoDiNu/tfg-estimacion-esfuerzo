@@ -1,5 +1,6 @@
 package com.uniovi.estimacion.controllers.users;
 
+import com.uniovi.estimacion.services.security.SecurityService;
 import com.uniovi.estimacion.services.users.UserService;
 import com.uniovi.estimacion.validators.users.SignUpFormValidator;
 import com.uniovi.estimacion.web.forms.users.SignUpForm;
@@ -10,7 +11,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import com.uniovi.estimacion.services.security.SecurityService;
 
 @Controller
 @RequiredArgsConstructor

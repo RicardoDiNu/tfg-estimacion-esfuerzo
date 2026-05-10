@@ -3,7 +3,6 @@ package com.uniovi.estimacion.repositories.sizeanalyses.functionpoints;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

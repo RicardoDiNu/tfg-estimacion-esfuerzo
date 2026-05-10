@@ -1,11 +1,7 @@
 package com.uniovi.estimacion.services.sizeanalyses.functionpoints;
 
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunctionType;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.FunctionPointComplexity;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunctionType;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.*;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointFunctionType;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointWeightMatrixEntry;

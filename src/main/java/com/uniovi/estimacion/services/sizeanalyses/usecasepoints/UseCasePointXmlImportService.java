@@ -13,12 +13,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.modules.UseCase
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.usecases.UseCaseComplexity;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.usecases.UseCaseEntry;
 import com.uniovi.estimacion.repositories.sizeanalyses.usecasepoints.UseCasePointAnalysisRepository;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCaseActorXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCaseEntryXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCaseEnvironmentalFactorXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCasePointAnalysisXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCasePointModuleXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCaseTechnicalFactorXmlDto;
+import com.uniovi.estimacion.web.dtos.xml.usecasepoints.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -26,11 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor

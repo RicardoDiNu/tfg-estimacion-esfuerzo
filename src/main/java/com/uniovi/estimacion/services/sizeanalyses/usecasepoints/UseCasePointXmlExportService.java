@@ -8,23 +8,14 @@ import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.factors.Technic
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.modules.UseCasePointModule;
 import com.uniovi.estimacion.entities.sizeanalyses.usecasepoints.usecases.UseCaseEntry;
 import com.uniovi.estimacion.repositories.sizeanalyses.usecasepoints.UseCasePointAnalysisRepository;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCaseActorXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCaseEntryXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCaseEnvironmentalFactorXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCasePointAnalysisXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCasePointModuleXmlDto;
-import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCaseTechnicalFactorXmlDto;
+import com.uniovi.estimacion.web.dtos.xml.usecasepoints.*;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
