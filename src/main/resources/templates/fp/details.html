@@ -51,11 +51,6 @@
                                th:text="#{fp.details.editAnalysis}">
                                 Editar análisis
                             </a>
-                            <a class="btn btn-outline-secondary"
-                               th:href="@{/projects/{projectId}/function-points/export/xml(projectId=${project.id})}"
-                               th:text="#{fp.export.xml.button}">
-                                Exportar XML
-                            </a>
                         </div>
 
                         <div class="fp-context-item mb-3">
@@ -610,6 +605,12 @@
                th:href="@{/projects/{projectId}/function-points/report/pdf(projectId=${project.id})}"
                th:text="#{fp.report.generate.button}">
                 Generar informe
+            </a>
+
+            <a class="btn btn-primary mr-2"
+               th:href="@{/projects/{projectId}/function-points/export/xml(projectId=${project.id})}"
+               th:text="#{fp.export.xml.button}">
+                Exportar XML
             </a>
 
             <a class="btn btn-danger mr-2"

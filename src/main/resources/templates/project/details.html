@@ -273,6 +273,12 @@
                                th:text="${hasUseCasePointAnalysis} ? #{project.details.ucp.open} : #{project.details.ucp.create}">
                                 Análisis UCP
                             </a>
+                            <a class="btn btn-outline-secondary"
+                               th:if="${!hasUseCasePointAnalysis and canManageProject}"
+                               th:href="@{/projects/{projectId}/use-case-points/import(projectId=${project.id})}"
+                               th:text="#{ucp.import.xml.button}">
+                                Importar análisis UCP desde XML
+                            </a>
                         </div>
 
                         <div class="mb-4">

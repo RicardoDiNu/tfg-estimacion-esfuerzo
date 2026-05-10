@@ -750,6 +750,12 @@
                 Generar informe
             </a>
 
+            <a class="btn btn-primary mr-2"
+               th:href="@{/projects/{projectId}/use-case-points/export/xml(projectId=${project.id})}"
+               th:text="#{ucp.export.xml.button}">
+                Exportar XML
+            </a>
+
             <a class="btn btn-danger mr-2"
                th:if="${canManageProject == true}"
                th:href="@{/projects/{projectId}/use-case-points/delete(projectId=${project.id})}"
