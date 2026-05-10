@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{fp.import.title}">
+                    Importar análisis PF desde XML
+                </li>
+            </ol>
+        </nav>
+
+        <h1 th:text="#{fp.import.title}">Importar análisis PF desde XML</h1>
+        <p th:text="#{fp.import.subtitle}">
+            Selecciona un archivo XML con los datos de un análisis de Puntos Función.
+        </p>
+
+        <div class="alert alert-light border mb-3">
+            <strong th:text="#{project.field.name}">Nombre</strong>:
+            <span th:text="${project.name}">Proyecto</span>
+        </div>
+
+        <div class="alert alert-warning border mb-3" th:text="#{fp.import.warning}">
+            La importación solo está disponible si el proyecto todavía no tiene análisis PF.
+        </div>
+
+        <div class="alert alert-danger" th:if="${errorKey != null}" th:text="#{${errorKey}}">
+            Error al importar el análisis PF.
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      th:action="@{/projects/{projectId}/function-points/import(projectId=${project.id})}">
+
+                    <div class="form-group mb-3">
+                        <label for="file" th:text="#{fp.import.file}">Archivo XML</label>
+                        <input type="file"
+                               id="file"
+                               name="file"
+                               class="form-control"
+                               accept=".xml,application/xml,text/xml"
+                               required/>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary mr-2"
+                            th:text="#{fp.import.submit}">
+                        Importar análisis
+                    </button>
+
+                    <a class="btn btn-secondary"
+                       th:href="@{/projects/{id}(id=${project.id})}"
+                       th:text="#{fp.import.cancel}">
+                        Cancelar
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

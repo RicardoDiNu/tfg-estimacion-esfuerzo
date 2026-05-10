@@ -120,6 +120,12 @@
                                th:text="${hasFunctionPointAnalysis} ? #{project.details.fp.open} : #{project.details.fp.create}">
                                 Análisis PF
                             </a>
+                            <a class="btn btn-outline-secondary"
+                               th:if="${!hasFunctionPointAnalysis and canManageProject}"
+                               th:href="@{/projects/{projectId}/function-points/import(projectId=${project.id})}"
+                               th:text="#{fp.import.xml.button}">
+                                Importar análisis PF desde XML
+                            </a>
                         </div>
 
                         <div class="mb-4">

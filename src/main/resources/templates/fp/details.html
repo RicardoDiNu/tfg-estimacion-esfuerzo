@@ -45,11 +45,16 @@
 
                     <div class="card-body">
                         <div class="mb-3">
-                            <a class="btn btn-outline-primary"
+                            <a class="btn btn-outline-primary mr-2"
                                th:if="${canEditEstimationData}"
                                th:href="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}"
                                th:text="#{fp.details.editAnalysis}">
                                 Editar análisis
+                            </a>
+                            <a class="btn btn-outline-secondary"
+                               th:href="@{/projects/{projectId}/function-points/export/xml(projectId=${project.id})}"
+                               th:text="#{fp.export.xml.button}">
+                                Exportar XML
                             </a>
                         </div>
 
