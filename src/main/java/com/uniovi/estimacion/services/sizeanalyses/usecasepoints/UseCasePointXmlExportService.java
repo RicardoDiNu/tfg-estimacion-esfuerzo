@@ -78,7 +78,7 @@ public class UseCasePointXmlExportService {
     }
 
     private List<UseCaseActorXmlDto> buildActorsDto(List<UseCaseActor> actors,
-                                                     Map<Long, String> actorRefMap) {
+                                                    Map<Long, String> actorRefMap) {
         List<UseCaseActorXmlDto> dtos = new ArrayList<>();
         int index = 1;
 
@@ -98,7 +98,7 @@ public class UseCasePointXmlExportService {
     }
 
     private List<UseCasePointModuleXmlDto> buildModulesDto(List<UseCasePointModule> modules,
-                                                            Map<Long, String> moduleRefMap) {
+                                                           Map<Long, String> moduleRefMap) {
         List<UseCasePointModuleXmlDto> dtos = new ArrayList<>();
         int index = 1;
 
@@ -117,8 +117,8 @@ public class UseCasePointXmlExportService {
     }
 
     private List<UseCaseEntryXmlDto> buildUseCasesDto(List<UseCasePointModule> modules,
-                                                       Map<Long, String> moduleRefMap,
-                                                       Map<Long, String> actorRefMap) {
+                                                      Map<Long, String> moduleRefMap,
+                                                      Map<Long, String> actorRefMap) {
         List<UseCaseEntryXmlDto> dtos = new ArrayList<>();
         int index = 1;
 

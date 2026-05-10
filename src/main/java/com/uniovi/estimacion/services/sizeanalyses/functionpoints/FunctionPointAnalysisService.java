@@ -60,7 +60,8 @@ public class FunctionPointAnalysisService {
         initializeGeneralSystemCharacteristics(analysis);
         initializeDefaultWeightMatrix(analysis);
         functionPointCalculationService.recalculateAnalysis(analysis);
-        functionPointAnalysisRepository.save(analysis);;
+        functionPointAnalysisRepository.save(analysis);
+        ;
     }
 
     @Transactional

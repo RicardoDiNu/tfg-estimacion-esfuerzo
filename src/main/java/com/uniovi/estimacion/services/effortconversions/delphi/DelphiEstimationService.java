@@ -88,7 +88,6 @@ public class DelphiEstimationService {
     }
 
 
-
     @Transactional
     public DelphiEstimation createInitialEstimation(SizeAnalysis sourceAnalysis,
                                                     List<SizeAnalysisModuleResult> moduleResults,

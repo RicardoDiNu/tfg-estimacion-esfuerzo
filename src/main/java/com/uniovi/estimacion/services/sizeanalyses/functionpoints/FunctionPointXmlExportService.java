@@ -69,7 +69,7 @@ public class FunctionPointXmlExportService {
     }
 
     private FunctionPointAnalysisXmlDto buildDto(FunctionPointAnalysis analysis,
-                                                  List<FunctionPointModule> modules) {
+                                                 List<FunctionPointModule> modules) {
         FunctionPointAnalysisXmlDto dto = new FunctionPointAnalysisXmlDto();
         dto.setVersion("1.0");
         dto.setSystemBoundaryDescription(analysis.getSystemBoundaryDescription());
@@ -116,7 +116,7 @@ public class FunctionPointXmlExportService {
     }
 
     private List<FunctionPointModuleXmlDto> buildModulesDto(List<FunctionPointModule> modules,
-                                                             Map<Long, String> moduleRefMap) {
+                                                            Map<Long, String> moduleRefMap) {
         List<FunctionPointModuleXmlDto> moduleDtos = new ArrayList<>();
         int index = 1;
 
@@ -135,8 +135,8 @@ public class FunctionPointXmlExportService {
     }
 
     private List<FunctionPointRequirementXmlDto> buildRequirementsDto(List<FunctionPointModule> modules,
-                                                                       Map<Long, String> moduleRefMap,
-                                                                       Map<Long, String> requirementRefMap) {
+                                                                      Map<Long, String> moduleRefMap,
+                                                                      Map<Long, String> requirementRefMap) {
         List<FunctionPointRequirementXmlDto> requirementDtos = new ArrayList<>();
         int index = 1;
 
