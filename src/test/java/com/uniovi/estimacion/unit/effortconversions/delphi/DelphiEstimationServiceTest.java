@@ -3,6 +3,8 @@ package com.uniovi.estimacion.unit.effortconversions.delphi;
 import com.uniovi.estimacion.entities.effortconversions.delphi.DelphiEstimation;
 import com.uniovi.estimacion.entities.effortconversions.delphi.DelphiExpertEstimate;
 import com.uniovi.estimacion.entities.effortconversions.delphi.DelphiIteration;
+import com.uniovi.estimacion.entities.projects.EstimationProject;
+import com.uniovi.estimacion.entities.sizeanalyses.SizeAnalysis;
 import com.uniovi.estimacion.repositories.effortconversions.delphi.DelphiEstimationRepository;
 import com.uniovi.estimacion.services.effortconversions.LinearEffortModel;
 import com.uniovi.estimacion.services.effortconversions.delphi.DelphiEstimationService;
@@ -21,6 +23,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,7 +58,6 @@ class DelphiEstimationServiceTest {
         e.setMaximumIterations(3);
         e.setActive(true);
         e.setOutdated(false);
-        // regressionSlope and regressionIntercept remain null -> isFinished() == false
         return e;
     }
 
@@ -80,8 +83,190 @@ class DelphiEstimationServiceTest {
         return e;
     }
 
+    private SizeAnalysis validSourceAnalysis() {
+        EstimationProject project = new EstimationProject();
+        project.setId(1L);
+        project.setName("Test project");
+
+        SizeAnalysis sourceAnalysis = mock(SizeAnalysis.class);
+        lenient().when(sourceAnalysis.getId()).thenReturn(10L);
+        lenient().when(sourceAnalysis.getEstimationProject()).thenReturn(project);
+        lenient().when(sourceAnalysis.getCalculatedSizeValue()).thenReturn(40.0);
+        lenient().when(sourceAnalysis.getTechniqueCode()).thenReturn("FP");
+        lenient().when(sourceAnalysis.getSizeUnitCode()).thenReturn("FP");
+
+        return sourceAnalysis;
+    }
+
+    private List<SizeAnalysisModuleResult> validModuleResults() {
+        return List.of(
+                new SizeAnalysisModuleResult(1L, "min-module", 10.0),
+                new SizeAnalysisModuleResult(2L, "max-module", 30.0)
+        );
+    }
+
     // -------------------------------------------------------------------------
-    // A. Regression line calculation (LinearEffortModel)
+    // A. Initial configuration validation
+    // -------------------------------------------------------------------------
+
+    @Nested
+    @DisplayName("Initial configuration validation")
+    class InitialConfigurationValidation {
+
+        @Test
+        @DisplayName("createInitialEstimation accepts two experts")
+        void createInitialEstimationAcceptsTwoExperts() {
+            // given
+            SizeAnalysis sourceAnalysis = validSourceAnalysis();
+            List<SizeAnalysisModuleResult> modules = validModuleResults();
+
+            when(delphiEstimationRepository.save(any()))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            // when
+            DelphiEstimation result = service.createInitialEstimation(
+                    sourceAnalysis,
+                    modules,
+                    10.0,
+                    3,
+                    2
+            );
+
+            // then
+            assertNotNull(result);
+            assertEquals(2, result.getExpertCount());
+            assertEquals(10.0, result.getAcceptableDeviationPercentage(), 0.001);
+            assertEquals(3, result.getMaximumIterations());
+            assertEquals(1L, result.getMinimumModuleId());
+            assertEquals(2L, result.getMaximumModuleId());
+            assertEquals(10.0, result.getMinimumModuleSizeSnapshot(), 0.001);
+            assertEquals(30.0, result.getMaximumModuleSizeSnapshot(), 0.001);
+            assertTrue(result.getActive());
+            assertFalse(result.getOutdated());
+        }
+
+        @Test
+        @DisplayName("createInitialEstimation rejects one expert")
+        void createInitialEstimationRejectsOneExpert() {
+            // given
+            SizeAnalysis sourceAnalysis = validSourceAnalysis();
+
+            // then
+            assertThrows(IllegalArgumentException.class, () ->
+                    service.createInitialEstimation(
+                            sourceAnalysis,
+                            validModuleResults(),
+                            10.0,
+                            3,
+                            1
+                    ));
+        }
+
+        @Test
+        @DisplayName("createInitialEstimation rejects null expert count")
+        void createInitialEstimationRejectsNullExpertCount() {
+            // given
+            SizeAnalysis sourceAnalysis = validSourceAnalysis();
+
+            // then
+            assertThrows(IllegalArgumentException.class, () ->
+                    service.createInitialEstimation(
+                            sourceAnalysis,
+                            validModuleResults(),
+                            10.0,
+                            3,
+                            null
+                    ));
+        }
+
+        @Test
+        @DisplayName("createInitialEstimation rejects null acceptable deviation")
+        void createInitialEstimationRejectsNullAcceptableDeviation() {
+            // given
+            SizeAnalysis sourceAnalysis = validSourceAnalysis();
+
+            // then
+            assertThrows(IllegalArgumentException.class, () ->
+                    service.createInitialEstimation(
+                            sourceAnalysis,
+                            validModuleResults(),
+                            null,
+                            3,
+                            2
+                    ));
+        }
+
+        @Test
+        @DisplayName("createInitialEstimation rejects zero acceptable deviation")
+        void createInitialEstimationRejectsZeroAcceptableDeviation() {
+            // given
+            SizeAnalysis sourceAnalysis = validSourceAnalysis();
+
+            // then
+            assertThrows(IllegalArgumentException.class, () ->
+                    service.createInitialEstimation(
+                            sourceAnalysis,
+                            validModuleResults(),
+                            0.0,
+                            3,
+                            2
+                    ));
+        }
+
+        @Test
+        @DisplayName("createInitialEstimation rejects negative acceptable deviation")
+        void createInitialEstimationRejectsNegativeAcceptableDeviation() {
+            // given
+            SizeAnalysis sourceAnalysis = validSourceAnalysis();
+
+            // then
+            assertThrows(IllegalArgumentException.class, () ->
+                    service.createInitialEstimation(
+                            sourceAnalysis,
+                            validModuleResults(),
+                            -1.0,
+                            3,
+                            2
+                    ));
+        }
+
+        @Test
+        @DisplayName("createInitialEstimation rejects null maximum iterations")
+        void createInitialEstimationRejectsNullMaximumIterations() {
+            // given
+            SizeAnalysis sourceAnalysis = validSourceAnalysis();
+
+            // then
+            assertThrows(IllegalArgumentException.class, () ->
+                    service.createInitialEstimation(
+                            sourceAnalysis,
+                            validModuleResults(),
+                            10.0,
+                            null,
+                            2
+                    ));
+        }
+
+        @Test
+        @DisplayName("createInitialEstimation rejects zero maximum iterations")
+        void createInitialEstimationRejectsZeroMaximumIterations() {
+            // given
+            SizeAnalysis sourceAnalysis = validSourceAnalysis();
+
+            // then
+            assertThrows(IllegalArgumentException.class, () ->
+                    service.createInitialEstimation(
+                            sourceAnalysis,
+                            validModuleResults(),
+                            10.0,
+                            0,
+                            2
+                    ));
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // B. Regression line calculation (LinearEffortModel)
     // -------------------------------------------------------------------------
 
     @Nested
@@ -91,7 +276,7 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("calculates slope = (effortMax - effortMin) / (sizeMax - sizeMin)")
         void calculatesSlopeCorrectly() {
-            // given: sizeMin=10,effortMin=100, sizeMax=30,effortMax=300 -> slope=(300-100)/(30-10)=10
+            // given
             LinearEffortModel model = LinearEffortModel.fromTwoPoints(10.0, 100.0, 30.0, 300.0);
 
             // then
@@ -101,7 +286,7 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("calculates intercept = 0 when regression passes through origin")
         void calculatesInterceptZeroWhenRegressionPassesThroughOrigin() {
-            // given: slope=10, intercept = 100 - 10*10 = 0
+            // given
             LinearEffortModel model = LinearEffortModel.fromTwoPoints(10.0, 100.0, 30.0, 300.0);
 
             // then
@@ -111,7 +296,7 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("calculates non-zero intercept: sizeMin=10,effortMin=150, sizeMax=30,effortMax=350 -> slope=10, intercept=50")
         void calculatesNonZeroIntercept() {
-            // given: slope=(350-150)/(30-10)=10; intercept=150-10*10=50
+            // given
             LinearEffortModel model = LinearEffortModel.fromTwoPoints(10.0, 150.0, 30.0, 350.0);
 
             // then
@@ -129,7 +314,7 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("applyFinalCalibration sets slope and intercept on estimation via regression")
         void applyFinalCalibrationSetsSlopeAndIntercept() {
-            // given: sizeMin=10, sizeMax=30; effortMin=100, effortMax=300 -> slope=10, intercept=0
+            // given
             DelphiEstimation estimation = unfinishedEstimation(10.0, 30.0);
             when(delphiEstimationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
@@ -159,7 +344,7 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("applyFinalCalibration throws IllegalStateException when min and max sizes are equal")
         void applyFinalCalibrationThrowsWhenSizesAreEqual() {
-            // given: same size for min and max module -> regression impossible
+            // given
             DelphiEstimation estimation = unfinishedEstimation(10.0, 10.0);
 
             // then
@@ -169,7 +354,7 @@ class DelphiEstimationServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // B. Module effort calculation
+    // C. Module effort calculation
     // -------------------------------------------------------------------------
 
     @Nested
@@ -222,7 +407,7 @@ class DelphiEstimationServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // C. Total effort calculation
+    // D. Total effort calculation
     // -------------------------------------------------------------------------
 
     @Nested
@@ -232,7 +417,7 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("calculates total effort as sum of individual module efforts (map overload)")
         void calculatesTotalEffortAsSumViaMap() {
-            // given: a=0, b=10 -> effort(10)=100, effort(20)=200, effort(5)=50 -> total=350
+            // given
             DelphiEstimation estimation = finishedEstimation(0.0, 10.0);
 
             // when
@@ -246,7 +431,7 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("calculates total effort via SizeAnalysisModuleResult list: a=50,b=10, sizes=[5,10] -> 250")
         void calculatesTotalEffortViaModuleResultList() {
-            // given: a=50, b=10 -> effort(5)=100, effort(10)=150 -> total=250
+            // given
             DelphiEstimation estimation = finishedEstimation(50.0, 10.0);
 
             List<SizeAnalysisModuleResult> modules = List.of(
@@ -309,7 +494,7 @@ class DelphiEstimationServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // D. State: isFinished
+    // E. State: isFinished
     // -------------------------------------------------------------------------
 
     @Nested
@@ -344,7 +529,7 @@ class DelphiEstimationServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // E. Convergence via registerIteration
+    // F. Convergence via registerIteration
     // -------------------------------------------------------------------------
 
     @Nested
@@ -354,7 +539,7 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("convergent iteration (deviation=0%) sets finalIteration=true and computes regression")
         void convergentIterationSetsFinalIterationAndRegression() {
-            // given: 3 experts with identical estimates -> deviation = 0% < 10%
+            // given
             DelphiEstimation estimation = unfinishedEstimation(10.0, 30.0);
             when(delphiEstimationRepository.findById(1L)).thenReturn(Optional.of(estimation));
             when(delphiEstimationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -368,12 +553,11 @@ class DelphiEstimationServiceTest {
             // when
             service.registerIteration(1L, estimates);
 
-            // then: iteration is final due to convergence
+            // then
             DelphiIteration iteration = estimation.getIterations().get(0);
             assertTrue(iteration.getFinalIteration());
             assertTrue(iteration.getAcceptedByDeviation());
 
-            // regression is now set: sizeMin=10, sizeMax=30, effortMin=100, effortMax=300
             assertTrue(estimation.isFinished());
             assertEquals(10.0, estimation.getRegressionSlope(), 0.001);
             assertEquals(0.0, estimation.getRegressionIntercept(), 0.001);
@@ -382,12 +566,11 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("non-convergent iteration with remaining iterations sets finalIteration=false")
         void nonConvergentIterationDoesNotFinalizeWhenIterationsRemain() {
-            // given: 3 experts with highly divergent estimates -> deviation >> 10%
+            // given
             DelphiEstimation estimation = unfinishedEstimation(10.0, 30.0);
             when(delphiEstimationRepository.findById(1L)).thenReturn(Optional.of(estimation));
             when(delphiEstimationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-            // Divergent min estimates: [50, 300, 100] -> avg=150, dev=(300-50)/150*100=166%
             List<DelphiExpertEstimate> estimates = List.of(
                     expertEstimate("expert1", 50.0, 100.0),
                     expertEstimate("expert2", 300.0, 600.0),
@@ -397,7 +580,7 @@ class DelphiEstimationServiceTest {
             // when
             service.registerIteration(1L, estimates);
 
-            // then: iteration is NOT final (1 < 3 max iterations; divergent)
+            // then
             DelphiIteration iteration = estimation.getIterations().get(0);
             assertFalse(iteration.getFinalIteration());
             assertFalse(iteration.getAcceptedByDeviation());
@@ -406,7 +589,7 @@ class DelphiEstimationServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // E. Expert count validation
+    // G. Expert count validation
     // -------------------------------------------------------------------------
 
     @Nested
@@ -416,7 +599,7 @@ class DelphiEstimationServiceTest {
         @Test
         @DisplayName("registerIteration rejects fewer expert estimates than the configured count")
         void rejectsFewerExpertsThanConfigured() {
-            // given: estimation expects 3 experts but only 1 is provided
+            // given
             DelphiEstimation estimation = unfinishedEstimation(10.0, 30.0);
             when(delphiEstimationRepository.findById(1L)).thenReturn(Optional.of(estimation));
 
@@ -443,7 +626,7 @@ class DelphiEstimationServiceTest {
     }
 
     // -------------------------------------------------------------------------
-    // F. Boundary cases: canStartCalibration
+    // H. Boundary cases: canStartCalibration
     // -------------------------------------------------------------------------
 
     @Nested
@@ -475,6 +658,7 @@ class DelphiEstimationServiceTest {
                     new SizeAnalysisModuleResult(1L, "mod-a", 10.0),
                     new SizeAnalysisModuleResult(2L, "mod-b", 30.0)
             );
+
             assertTrue(service.canStartCalibration(modules));
         }
 
@@ -485,6 +669,7 @@ class DelphiEstimationServiceTest {
                     new SizeAnalysisModuleResult(1L, "mod-a", 10.0),
                     new SizeAnalysisModuleResult(2L, "mod-b", 10.0)
             );
+
             assertFalse(service.canStartCalibration(modules));
         }
 
@@ -494,6 +679,7 @@ class DelphiEstimationServiceTest {
             List<SizeAnalysisModuleResult> modules = List.of(
                     new SizeAnalysisModuleResult(1L, "mod-a", 10.0)
             );
+
             assertFalse(service.canStartCalibration(modules));
         }
     }

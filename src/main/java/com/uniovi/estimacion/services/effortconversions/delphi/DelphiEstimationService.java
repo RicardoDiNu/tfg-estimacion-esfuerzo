@@ -25,7 +25,7 @@ import java.util.Set;
 @Transactional(readOnly = true)
 public class DelphiEstimationService {
 
-    private static final int MINIMUM_EXPERT_COUNT = 3;
+    private static final int MINIMUM_EXPERT_COUNT = 2;
 
     private final DelphiEstimationRepository delphiEstimationRepository;
 
@@ -101,6 +101,7 @@ public class DelphiEstimationService {
                                                     Integer maximumIterations,
                                                     Integer expertCount) {
         validateSourceAnalysis(sourceAnalysis);
+        validateInitialConfiguration(acceptableDeviationPercentage, maximumIterations, expertCount);
 
         List<SizeAnalysisModuleResult> validModules = moduleResults.stream()
                 .filter(module -> module.getSize() != null && module.getSize() > 0)
