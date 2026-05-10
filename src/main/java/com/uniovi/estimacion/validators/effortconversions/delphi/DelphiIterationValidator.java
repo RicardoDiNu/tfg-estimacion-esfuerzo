@@ -14,7 +14,7 @@ import java.util.Set;
 @Component
 public class DelphiIterationValidator implements Validator {
 
-    private static final int MINIMUM_EXPERT_COUNT = 3;
+    private static final int MINIMUM_EXPERT_COUNT = 2;
 
     @Override
     public boolean supports(Class<?> clazz) {

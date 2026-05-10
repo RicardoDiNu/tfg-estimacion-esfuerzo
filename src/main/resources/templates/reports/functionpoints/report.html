@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="#{fp.report.pdf.title}">Informe de análisis de Puntos Función</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 22mm 18mm 20mm 18mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #222;
+            line-height: 1.4;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        h2 {
+            font-size: 16.5px;
+            margin-top: 24px;
+            margin-bottom: 9px;
+            border-bottom: 1px solid #cccccc;
+            padding-bottom: 4px;
+        }
+
+        h3 {
+            font-size: 14px;
+            margin-top: 16px;
+            margin-bottom: 7px;
+        }
+
+        h4 {
+            font-size: 13px;
+            margin-top: 11px;
+            margin-bottom: 6px;
+            color: #333333;
+        }
+
+        .muted {
+            color: #666666;
+        }
+
+        .cover-page {
+            page-break-after: always;
+        }
+
+        .header-box {
+            border: 1px solid #dddddd;
+            padding: 13px;
+            margin-bottom: 18px;
+            background: #f7f7f7;
+        }
+
+        .toc {
+            border: 1px solid #dddddd;
+            padding: 18px 20px;
+            margin-top: 18px;
+            margin-bottom: 24px;
+            background: #fafafa;
+        }
+
+        .toc-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 14px;
+        }
+
+        .toc ul {
+            margin: 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .toc li {
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .toc a {
+            color: #222222;
+            text-decoration: none;
+        }
+
+        .toc-sublist {
+            margin-top: 6px;
+            margin-bottom: 8px;
+            padding-left: 22px !important;
+        }
+
+        .toc-sublist li {
+            margin-bottom: 5px;
+            font-size: 12.5px;
+        }
+
+        .field-label {
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            margin-bottom: 14px;
+            font-size: 11.5px;
+        }
+
+        th {
+            background: #eeeeee;
+            font-weight: bold;
+        }
+
+        th, td {
+            border: 1px solid #cccccc;
+            padding: 5.5px 6.5px;
+            vertical-align: top;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .result-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px;
+            margin-top: 6px;
+        }
+
+        .result-box {
+            border: 1px solid #dddddd;
+            padding: 9px;
+            background: #fafafa;
+        }
+
+        .result-value {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .module-block {
+            margin-top: 18px;
+            margin-bottom: 20px;
+            border: 1px solid #d8d8d8;
+            background: #fcfcfc;
+        }
+
+        .module-header {
+            background: #f0f0f0;
+            border-bottom: 1px solid #d8d8d8;
+            padding: 8px 10px;
+        }
+
+        .module-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .module-body {
+            padding: 10px;
+        }
+
+        .module-summary {
+            margin-bottom: 12px;
+            padding: 8px;
+            border: 1px solid #e1e1e1;
+            background: #f8f8f8;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            color: #2f2f2f;
+        }
+
+        .requirement-block {
+            margin-top: 10px;
+            margin-bottom: 14px;
+            padding: 8px 10px;
+            border-left: 4px solid #bdbdbd;
+            background: #fafafa;
+        }
+
+        .requirement-title {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .subsection-note {
+            margin-top: 6px;
+            margin-bottom: 4px;
+            font-weight: bold;
+            color: #444444;
+        }
+
+        .footer {
+            margin-top: 24px;
+            font-size: 10px;
+            color: #777777;
+            border-top: 1px solid #dddddd;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="cover-page">
+
+    <h1 th:text="#{fp.report.pdf.title}">
+        Informe de análisis de Puntos Función
+    </h1>
+
+    <p class="muted">
+        <span th:text="#{fp.report.pdf.generatedAt}">Generado el</span>
+        <span th:text="${generatedAt}">01/01/2026 12:00</span>
+    </p>
+
+    <div class="header-box">
+        <p>
+            <span class="field-label" th:text="#{fp.report.pdf.project}">Proyecto:</span>
+            <span th:text="${project.name}">Proyecto</span>
+        </p>
+
+        <p th:if="${project.description != null and !#strings.isEmpty(project.description)}">
+            <span class="field-label" th:text="#{fp.report.pdf.description}">Descripción:</span>
+            <span th:text="${project.description}">Descripción del proyecto</span>
+        </p>
+
+        <p>
+            <span class="field-label" th:text="#{fp.report.pdf.sizeUnit}">Unidad de tamaño:</span>
+            <span th:text="${analysis.sizeUnitCode}">FP</span>
+        </p>
+    </div>
+
+    <div class="toc">
+        <div class="toc-title" th:text="#{fp.report.pdf.tableOfContents}">
+            Tabla de contenidos
+        </div>
+
+        <ul>
+            <li>
+                <a href="#section-results" th:text="#{fp.report.pdf.toc.results}">
+                    1. Resultados globales
+                </a>
+            </li>
+
+            <li>
+                <a href="#section-context" th:text="#{fp.report.pdf.toc.context}">
+                    2. Contexto del análisis
+                </a>
+            </li>
+
+            <li>
+                <a href="#section-measurement" th:text="#{fp.report.pdf.toc.measurement}">
+                    3. Medición de funciones
+                </a>
+                <ul class="toc-sublist">
+                    <li>
+                        <a href="#section-weight-matrix" th:text="#{fp.report.pdf.toc.weightMatrix}">
+                            3.1. Matriz de pesos de funciones
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#section-function-count" th:text="#{fp.report.pdf.toc.functionCount}">
+                            3.2. Conteo de funciones
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a href="#section-gsc" th:text="#{fp.report.pdf.toc.gsc}">
+                    4. Características generales del sistema
+                </a>
+            </li>
+
+            <li>
+                <a href="#section-modules" th:text="#{fp.report.pdf.toc.modules}">
+                    5. Módulos del análisis
+                </a>
+                <ul class="toc-sublist">
+                    <li>
+                        <a href="#section-module-detail" th:text="#{fp.report.pdf.toc.moduleDetail}">
+                            5.1. Detalle estructurado por módulo
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a href="#section-conversions" th:text="#{fp.report.pdf.toc.conversions}">
+                    6. Conversiones a esfuerzo
+                </a>
+                <ul class="toc-sublist">
+                    <li>
+                        <a href="#section-delphi" th:text="#{fp.report.pdf.toc.delphi}">
+                            6.1. Conversión mediante Delphi
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#section-transformation" th:text="#{fp.report.pdf.toc.transformation}">
+                            6.2. Conversión mediante función de transformación
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+<h2 id="section-results" th:text="#{fp.report.pdf.section.results}">
+    1. Resultados globales
+</h2>
+
+<table class="result-grid">
+    <tr>
+        <td class="result-box">
+            <div class="muted" th:text="#{fp.report.pdf.tdi}">Grado total de influencia</div>
+            <div class="result-value" th:text="${results.totalDegreeOfInfluence}">0</div>
+        </td>
+
+        <td class="result-box">
+            <div class="muted" th:text="#{fp.report.pdf.vaf}">Factor de ajuste del valor</div>
+            <div class="result-value"
+                 th:text="${#numbers.formatDecimal(results.valueAdjustmentFactor, 1, 2)}">
+                0.65
+            </div>
+        </td>
+    </tr>
+
+    <tr>
+        <td class="result-box">
+            <div class="muted" th:text="#{fp.report.pdf.ufp}">Puntos Función No Ajustados</div>
+            <div class="result-value" th:text="${results.unadjustedFunctionPoints}">0</div>
+        </td>
+
+        <td class="result-box">
+            <div class="muted" th:text="#{fp.report.pdf.afp}">Puntos Función Ajustados</div>
+            <div class="result-value"
+                 th:text="${#numbers.formatDecimal(results.adjustedFunctionPoints, 1, 2)}">
+                0.00
+            </div>
+        </td>
+    </tr>
+</table>
+
+<h2 id="section-context" th:text="#{fp.report.pdf.section.context}">
+    2. Contexto del análisis
+</h2>
+
+<p>
+    <span class="field-label" th:text="#{fp.report.pdf.systemBoundary}">Límite del sistema:</span>
+</p>
+
+<p th:text="${analysis.systemBoundaryDescription != null and !#strings.isEmpty(analysis.systemBoundaryDescription) ? analysis.systemBoundaryDescription : '-'}">
+    Límite del sistema
+</p>
+
+<h2 id="section-measurement" th:text="#{fp.report.pdf.section.measurement}">
+    3. Medición de funciones
+</h2>
+
+<h3 id="section-weight-matrix" th:text="#{fp.report.pdf.section.weightMatrix}">
+    3.1. Matriz de pesos de funciones
+</h3>
+
+<table th:if="${weightMatrixForm != null and weightMatrixForm.rows != null and !weightMatrixForm.rows.isEmpty()}">
+    <thead>
+    <tr>
+        <th th:text="#{fp.report.pdf.functionType}">Tipo funcional</th>
+        <th class="text-center" th:text="#{fp.report.pdf.low}">Simple</th>
+        <th class="text-center" th:text="#{fp.report.pdf.average}">Media</th>
+        <th class="text-center" th:text="#{fp.report.pdf.high}">Compleja</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="row : ${weightMatrixForm.rows}">
+        <td th:text="${#messages.msg(row.functionType.labelKey)}">Tipo funcional</td>
+        <td class="text-center" th:text="${row.lowWeight}">0</td>
+        <td class="text-center" th:text="${row.averageWeight}">0</td>
+        <td class="text-center" th:text="${row.highWeight}">0</td>
+    </tr>
+    </tbody>
+</table>
+
+<p th:if="${weightMatrixForm == null or weightMatrixForm.rows == null or weightMatrixForm.rows.isEmpty()}"
+   th:text="#{fp.report.pdf.noWeightMatrix}">
+    No hay matriz de pesos configurada.
+</p>
+
+<h3 id="section-function-count" th:text="#{fp.report.pdf.section.functionCount}">
+    3.2. Conteo de funciones
+</h3>
+
+<table>
+    <thead>
+    <tr>
+        <th th:text="#{fp.report.pdf.functionType}">Tipo funcional</th>
+        <th class="text-center" th:text="#{fp.report.pdf.low}">Simple</th>
+        <th class="text-center" th:text="#{fp.report.pdf.average}">Media</th>
+        <th class="text-center" th:text="#{fp.report.pdf.high}">Compleja</th>
+        <th class="text-center" th:text="#{fp.report.pdf.total}">Total</th>
+        <th class="text-center" th:text="#{fp.report.pdf.ufpContribution}">Contribución UFP</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="row : ${results.breakdownRows}">
+        <td th:text="${#messages.msg(row['labelKey'])}">Entradas externas</td>
+        <td class="text-center" th:text="${row['simpleCount']}">0</td>
+        <td class="text-center" th:text="${row['averageCount']}">0</td>
+        <td class="text-center" th:text="${row['highCount']}">0</td>
+        <td class="text-center" th:text="${row['totalCount']}">0</td>
+        <td class="text-center" th:text="${row['ufpContribution']}">0</td>
+    </tr>
+
+    <tr>
+        <td><strong th:text="#{fp.report.pdf.total}">Total</strong></td>
+        <td class="text-center" th:text="${results.breakdownTotalSimple}">0</td>
+        <td class="text-center" th:text="${results.breakdownTotalAverage}">0</td>
+        <td class="text-center" th:text="${results.breakdownTotalHigh}">0</td>
+        <td class="text-center" th:text="${results.breakdownTotalFunctions}">0</td>
+        <td class="text-center" th:text="${results.breakdownTotalUfp}">0</td>
+    </tr>
+    </tbody>
+</table>
+
+<h2 id="section-gsc" th:text="#{fp.report.pdf.section.gsc}">
+    4. Características generales del sistema
+</h2>
+
+<p th:if="${analysis.generalSystemCharacteristicAssessments == null or analysis.generalSystemCharacteristicAssessments.isEmpty()}"
+   th:text="#{fp.report.pdf.noGsc}">
+    No hay características generales del sistema registradas.
+</p>
+
+<table th:if="${analysis.generalSystemCharacteristicAssessments != null and !analysis.generalSystemCharacteristicAssessments.isEmpty()}">
+    <thead>
+    <tr>
+        <th th:text="#{fp.report.pdf.gscCharacteristic}">Característica</th>
+        <th class="text-center" th:text="#{fp.report.pdf.degreeOfInfluence}">Grado de influencia</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="assessment : ${analysis.generalSystemCharacteristicAssessments}">
+        <td th:text="${#messages.msg(assessment.characteristicType.messageKey)}">
+            Característica
+        </td>
+
+        <td class="text-center" th:text="${assessment.degreeOfInfluence}">
+            0
+        </td>
+    </tr>
+
+    <tr>
+        <td><strong th:text="#{fp.report.pdf.totalTdi}">Total TDI</strong></td>
+        <td class="text-center">
+            <strong th:text="${results.totalDegreeOfInfluence}">0</strong>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<h2 id="section-modules" th:text="#{fp.report.pdf.section.modules}">
+    5. Módulos del análisis
+</h2>
+
+<p th:if="${moduleRows == null or moduleRows.isEmpty()}"
+   th:text="#{fp.report.pdf.noModules}">
+    No hay módulos registrados para este análisis.
+</p>
+
+<table th:if="${moduleRows != null and !moduleRows.isEmpty()}">
+    <thead>
+    <tr>
+        <th th:text="#{fp.report.pdf.module}">Módulo</th>
+        <th th:text="#{fp.report.pdf.descriptionTableHeader}">Descripción</th>
+        <th class="text-center" th:text="#{fp.report.pdf.ufp.short}">UFP</th>
+        <th class="text-center" th:text="#{fp.report.pdf.afp.short}">AFP</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="row : ${moduleRows}">
+        <td th:text="${row.module.name}">Módulo</td>
+
+        <td th:text="${row.module.description != null and !#strings.isEmpty(row.module.description) ? row.module.description : '-'}">
+            Descripción
+        </td>
+
+        <td class="text-center" th:text="${row.results.unadjustedFunctionPoints}">
+            0
+        </td>
+
+        <td class="text-center"
+            th:text="${#numbers.formatDecimal(row.results.adjustedFunctionPoints, 1, 2)}">
+            0.00
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<h3 id="section-module-detail" th:text="#{fp.report.pdf.section.moduleDetail}">
+    5.1. Detalle estructurado por módulo
+</h3>
+
+<div th:if="${moduleRows != null and !moduleRows.isEmpty()}">
+
+    <div class="module-block" th:each="row : ${moduleRows}">
+        <div class="module-header">
+            <p class="module-title" th:text="${row.module.name}">
+                Nombre del módulo
+            </p>
+        </div>
+
+        <div class="module-body">
+
+            <div class="module-summary">
+                <span class="field-label" th:text="#{fp.report.pdf.description}">Descripción:</span>
+                <span th:text="${row.module.description != null and !#strings.isEmpty(row.module.description) ? row.module.description : '-'}">
+                    Descripción del módulo
+                </span>
+                <br/>
+
+                <span class="field-label" th:text="#{fp.report.pdf.moduleResult}">Resultado del módulo:</span>
+                <span th:text="${row.results.unadjustedFunctionPoints}">0</span>
+                <span th:text="#{fp.report.pdf.ufp.short}">UFP</span>
+                ·
+                <span th:text="${#numbers.formatDecimal(row.results.adjustedFunctionPoints, 1, 2)}">
+                    0.00
+                </span>
+                <span th:text="#{fp.report.pdf.afp.short}">AFP</span>
+            </div>
+
+            <div class="section-label" th:text="#{fp.report.pdf.userRequirements}">
+                5.1.1. Requisitos de usuario del módulo
+            </div>
+
+            <p th:if="${row.requirements == null or row.requirements.isEmpty()}"
+               th:text="#{fp.report.pdf.noUserRequirements}">
+                No hay requisitos de usuario registrados en este módulo.
+            </p>
+
+            <table th:if="${row.requirements != null and !row.requirements.isEmpty()}">
+                <thead>
+                <tr>
+                    <th style="width: 20%;" th:text="#{fp.report.pdf.identifier}">Identificador</th>
+                    <th th:text="#{fp.report.pdf.statement}">Enunciado</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="requirement : ${row.requirements}">
+                    <td th:text="${requirement.identifier}">
+                        RU-01
+                    </td>
+
+                    <td th:text="${requirement.statement}">
+                        Enunciado del requisito
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="section-label" th:text="#{fp.report.pdf.traceability}">
+                5.1.2. Trazabilidad de funciones por requisito
+            </div>
+
+            <p th:if="${row.requirements == null or row.requirements.isEmpty()}"
+               th:text="#{fp.report.pdf.noTraceability}">
+                No hay requisitos sobre los que mostrar trazabilidad.
+            </p>
+
+            <div th:if="${row.requirements != null and !row.requirements.isEmpty()}">
+                <div class="requirement-block" th:each="requirement : ${row.requirements}">
+                    <div class="requirement-title">
+                        <span th:text="${requirement.identifier}">RU-01</span>
+                        -
+                        <span th:text="${requirement.statement}">Enunciado del requisito</span>
+                    </div>
+
+                    <div class="subsection-note" th:text="#{fp.report.pdf.dataFunctionsDerived}">
+                        Funciones de datos derivadas
+                    </div>
+
+                    <p th:if="${requirement.dataFunctions == null or requirement.dataFunctions.isEmpty()}"
+                       th:text="#{fp.report.pdf.noDataFunctionsDerived}">
+                        No hay funciones de datos derivadas de este requisito.
+                    </p>
+
+                    <table th:if="${requirement.dataFunctions != null and !requirement.dataFunctions.isEmpty()}">
+                        <thead>
+                        <tr>
+                            <th th:text="#{fp.report.pdf.name}">Nombre</th>
+                            <th th:text="#{fp.report.pdf.classification}">Clasificación</th>
+                            <th th:text="#{fp.report.pdf.complexity}">Complejidad</th>
+                            <th class="text-center" th:text="#{fp.report.pdf.weight}">Peso</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="dataFunction : ${requirement.dataFunctions}">
+                            <td th:text="${dataFunction.name}">Función de datos</td>
+                            <td th:text="${dataFunction.type}">ILF</td>
+                            <td th:text="${dataFunction.complexity}">LOW</td>
+                            <td class="text-center" th:text="${dataFunction.weight}">0</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="subsection-note" th:text="#{fp.report.pdf.transactionalFunctionsDerived}">
+                        Funciones transaccionales derivadas
+                    </div>
+
+                    <p th:if="${requirement.transactionalFunctions == null or requirement.transactionalFunctions.isEmpty()}"
+                       th:text="#{fp.report.pdf.noTransactionalFunctionsDerived}">
+                        No hay funciones transaccionales derivadas de este requisito.
+                    </p>
+
+                    <table th:if="${requirement.transactionalFunctions != null and !requirement.transactionalFunctions.isEmpty()}">
+                        <thead>
+                        <tr>
+                            <th th:text="#{fp.report.pdf.name}">Nombre</th>
+                            <th th:text="#{fp.report.pdf.classification}">Clasificación</th>
+                            <th th:text="#{fp.report.pdf.complexity}">Complejidad</th>
+                            <th class="text-center" th:text="#{fp.report.pdf.weight}">Peso</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="transactionalFunction : ${requirement.transactionalFunctions}">
+                            <td th:text="${transactionalFunction.name}">
+                                Función transaccional
+                            </td>
+
+                            <td th:text="${transactionalFunction.type}">
+                                EI
+                            </td>
+
+                            <td th:text="${transactionalFunction.complexity}">
+                                LOW
+                            </td>
+
+                            <td class="text-center" th:text="${transactionalFunction.weight}">
+                                0
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<h2 id="section-conversions" th:text="#{fp.report.pdf.section.conversions}">
+    6. Conversiones a esfuerzo
+</h2>
+
+<h3 id="section-delphi" th:text="#{fp.report.pdf.section.delphi}">
+    6.1. Conversión mediante Delphi
+</h3>
+
+<p th:if="${activeDelphiEstimation == null}"
+   th:text="#{fp.report.pdf.noDelphi}">
+    No hay una conversión Delphi activa para este análisis.
+</p>
+
+<div th:if="${activeDelphiEstimation != null}">
+
+    <table>
+        <tbody>
+        <tr>
+            <th style="width: 35%;" th:text="#{fp.report.pdf.status}">Estado</th>
+            <td>
+                <span th:if="${activeDelphiEstimation.regressionIntercept == null}"
+                      th:text="#{fp.report.pdf.inProgress}">
+                    En progreso
+                </span>
+
+                <span th:if="${activeDelphiEstimation.regressionIntercept != null}"
+                      th:text="#{fp.report.pdf.finished}">
+                    Finalizada
+                </span>
+            </td>
+        </tr>
+
+        <tr>
+            <th th:text="#{fp.report.pdf.registeredIterations}">Iteraciones registradas</th>
+            <td th:text="${activeDelphiIterationsCount}">0</td>
+        </tr>
+
+        <tr>
+            <th th:text="#{fp.report.pdf.maximumIterations}">Número máximo de iteraciones</th>
+            <td th:text="${activeDelphiEstimation.maximumIterations}">0</td>
+        </tr>
+
+        <tr>
+            <th th:text="#{fp.report.pdf.acceptableDeviation}">Desviación aceptable</th>
+            <td>
+                <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.acceptableDeviationPercentage, 1, 2)}">
+                    0.00
+                </span>
+                %
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${activeDelphiEstimation.regressionIntercept != null}">
+
+        <h4 th:text="#{fp.report.pdf.delphiResult}">Resultado Delphi</h4>
+
+        <table>
+            <tbody>
+            <tr>
+                <th style="width: 35%;" th:text="#{fp.report.pdf.estimatedTotalEffort}">
+                    Esfuerzo estimado total
+                </th>
+                <td>
+                    <span th:if="${delphiEstimatedTotalHours != null}">
+                        <span th:text="${#numbers.formatDecimal(delphiEstimatedTotalHours, 1, 2)}">
+                            0.00
+                        </span>
+                        <span th:text="#{fp.report.pdf.hoursPersonUnit}">H-Persona</span>
+                    </span>
+
+                    <span th:if="${delphiEstimatedTotalHours == null}">-</span>
+                </td>
+            </tr>
+
+            <tr>
+                <th th:text="#{fp.report.pdf.estimatedCost}">Coste estimado</th>
+                <td>
+                    <span th:if="${delphiEstimatedCost != null}">
+                        <span th:text="${#numbers.formatDecimal(delphiEstimatedCost, 1, 2)}">
+                            0.00
+                        </span>
+                        <span th:text="${project.currencyCode}">EUR</span>
+                    </span>
+
+                    <span th:if="${delphiEstimatedCost == null}">-</span>
+                </td>
+            </tr>
+
+            <tr>
+                <th th:text="#{fp.report.pdf.minimumModuleEffort}">Esfuerzo módulo mínimo</th>
+                <td>
+                    <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.minimumModuleEstimatedEffortHours, 1, 2)}">
+                        0.00
+                    </span>
+                    <span th:text="#{fp.report.pdf.hoursPersonUnit}">H-Persona</span>
+                </td>
+            </tr>
+
+            <tr>
+                <th th:text="#{fp.report.pdf.maximumModuleEffort}">Esfuerzo módulo máximo</th>
+                <td>
+                    <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.maximumModuleEstimatedEffortHours, 1, 2)}">
+                        0.00
+                    </span>
+                    <span th:text="#{fp.report.pdf.hoursPersonUnit}">H-Persona</span>
+                </td>
+            </tr>
+
+            <tr>
+                <th th:text="#{fp.report.pdf.resultingFunction}">Función resultante</th>
+                <td>
+                    E =
+                    <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.regressionIntercept, 1, 2)}">
+                        0.00
+                    </span>
+                    +
+                    <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.regressionSlope, 1, 2)}">
+                        0.00
+                    </span>
+                    ×
+                    <span th:text="${analysis.sizeUnitCode}">FP</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<h3 id="section-transformation" th:text="#{fp.report.pdf.section.transformation}">
+    6.2. Conversión mediante función de transformación
+</h3>
+
+<p th:if="${activeTransformationConversion == null}"
+   th:text="#{fp.report.pdf.noTransformation}">
+    No hay una conversión mediante función de transformación activa para este análisis.
+</p>
+
+<div th:if="${activeTransformationConversion != null}">
+
+    <table>
+        <tbody>
+        <tr>
+            <th style="width: 35%;" th:text="#{fp.report.pdf.appliedFunction}">
+                Función aplicada
+            </th>
+            <td th:text="${activeTransformationConversion.functionNameSnapshot}">
+                Función de transformación
+            </td>
+        </tr>
+
+        <tr>
+            <th th:text="#{fp.report.pdf.formula}">Fórmula</th>
+            <td>
+                E =
+                <span th:text="${#numbers.formatDecimal(activeTransformationConversion.interceptSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                +
+                <span th:text="${#numbers.formatDecimal(activeTransformationConversion.slopeSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                ×
+                <span th:text="${analysis.sizeUnitCode}">FP</span>
+            </td>
+        </tr>
+
+        <tr>
+            <th th:text="#{fp.report.pdf.estimatedTotalEffort}">
+                Esfuerzo estimado total
+            </th>
+            <td>
+                <span th:if="${transformationEstimatedHours != null}">
+                    <span th:text="${#numbers.formatDecimal(transformationEstimatedHours, 1, 2)}">
+                        0.00
+                    </span>
+                    <span th:text="#{fp.report.pdf.hoursPersonUnit}">H-Persona</span>
+                </span>
+
+                <span th:if="${transformationEstimatedHours == null}">-</span>
+            </td>
+        </tr>
+
+        <tr>
+            <th th:text="#{fp.report.pdf.estimatedCost}">Coste estimado</th>
+            <td>
+                <span th:if="${transformationEstimatedCost != null}">
+                    <span th:text="${#numbers.formatDecimal(transformationEstimatedCost, 1, 2)}">
+                        0.00
+                    </span>
+                    <span th:text="${project.currencyCode}">EUR</span>
+                </span>
+
+                <span th:if="${transformationEstimatedCost == null}">-</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<div class="footer" th:text="#{fp.report.pdf.footer}">
+    Sistema para estimación en proyectos de software · Informe generado automáticamente.
+</div>
+
+</body>
+</html>
