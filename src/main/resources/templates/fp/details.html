@@ -33,37 +33,135 @@
 
         <h1 class="mb-4" th:text="#{fp.details.title}">Análisis PF</h1>
 
-        <!-- CONTEXTO DEL ANÁLISIS -->
-        <div class="card mb-4">
-            <div class="card-header" th:text="#{fp.details.context}">Contexto del análisis</div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <a class="btn btn-outline-primary"
-                       th:if="${canEditEstimationData}"
-                       th:href="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}"
-                       th:text="#{fp.details.editAnalysis}">
-                        Editar análisis
-                    </a>
-                </div>
+        <!-- CONTEXTO DEL ANÁLISIS + MATRIZ DE PESOS -->
+        <div class="row mb-4">
 
-                <div class="fp-context-item mb-3">
-                    <h6 class="text-muted" th:text="#{fp.details.project}">Proyecto</h6>
-                    <p class="card-text mb-1" th:text="${project.name}">Proyecto</p>
-                    <p class="card-text text-muted mb-0"
-                       th:if="${project.description != null and !#strings.isEmpty(project.description)}"
-                       th:text="${project.description}">
-                        Descripción del proyecto
-                    </p>
-                </div>
+            <!-- CONTEXTO DEL ANÁLISIS -->
+            <div class="col-12 col-xl-6 mb-4 mb-xl-0">
+                <div class="card h-100">
+                    <div class="card-header" th:text="#{fp.details.context}">
+                        Contexto del análisis
+                    </div>
 
-                <div class="fp-context-item pt-3 border-top">
-                    <h6 class="text-muted" th:text="#{fp.field.systemBoundary}">Límite del sistema</h6>
-                    <p class="card-text mb-0"
-                       th:text="${analysis.systemBoundaryDescription != null and !#strings.isEmpty(analysis.systemBoundaryDescription) ? analysis.systemBoundaryDescription : '-'}">
-                        Descripción del límite del sistema
-                    </p>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary"
+                               th:if="${canEditEstimationData}"
+                               th:href="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}"
+                               th:text="#{fp.details.editAnalysis}">
+                                Editar análisis
+                            </a>
+                        </div>
+
+                        <div class="fp-context-item mb-3">
+                            <h6 class="text-muted" th:text="#{fp.details.project}">
+                                Proyecto
+                            </h6>
+
+                            <p class="card-text mb-1" th:text="${project.name}">
+                                Proyecto
+                            </p>
+
+                            <p class="card-text text-muted mb-0"
+                               th:if="${project.description != null and !#strings.isEmpty(project.description)}"
+                               th:text="${project.description}">
+                                Descripción del proyecto
+                            </p>
+                        </div>
+
+                        <div class="fp-context-item pt-3 border-top">
+                            <h6 class="text-muted" th:text="#{fp.field.systemBoundary}">
+                                Límite del sistema
+                            </h6>
+
+                            <p class="card-text mb-0"
+                               th:text="${analysis.systemBoundaryDescription != null and !#strings.isEmpty(analysis.systemBoundaryDescription) ? analysis.systemBoundaryDescription : '-'}">
+                                Descripción del límite del sistema
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- MATRIZ DE PESOS DE FUNCIONES -->
+            <div class="col-12 col-xl-6">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                <span th:text="#{fp.weights.details.title}">
+                    Matriz de pesos de funciones
+                </span>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary"
+                               th:if="${canManageProject}"
+                               th:href="@{/projects/{projectId}/function-points/weights/edit(projectId=${project.id})}"
+                               th:text="#{fp.weights.edit.button}">
+                                Editar matriz de pesos de funciones
+                            </a>
+                        </div>
+
+                        <div th:if="${weightMatrixForm == null or weightMatrixForm.rows == null or weightMatrixForm.rows.isEmpty()}"
+                             class="alert alert-light border mb-0"
+                             th:text="#{fp.weights.details.empty}">
+                            No hay matriz de pesos configurada para este análisis.
+                        </div>
+
+                        <div class="table-responsive"
+                             th:if="${weightMatrixForm != null and weightMatrixForm.rows != null and !weightMatrixForm.rows.isEmpty()}">
+
+                            <table class="table table-bordered table-sm text-center align-middle mb-0 fp-weight-matrix-compact">
+                                <thead>
+                                <tr>
+                                    <th class="text-left" th:text="#{fp.weights.field.functionType}">
+                                        Tipo funcional
+                                    </th>
+                                    <th th:text="#{fp.complexity.low}">
+                                        Simple
+                                    </th>
+                                    <th th:text="#{fp.complexity.average}">
+                                        Media
+                                    </th>
+                                    <th th:text="#{fp.complexity.high}">
+                                        Compleja
+                                    </th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr th:each="row : ${weightMatrixForm.rows}">
+                                    <td class="text-left">
+                                        <strong th:text="${#messages.msg(row.functionType.labelKey)}">
+                                            Tipo funcional
+                                        </strong>
+                                    </td>
+
+                                    <td th:text="${row.lowWeight}">
+                                        0
+                                    </td>
+
+                                    <td th:text="${row.averageWeight}">
+                                        0
+                                    </td>
+
+                                    <td th:text="${row.highWeight}">
+                                        0
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <small class="text-muted d-block mt-3"
+                               th:text="#{fp.weights.details.help}">
+                            Estos valores se utilizan para calcular los Puntos Función No Ajustados.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- MÓDULOS DEL PROYECTO -->

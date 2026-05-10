@@ -242,6 +242,11 @@ public class FunctionPointAnalysisController {
         model.addAttribute("modulesPage", modulesPageResult);
         model.addAttribute("moduleResultsMap", moduleResultsMap);
 
+        functionPointAnalysisService.buildWeightMatrixForm(projectId)
+                .ifPresent(weightMatrixForm ->
+                        model.addAttribute("weightMatrixForm", weightMatrixForm)
+                );
+
         model.addAttribute("canManageProject",
                 projectAuthorizationService.canManageProject(projectId));
 

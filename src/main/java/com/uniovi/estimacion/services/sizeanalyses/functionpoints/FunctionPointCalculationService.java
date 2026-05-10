@@ -4,9 +4,11 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointA
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunctionType;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.FunctionPointComplexity;
-import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunctionType;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointFunctionType;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointWeightMatrixEntry;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,6 +24,7 @@ public class FunctionPointCalculationService {
 
         for (DataFunction dataFunction : analysis.getDataFunctions()) {
             int weight = calculateDataFunctionWeight(
+                    analysis,
                     dataFunction.getType(),
                     dataFunction.getComplexity()
             );
@@ -32,6 +35,7 @@ public class FunctionPointCalculationService {
 
         for (TransactionalFunction transactionalFunction : analysis.getTransactionalFunctions()) {
             int weight = calculateTransactionalFunctionWeight(
+                    analysis,
                     transactionalFunction.getType(),
                     transactionalFunction.getComplexity()
             );
@@ -58,6 +62,7 @@ public class FunctionPointCalculationService {
         recalculateAnalysis(analysis);
 
         return buildSummary(
+                analysis,
                 analysis.getDataFunctions(),
                 analysis.getTransactionalFunctions(),
                 analysis.getTotalDegreeOfInfluence(),
@@ -69,6 +74,7 @@ public class FunctionPointCalculationService {
                                                            List<DataFunction> dataFunctions,
                                                            List<TransactionalFunction> transactionalFunctions) {
         return buildSummary(
+                analysis,
                 dataFunctions,
                 transactionalFunctions,
                 analysis.getTotalDegreeOfInfluence(),
@@ -76,61 +82,54 @@ public class FunctionPointCalculationService {
         );
     }
 
-    public int calculateDataFunctionWeight(DataFunctionType type, FunctionPointComplexity complexity) {
-        if (type == null || complexity == null) {
-            return 0;
-        }
+    public int calculateDataFunctionWeight(FunctionPointAnalysis analysis,
+                                           DataFunctionType type,
+                                           FunctionPointComplexity complexity) {
+        FunctionPointFunctionType functionType =
+                FunctionPointFunctionType.fromDataFunctionType(type);
 
-        return switch (type) {
-            case ILF -> switch (complexity) {
-                case LOW -> 7;
-                case AVERAGE -> 10;
-                case HIGH -> 15;
-            };
-            case EIF -> switch (complexity) {
-                case LOW -> 5;
-                case AVERAGE -> 7;
-                case HIGH -> 10;
-            };
-        };
+        return resolveWeight(analysis, functionType, complexity);
+    }
+
+    public int calculateTransactionalFunctionWeight(FunctionPointAnalysis analysis,
+                                                    TransactionalFunctionType type,
+                                                    FunctionPointComplexity complexity) {
+        FunctionPointFunctionType functionType =
+                FunctionPointFunctionType.fromTransactionalFunctionType(type);
+
+        return resolveWeight(analysis, functionType, complexity);
+    }
+
+    public int calculateDataFunctionWeight(DataFunctionType type,
+                                           FunctionPointComplexity complexity) {
+        FunctionPointFunctionType functionType =
+                FunctionPointFunctionType.fromDataFunctionType(type);
+
+        return getDefaultWeight(functionType, complexity);
     }
 
     public int calculateTransactionalFunctionWeight(TransactionalFunctionType type,
                                                     FunctionPointComplexity complexity) {
-        if (type == null || complexity == null) {
-            return 0;
-        }
+        FunctionPointFunctionType functionType =
+                FunctionPointFunctionType.fromTransactionalFunctionType(type);
 
-        return switch (type) {
-            case EI -> switch (complexity) {
-                case LOW -> 3;
-                case AVERAGE -> 4;
-                case HIGH -> 6;
-            };
-            case EO -> switch (complexity) {
-                case LOW -> 4;
-                case AVERAGE -> 5;
-                case HIGH -> 7;
-            };
-            case EQ -> switch (complexity) {
-                case LOW -> 3;
-                case AVERAGE -> 4;
-                case HIGH -> 6;
-            };
-        };
+        return getDefaultWeight(functionType, complexity);
     }
 
-    private FunctionPointAnalysisSummary buildSummary(List<DataFunction> dataFunctions,
+    private FunctionPointAnalysisSummary buildSummary(FunctionPointAnalysis analysis,
+                                                      List<DataFunction> dataFunctions,
                                                       List<TransactionalFunction> transactionalFunctions,
                                                       Integer totalDegreeOfInfluence,
                                                       Double valueAdjustmentFactor) {
-        int unadjustedFunctionPoints = calculateUnadjustedFunctionPoints(dataFunctions, transactionalFunctions);
+        int unadjustedFunctionPoints =
+                calculateUnadjustedFunctionPoints(analysis, dataFunctions, transactionalFunctions);
 
         int tdi = totalDegreeOfInfluence != null ? totalDegreeOfInfluence : 0;
         double vaf = valueAdjustmentFactor != null ? valueAdjustmentFactor : 0.65 + (0.01 * tdi);
         double adjustedFunctionPoints = unadjustedFunctionPoints * vaf;
 
-        List<Map<String, Object>> breakdownRows = buildBreakdownRows(dataFunctions, transactionalFunctions);
+        List<Map<String, Object>> breakdownRows =
+                buildBreakdownRows(analysis, dataFunctions, transactionalFunctions);
 
         int breakdownTotalSimple = breakdownRows.stream()
                 .mapToInt(row -> (Integer) row.get("simpleCount"))
@@ -166,12 +165,14 @@ public class FunctionPointCalculationService {
         );
     }
 
-    private int calculateUnadjustedFunctionPoints(List<DataFunction> dataFunctions,
+    private int calculateUnadjustedFunctionPoints(FunctionPointAnalysis analysis,
+                                                  List<DataFunction> dataFunctions,
                                                   List<TransactionalFunction> transactionalFunctions) {
         int unadjustedFunctionPoints = 0;
 
         for (DataFunction dataFunction : dataFunctions) {
             unadjustedFunctionPoints += calculateDataFunctionWeight(
+                    analysis,
                     dataFunction.getType(),
                     dataFunction.getComplexity()
             );
@@ -179,6 +180,7 @@ public class FunctionPointCalculationService {
 
         for (TransactionalFunction transactionalFunction : transactionalFunctions) {
             unadjustedFunctionPoints += calculateTransactionalFunctionWeight(
+                    analysis,
                     transactionalFunction.getType(),
                     transactionalFunction.getComplexity()
             );
@@ -187,45 +189,58 @@ public class FunctionPointCalculationService {
         return unadjustedFunctionPoints;
     }
 
-    private List<Map<String, Object>> buildBreakdownRows(List<DataFunction> dataFunctions,
+    private List<Map<String, Object>> buildBreakdownRows(FunctionPointAnalysis analysis,
+                                                         List<DataFunction> dataFunctions,
                                                          List<TransactionalFunction> transactionalFunctions) {
         List<Map<String, Object>> rows = new ArrayList<>();
 
         rows.add(buildTransactionalFunctionRow(
+                analysis,
                 transactionalFunctions,
                 TransactionalFunctionType.EI,
+                FunctionPointFunctionType.EI,
                 "fp.results.type.ei"
         ));
 
         rows.add(buildTransactionalFunctionRow(
+                analysis,
                 transactionalFunctions,
                 TransactionalFunctionType.EO,
+                FunctionPointFunctionType.EO,
                 "fp.results.type.eo"
         ));
 
         rows.add(buildTransactionalFunctionRow(
+                analysis,
                 transactionalFunctions,
                 TransactionalFunctionType.EQ,
+                FunctionPointFunctionType.EQ,
                 "fp.results.type.eq"
         ));
 
         rows.add(buildDataFunctionRow(
+                analysis,
                 dataFunctions,
                 DataFunctionType.ILF,
+                FunctionPointFunctionType.ILF,
                 "fp.results.type.ilf"
         ));
 
         rows.add(buildDataFunctionRow(
+                analysis,
                 dataFunctions,
                 DataFunctionType.EIF,
+                FunctionPointFunctionType.EIF,
                 "fp.results.type.eif"
         ));
 
         return rows;
     }
 
-    private Map<String, Object> buildDataFunctionRow(List<DataFunction> dataFunctions,
+    private Map<String, Object> buildDataFunctionRow(FunctionPointAnalysis analysis,
+                                                     List<DataFunction> dataFunctions,
                                                      DataFunctionType type,
+                                                     FunctionPointFunctionType functionType,
                                                      String labelKey) {
         int simpleCount = (int) dataFunctions.stream()
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.LOW)
@@ -239,11 +254,15 @@ public class FunctionPointCalculationService {
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.HIGH)
                 .count();
 
+        int simpleWeight = resolveWeight(analysis, functionType, FunctionPointComplexity.LOW);
+        int averageWeight = resolveWeight(analysis, functionType, FunctionPointComplexity.AVERAGE);
+        int highWeight = resolveWeight(analysis, functionType, FunctionPointComplexity.HIGH);
+
         int totalCount = simpleCount + averageCount + highCount;
         int ufpContribution =
-                simpleCount * calculateDataFunctionWeight(type, FunctionPointComplexity.LOW) +
-                        averageCount * calculateDataFunctionWeight(type, FunctionPointComplexity.AVERAGE) +
-                        highCount * calculateDataFunctionWeight(type, FunctionPointComplexity.HIGH);
+                simpleCount * simpleWeight +
+                        averageCount * averageWeight +
+                        highCount * highWeight;
 
         Map<String, Object> row = new LinkedHashMap<>();
         row.put("labelKey", labelKey);
@@ -256,8 +275,10 @@ public class FunctionPointCalculationService {
         return row;
     }
 
-    private Map<String, Object> buildTransactionalFunctionRow(List<TransactionalFunction> transactionalFunctions,
+    private Map<String, Object> buildTransactionalFunctionRow(FunctionPointAnalysis analysis,
+                                                              List<TransactionalFunction> transactionalFunctions,
                                                               TransactionalFunctionType type,
+                                                              FunctionPointFunctionType functionType,
                                                               String labelKey) {
         int simpleCount = (int) transactionalFunctions.stream()
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.LOW)
@@ -271,11 +292,15 @@ public class FunctionPointCalculationService {
                 .filter(f -> f.getType() == type && f.getComplexity() == FunctionPointComplexity.HIGH)
                 .count();
 
+        int simpleWeight = resolveWeight(analysis, functionType, FunctionPointComplexity.LOW);
+        int averageWeight = resolveWeight(analysis, functionType, FunctionPointComplexity.AVERAGE);
+        int highWeight = resolveWeight(analysis, functionType, FunctionPointComplexity.HIGH);
+
         int totalCount = simpleCount + averageCount + highCount;
         int ufpContribution =
-                simpleCount * calculateTransactionalFunctionWeight(type, FunctionPointComplexity.LOW) +
-                        averageCount * calculateTransactionalFunctionWeight(type, FunctionPointComplexity.AVERAGE) +
-                        highCount * calculateTransactionalFunctionWeight(type, FunctionPointComplexity.HIGH);
+                simpleCount * simpleWeight +
+                        averageCount * averageWeight +
+                        highCount * highWeight;
 
         Map<String, Object> row = new LinkedHashMap<>();
         row.put("labelKey", labelKey);
@@ -286,5 +311,45 @@ public class FunctionPointCalculationService {
         row.put("ufpContribution", ufpContribution);
 
         return row;
+    }
+
+    private int resolveWeight(FunctionPointAnalysis analysis,
+                              FunctionPointFunctionType functionType,
+                              FunctionPointComplexity complexity) {
+        if (functionType == null || complexity == null) {
+            return 0;
+        }
+
+        if (analysis == null
+                || analysis.getWeightMatrixEntries() == null
+                || analysis.getWeightMatrixEntries().isEmpty()) {
+            return getDefaultWeight(functionType, complexity);
+        }
+
+        return analysis.getWeightMatrixEntries()
+                .stream()
+                .filter(entry -> entry.getFunctionType() == functionType)
+                .filter(entry -> entry.getComplexity() == complexity)
+                .findFirst()
+                .map(FunctionPointWeightMatrixEntry::getWeight)
+                .map(this::normalizeWeight)
+                .orElseGet(() -> getDefaultWeight(functionType, complexity));
+    }
+
+    private int getDefaultWeight(FunctionPointFunctionType functionType,
+                                 FunctionPointComplexity complexity) {
+        if (functionType == null || complexity == null) {
+            return 0;
+        }
+
+        return functionType.getDefaultWeight(complexity);
+    }
+
+    private int normalizeWeight(Integer weight) {
+        if (weight == null || weight < 0) {
+            return 0;
+        }
+
+        return weight;
     }
 }

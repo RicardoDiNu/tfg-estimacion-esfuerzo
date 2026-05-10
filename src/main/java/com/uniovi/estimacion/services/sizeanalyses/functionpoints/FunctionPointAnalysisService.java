@@ -2,17 +2,22 @@ package com.uniovi.estimacion.services.sizeanalyses.functionpoints;
 
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.DataFunction;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.FunctionPointComplexity;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicType;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointFunctionType;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointWeightMatrixEntry;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.DataFunctionRepository;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointAnalysisRepository;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.TransactionalFunctionRepository;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.UserRequirementRepository;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointModuleRepository;
 import com.uniovi.estimacion.services.effortconversions.delphi.EffortResultsInvalidationCoordinator;
+import com.uniovi.estimacion.web.forms.sizeanalyses.functionpoints.FunctionPointWeightMatrixForm;
+import com.uniovi.estimacion.web.forms.sizeanalyses.functionpoints.FunctionPointWeightMatrixRowForm;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
@@ -20,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,8 +62,9 @@ public class FunctionPointAnalysisService {
                 new FunctionPointAnalysis(estimationProject, normalizeText(systemBoundaryDescription));
 
         initializeGeneralSystemCharacteristics(analysis);
+        initializeDefaultWeightMatrix(analysis);
         functionPointCalculationService.recalculateAnalysis(analysis);
-        functionPointAnalysisRepository.save(analysis);
+        functionPointAnalysisRepository.save(analysis);;
     }
 
     @Transactional
@@ -384,13 +392,137 @@ public class FunctionPointAnalysisService {
         return transactionalFunctions;
     }
 
+    @Transactional
+    public Optional<FunctionPointWeightMatrixForm> buildWeightMatrixForm(Long projectId) {
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisRepository.findByEstimationProjectId(projectId);
+
+        if (optionalAnalysis.isEmpty()) {
+            return Optional.empty();
+        }
+
+        FunctionPointAnalysis analysis = optionalAnalysis.get();
+        Hibernate.initialize(analysis.getWeightMatrixEntries());
+
+        ensureDefaultWeightMatrix(analysis);
+        sortWeightMatrixEntries(analysis);
+
+        FunctionPointWeightMatrixForm form = new FunctionPointWeightMatrixForm();
+        form.setRows(new ArrayList<>());
+
+        for (FunctionPointFunctionType functionType : getOrderedFunctionTypes()) {
+            FunctionPointWeightMatrixRowForm row = new FunctionPointWeightMatrixRowForm();
+            row.setFunctionType(functionType);
+            row.setLowWeight(resolveMatrixWeight(analysis, functionType, FunctionPointComplexity.LOW));
+            row.setAverageWeight(resolveMatrixWeight(analysis, functionType, FunctionPointComplexity.AVERAGE));
+            row.setHighWeight(resolveMatrixWeight(analysis, functionType, FunctionPointComplexity.HIGH));
+
+            form.getRows().add(row);
+        }
+
+        return Optional.of(form);
+    }
+
+    @Transactional
+    public boolean updateWeightMatrix(Long projectId, FunctionPointWeightMatrixForm form) {
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisRepository.findByEstimationProjectId(projectId);
+
+        if (optionalAnalysis.isEmpty()) {
+            return false;
+        }
+
+        FunctionPointAnalysis analysis = optionalAnalysis.get();
+        Hibernate.initialize(analysis.getWeightMatrixEntries());
+
+        ensureDefaultWeightMatrix(analysis);
+
+        for (FunctionPointWeightMatrixRowForm row : form.getRows()) {
+            if (row.getFunctionType() == null) {
+                continue;
+            }
+
+            updateWeightMatrixEntry(
+                    analysis,
+                    row.getFunctionType(),
+                    FunctionPointComplexity.LOW,
+                    row.getLowWeight()
+            );
+
+            updateWeightMatrixEntry(
+                    analysis,
+                    row.getFunctionType(),
+                    FunctionPointComplexity.AVERAGE,
+                    row.getAverageWeight()
+            );
+
+            updateWeightMatrixEntry(
+                    analysis,
+                    row.getFunctionType(),
+                    FunctionPointComplexity.HIGH,
+                    row.getHighWeight()
+            );
+        }
+
+        sortWeightMatrixEntries(analysis);
+        recalculateManagedAnalysis(analysis);
+
+        return true;
+    }
+
+    @Transactional
+    public boolean resetWeightMatrixToDefault(Long projectId) {
+        Optional<FunctionPointAnalysis> optionalAnalysis =
+                functionPointAnalysisRepository.findByEstimationProjectId(projectId);
+
+        if (optionalAnalysis.isEmpty()) {
+            return false;
+        }
+
+        FunctionPointAnalysis analysis = optionalAnalysis.get();
+        Hibernate.initialize(analysis.getWeightMatrixEntries());
+
+        ensureDefaultWeightMatrix(analysis);
+
+        for (FunctionPointFunctionType functionType : getOrderedFunctionTypes()) {
+            updateWeightMatrixEntry(
+                    analysis,
+                    functionType,
+                    FunctionPointComplexity.LOW,
+                    functionType.getDefaultWeight(FunctionPointComplexity.LOW)
+            );
+
+            updateWeightMatrixEntry(
+                    analysis,
+                    functionType,
+                    FunctionPointComplexity.AVERAGE,
+                    functionType.getDefaultWeight(FunctionPointComplexity.AVERAGE)
+            );
+
+            updateWeightMatrixEntry(
+                    analysis,
+                    functionType,
+                    FunctionPointComplexity.HIGH,
+                    functionType.getDefaultWeight(FunctionPointComplexity.HIGH)
+            );
+        }
+
+        sortWeightMatrixEntries(analysis);
+        recalculateManagedAnalysis(analysis);
+
+        return true;
+    }
+
     private void initializeAnalysisCollections(FunctionPointAnalysis analysis) {
         Hibernate.initialize(analysis.getDataFunctions());
         Hibernate.initialize(analysis.getTransactionalFunctions());
         Hibernate.initialize(analysis.getGeneralSystemCharacteristicAssessments());
+        Hibernate.initialize(analysis.getWeightMatrixEntries());
 
         analysis.getGeneralSystemCharacteristicAssessments()
-                .sort(java.util.Comparator.comparingInt(a -> a.getCharacteristicType().getOrder()));
+                .sort(Comparator.comparingInt(a -> a.getCharacteristicType().getOrder()));
+
+        sortWeightMatrixEntries(analysis);
 
         analysis.getDataFunctions().forEach(this::initializeDataFunctionReferences);
         analysis.getTransactionalFunctions().forEach(this::initializeTransactionalFunctionReferences);
@@ -425,6 +557,107 @@ public class FunctionPointAnalysisService {
 
             analysis.getGeneralSystemCharacteristicAssessments().add(assessment);
         }
+    }
+
+    private void initializeDefaultWeightMatrix(FunctionPointAnalysis analysis) {
+        ensureDefaultWeightMatrix(analysis);
+    }
+
+    private void ensureDefaultWeightMatrix(FunctionPointAnalysis analysis) {
+        for (FunctionPointFunctionType functionType : getOrderedFunctionTypes()) {
+            ensureDefaultWeightEntry(analysis, functionType, FunctionPointComplexity.LOW);
+            ensureDefaultWeightEntry(analysis, functionType, FunctionPointComplexity.AVERAGE);
+            ensureDefaultWeightEntry(analysis, functionType, FunctionPointComplexity.HIGH);
+        }
+
+        sortWeightMatrixEntries(analysis);
+    }
+
+    private void ensureDefaultWeightEntry(FunctionPointAnalysis analysis,
+                                          FunctionPointFunctionType functionType,
+                                          FunctionPointComplexity complexity) {
+        boolean exists = analysis.getWeightMatrixEntries()
+                .stream()
+                .anyMatch(entry ->
+                        entry.getFunctionType() == functionType
+                                && entry.getComplexity() == complexity
+                );
+
+        if (!exists) {
+            addDefaultWeightEntry(analysis, functionType, complexity);
+        }
+    }
+
+    private void addDefaultWeightEntry(FunctionPointAnalysis analysis,
+                                       FunctionPointFunctionType functionType,
+                                       FunctionPointComplexity complexity) {
+        FunctionPointWeightMatrixEntry entry = new FunctionPointWeightMatrixEntry();
+        entry.setFunctionType(functionType);
+        entry.setComplexity(complexity);
+        entry.setWeight(functionType.getDefaultWeight(complexity));
+        entry.setDisplayOrder(functionType.getDisplayOrder());
+
+        analysis.addWeightMatrixEntry(entry);
+    }
+
+    private void updateWeightMatrixEntry(FunctionPointAnalysis analysis,
+                                         FunctionPointFunctionType functionType,
+                                         FunctionPointComplexity complexity,
+                                         Integer weight) {
+        FunctionPointWeightMatrixEntry entry = analysis.getWeightMatrixEntries()
+                .stream()
+                .filter(existing -> existing.getFunctionType() == functionType)
+                .filter(existing -> existing.getComplexity() == complexity)
+                .findFirst()
+                .orElseGet(() -> {
+                    FunctionPointWeightMatrixEntry newEntry = new FunctionPointWeightMatrixEntry();
+                    newEntry.setFunctionType(functionType);
+                    newEntry.setComplexity(complexity);
+                    newEntry.setDisplayOrder(functionType.getDisplayOrder());
+                    analysis.addWeightMatrixEntry(newEntry);
+                    return newEntry;
+                });
+
+        entry.setWeight(normalizeFunctionWeight(weight));
+    }
+
+    private Integer resolveMatrixWeight(FunctionPointAnalysis analysis,
+                                        FunctionPointFunctionType functionType,
+                                        FunctionPointComplexity complexity) {
+        return analysis.getWeightMatrixEntries()
+                .stream()
+                .filter(entry -> entry.getFunctionType() == functionType)
+                .filter(entry -> entry.getComplexity() == complexity)
+                .findFirst()
+                .map(FunctionPointWeightMatrixEntry::getWeight)
+                .orElse(functionType.getDefaultWeight(complexity));
+    }
+
+    private Integer normalizeFunctionWeight(Integer value) {
+        if (value == null || value < 1) {
+            return 1;
+        }
+
+        return Math.min(value, 999);
+    }
+
+    private List<FunctionPointFunctionType> getOrderedFunctionTypes() {
+        return List.of(
+                FunctionPointFunctionType.EI,
+                FunctionPointFunctionType.EO,
+                FunctionPointFunctionType.EQ,
+                FunctionPointFunctionType.ILF,
+                FunctionPointFunctionType.EIF
+        );
+    }
+
+    private void sortWeightMatrixEntries(FunctionPointAnalysis analysis) {
+        analysis.getWeightMatrixEntries()
+                .sort(
+                        Comparator
+                                .comparingInt(FunctionPointWeightMatrixEntry::getDisplayOrder)
+                                .thenComparing(entry -> entry.getComplexity().ordinal())
+                );
     }
 
     private Integer normalizeDegreeOfInfluence(Integer value) {

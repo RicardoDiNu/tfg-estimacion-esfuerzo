@@ -8,6 +8,7 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.Tran
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.weights.FunctionPointWeightMatrixEntry;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,6 +54,9 @@ public class FunctionPointAnalysis extends AbstractSizeAnalysis {
     @OneToMany(mappedBy = "functionPointAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GeneralSystemCharacteristicAssessment> generalSystemCharacteristicAssessments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "functionPointAnalysis", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FunctionPointWeightMatrixEntry> weightMatrixEntries = new ArrayList<>();
+
     public FunctionPointAnalysis(EstimationProject estimationProject, String systemBoundaryDescription) {
         setEstimationProject(estimationProject);
         this.systemBoundaryDescription = systemBoundaryDescription;
@@ -66,6 +70,16 @@ public class FunctionPointAnalysis extends AbstractSizeAnalysis {
     public void removeModule(FunctionPointModule module) {
         this.modules.remove(module);
         module.setFunctionPointAnalysis(null);
+    }
+
+    public void addWeightMatrixEntry(FunctionPointWeightMatrixEntry entry) {
+        entry.setFunctionPointAnalysis(this);
+        this.weightMatrixEntries.add(entry);
+    }
+
+    public void removeWeightMatrixEntry(FunctionPointWeightMatrixEntry entry) {
+        this.weightMatrixEntries.remove(entry);
+        entry.setFunctionPointAnalysis(null);
     }
 
     @Override
