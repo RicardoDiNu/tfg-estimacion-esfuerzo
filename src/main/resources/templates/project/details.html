@@ -193,19 +193,20 @@
                             </div>
                         </div>
 
-                        <div th:if="${hasFunctionPointAnalysis}" class="mt-3">
+                        <!-- CONVERSIÓN FUNCIÓN PF -->
+                        <div class="mb-4">
                             <h6 class="text-muted"
                                 th:text="#{project.details.fp.transformation.title}">
                                 Conversión por función de transformación
                             </h6>
 
-                            <div th:if="${activeFunctionPointTransformationConversion == null}"
+                            <div th:if="${!hasFunctionPointAnalysis or activeFunctionPointTransformationConversion == null}"
                                  class="alert alert-light border mb-0"
                                  th:text="#{project.details.fp.transformation.empty}">
                                 Todavía no hay una conversión por función de transformación para este análisis.
                             </div>
 
-                            <div th:if="${activeFunctionPointTransformationConversion != null}"
+                            <div th:if="${hasFunctionPointAnalysis and activeFunctionPointTransformationConversion != null}"
                                  class="border rounded p-3 bg-light">
                                 <p class="card-text mb-1">
                                     <strong th:text="${#numbers.formatDecimal(functionPointTransformationEstimatedHours, 1, 2)}">
@@ -221,7 +222,7 @@
                 Función aplicada
             </span>:
                                     <span th:text="${activeFunctionPointTransformationConversion.functionNameSnapshot}">
-                Matson, Barrett y Mellichamp (1994)
+                Función personalizada
             </span>
                                 </small>
 
@@ -245,9 +246,8 @@
             </span>
                                 </small>
 
-
                                 <p class="card-text mb-1"
-                                        th:if="${functionPointTransformationEstimatedCost != null}">
+                                   th:if="${functionPointTransformationEstimatedCost != null}">
                                     <strong th:text="${#numbers.formatDecimal(functionPointTransformationEstimatedCost, 1, 2)}">
                                         0.00
                                     </strong>
