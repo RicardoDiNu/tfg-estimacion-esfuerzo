@@ -35,7 +35,7 @@
             La importación solo está disponible si el proyecto todavía no tiene análisis UCP.
         </div>
 
-        <div class="alert alert-danger" th:if="${errorKey != null}" th:text="#{${errorKey}}">
+        <div class="alert alert-danger" th:if="${errorKey != null}" th:text="${errorKey}">
             Error al importar el análisis UCP.
         </div>
 

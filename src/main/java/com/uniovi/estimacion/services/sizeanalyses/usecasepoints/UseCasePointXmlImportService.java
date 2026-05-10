@@ -20,6 +20,8 @@ import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCasePointAnalysisXmlD
 import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCasePointModuleXmlDto;
 import com.uniovi.estimacion.web.dtos.xml.usecasepoints.UseCaseTechnicalFactorXmlDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,11 +40,12 @@ public class UseCasePointXmlImportService {
 
     private final UseCasePointAnalysisRepository useCasePointAnalysisRepository;
     private final UseCasePointCalculationService useCasePointCalculationService;
+    private final MessageSource messageSource;
 
     @Transactional
     public void importFromXml(EstimationProject project, byte[] xmlBytes) {
         if (useCasePointAnalysisRepository.findByEstimationProjectId(project.getId()).isPresent()) {
-            throw new InvalidUseCasePointXmlException("El proyecto ya tiene un análisis UCP creado.");
+            throw invalidXml("ucp.import.validation.existingAnalysis");
         }
 
         UseCasePointAnalysisXmlDto dto = parseXml(xmlBytes);
@@ -56,12 +59,20 @@ public class UseCasePointXmlImportService {
 
     private UseCasePointAnalysisXmlDto parseXml(byte[] xmlBytes) {
         if (xmlBytes == null || xmlBytes.length == 0) {
-            throw new InvalidUseCasePointXmlException("El archivo XML está vacío.");
+            throw invalidXml("ucp.import.validation.emptyFile");
         }
+
         try {
-            return XML_MAPPER.readValue(xmlBytes, UseCasePointAnalysisXmlDto.class);
-        } catch (IOException e) {
-            throw new InvalidUseCasePointXmlException("El XML no puede ser procesado.", e);
+            UseCasePointAnalysisXmlDto dto =
+                    XML_MAPPER.readValue(xmlBytes, UseCasePointAnalysisXmlDto.class);
+
+            if (dto == null) {
+                throw invalidXml("ucp.import.validation.emptyRoot");
+            }
+
+            return dto;
+        } catch (IOException exception) {
+            throw invalidXml("ucp.import.validation.parseError", exception);
         }
     }
 
@@ -76,29 +87,38 @@ public class UseCasePointXmlImportService {
 
     private Set<String> validateActors(List<UseCaseActorXmlDto> actors) {
         Set<String> refs = new HashSet<>();
+
         if (actors == null) {
             return refs;
         }
+
         for (UseCaseActorXmlDto actor : actors) {
             if (actor.getRef() == null || actor.getRef().isBlank()) {
-                throw new InvalidUseCasePointXmlException("Actor sin ref.");
+                throw invalidXml("ucp.import.validation.actor.missingRef");
             }
+
             if (!refs.add(actor.getRef())) {
-                throw new InvalidUseCasePointXmlException("Ref de actor duplicada: " + actor.getRef());
+                throw invalidXml("ucp.import.validation.actor.duplicateRef", actor.getRef());
             }
+
             if (actor.getName() == null || actor.getName().isBlank()) {
-                throw new InvalidUseCasePointXmlException("Actor sin nombre: " + actor.getRef());
+                throw invalidXml("ucp.import.validation.actor.missingName", actor.getRef());
             }
+
             if (actor.getComplexity() == null || actor.getComplexity().isBlank()) {
-                throw new InvalidUseCasePointXmlException("Actor sin complejidad: " + actor.getRef());
+                throw invalidXml("ucp.import.validation.actor.missingComplexity", actor.getRef());
             }
+
             try {
                 UseCaseActorComplexity.valueOf(actor.getComplexity());
-            } catch (IllegalArgumentException e) {
-                throw new InvalidUseCasePointXmlException(
-                        "Complejidad de actor inválida: " + actor.getComplexity());
+            } catch (IllegalArgumentException exception) {
+                throw invalidXml(
+                        "ucp.import.validation.actor.invalidComplexity",
+                        actor.getComplexity()
+                );
             }
         }
+
         return refs;
     }
 
@@ -106,62 +126,102 @@ public class UseCasePointXmlImportService {
         if (modules == null || modules.isEmpty()) {
             return;
         }
+
         Set<String> refs = new HashSet<>();
-        for (UseCasePointModuleXmlDto m : modules) {
-            if (m.getRef() == null || m.getRef().isBlank()) {
-                throw new InvalidUseCasePointXmlException("Módulo sin ref.");
+
+        for (UseCasePointModuleXmlDto module : modules) {
+            if (module.getRef() == null || module.getRef().isBlank()) {
+                throw invalidXml("ucp.import.validation.module.missingRef");
             }
-            if (!refs.add(m.getRef())) {
-                throw new InvalidUseCasePointXmlException("Ref de módulo duplicada: " + m.getRef());
+
+            if (!refs.add(module.getRef())) {
+                throw invalidXml("ucp.import.validation.module.duplicateRef", module.getRef());
             }
-            if (m.getName() == null || m.getName().isBlank()) {
-                throw new InvalidUseCasePointXmlException("Módulo sin nombre: " + m.getRef());
+
+            if (module.getName() == null || module.getName().isBlank()) {
+                throw invalidXml("ucp.import.validation.module.missingName", module.getRef());
             }
         }
     }
 
     private Set<String> buildModuleRefSet(List<UseCasePointModuleXmlDto> modules) {
         Set<String> refs = new HashSet<>();
+
         if (modules != null) {
-            for (UseCasePointModuleXmlDto m : modules) {
-                if (m.getRef() != null) {
-                    refs.add(m.getRef());
+            for (UseCasePointModuleXmlDto module : modules) {
+                if (module.getRef() != null) {
+                    refs.add(module.getRef());
                 }
             }
         }
+
         return refs;
     }
 
     private void validateUseCases(List<UseCaseEntryXmlDto> useCases,
-                                   Set<String> moduleRefs,
-                                   Set<String> actorRefs) {
+                                  Set<String> moduleRefs,
+                                  Set<String> actorRefs) {
         if (useCases == null) {
             return;
         }
+
         Set<String> refs = new HashSet<>();
-        for (UseCaseEntryXmlDto uc : useCases) {
-            if (uc.getRef() == null || uc.getRef().isBlank()) {
-                throw new InvalidUseCasePointXmlException("Caso de uso sin ref.");
+
+        for (UseCaseEntryXmlDto useCase : useCases) {
+            if (useCase.getRef() == null || useCase.getRef().isBlank()) {
+                throw invalidXml("ucp.import.validation.useCase.missingRef");
             }
-            if (!refs.add(uc.getRef())) {
-                throw new InvalidUseCasePointXmlException("Ref de caso de uso duplicada: " + uc.getRef());
+
+            if (!refs.add(useCase.getRef())) {
+                throw invalidXml("ucp.import.validation.useCase.duplicateRef", useCase.getRef());
             }
-            if (uc.getName() == null || uc.getName().isBlank()) {
-                throw new InvalidUseCasePointXmlException("Caso de uso sin nombre: " + uc.getRef());
+
+            if (useCase.getName() == null || useCase.getName().isBlank()) {
+                throw invalidXml("ucp.import.validation.useCase.missingName", useCase.getRef());
             }
-            if (uc.getModuleRef() == null || !moduleRefs.contains(uc.getModuleRef())) {
-                throw new InvalidUseCasePointXmlException(
-                        "Caso de uso '" + uc.getRef() + "' apunta a módulo inexistente: " + uc.getModuleRef());
+
+            if (useCase.getModuleRef() == null
+                    || useCase.getModuleRef().isBlank()
+                    || !moduleRefs.contains(useCase.getModuleRef())) {
+                throw invalidXml(
+                        "ucp.import.validation.useCase.invalidModuleRef",
+                        useCase.getRef(),
+                        useCase.getModuleRef()
+                );
             }
-            if (uc.getTransactionCount() != null && uc.getTransactionCount() < 0) {
-                throw new InvalidUseCasePointXmlException(
-                        "Caso de uso '" + uc.getRef() + "' tiene transactionCount negativo.");
+
+            if (useCase.getTransactionCount() == null || useCase.getTransactionCount() <= 0) {
+                throw invalidXml(
+                        "ucp.import.validation.useCase.invalidTransactionCount",
+                        useCase.getRef()
+                );
             }
-            if (uc.getActorRefs() != null) {
-                for (String actorRef : uc.getActorRefs()) {
+
+            if (useCase.getActorRefs() != null) {
+                Set<String> seenActorRefsInUseCase = new HashSet<>();
+
+                for (String actorRef : useCase.getActorRefs()) {
+                    if (actorRef == null || actorRef.isBlank()) {
+                        throw invalidXml(
+                                "ucp.import.validation.useCase.emptyActorRef",
+                                useCase.getRef()
+                        );
+                    }
+
+                    if (!seenActorRefsInUseCase.add(actorRef)) {
+                        throw invalidXml(
+                                "ucp.import.validation.useCase.duplicateActorRef",
+                                useCase.getRef(),
+                                actorRef
+                        );
+                    }
+
                     if (!actorRefs.contains(actorRef)) {
-                        throw new InvalidUseCasePointXmlException(
-                                "Caso de uso '" + uc.getRef() + "' apunta a actor inexistente: " + actorRef);
+                        throw invalidXml(
+                                "ucp.import.validation.useCase.invalidActorRef",
+                                useCase.getRef(),
+                                actorRef
+                        );
                     }
                 }
             }
@@ -172,25 +232,37 @@ public class UseCasePointXmlImportService {
         if (factors == null || factors.isEmpty()) {
             return;
         }
+
         Set<String> seen = new HashSet<>();
+
         for (UseCaseTechnicalFactorXmlDto factor : factors) {
             if (factor.getType() == null || factor.getType().isBlank()) {
-                throw new InvalidUseCasePointXmlException("Factor técnico sin tipo.");
+                throw invalidXml("ucp.import.validation.technicalFactor.missingType");
             }
+
             try {
                 TechnicalFactorType.valueOf(factor.getType());
-            } catch (IllegalArgumentException e) {
-                throw new InvalidUseCasePointXmlException(
-                        "Tipo de factor técnico inválido: " + factor.getType());
+            } catch (IllegalArgumentException exception) {
+                throw invalidXml(
+                        "ucp.import.validation.technicalFactor.invalidType",
+                        factor.getType()
+                );
             }
+
             if (!seen.add(factor.getType())) {
-                throw new InvalidUseCasePointXmlException("Factor técnico duplicado: " + factor.getType());
+                throw invalidXml(
+                        "ucp.import.validation.technicalFactor.duplicate",
+                        factor.getType()
+                );
             }
+
             if (factor.getDegreeOfInfluence() == null
                     || factor.getDegreeOfInfluence() < 0
                     || factor.getDegreeOfInfluence() > 5) {
-                throw new InvalidUseCasePointXmlException(
-                        "Grado de influencia fuera de rango [0..5] para factor técnico: " + factor.getType());
+                throw invalidXml(
+                        "ucp.import.validation.technicalFactor.degreeOutOfRange",
+                        factor.getType()
+                );
             }
         }
     }
@@ -199,35 +271,49 @@ public class UseCasePointXmlImportService {
         if (factors == null || factors.isEmpty()) {
             return;
         }
+
         Set<String> seen = new HashSet<>();
+
         for (UseCaseEnvironmentalFactorXmlDto factor : factors) {
             if (factor.getType() == null || factor.getType().isBlank()) {
-                throw new InvalidUseCasePointXmlException("Factor ambiental sin tipo.");
+                throw invalidXml("ucp.import.validation.environmentalFactor.missingType");
             }
+
             try {
                 EnvironmentalFactorType.valueOf(factor.getType());
-            } catch (IllegalArgumentException e) {
-                throw new InvalidUseCasePointXmlException(
-                        "Tipo de factor ambiental inválido: " + factor.getType());
+            } catch (IllegalArgumentException exception) {
+                throw invalidXml(
+                        "ucp.import.validation.environmentalFactor.invalidType",
+                        factor.getType()
+                );
             }
+
             if (!seen.add(factor.getType())) {
-                throw new InvalidUseCasePointXmlException("Factor ambiental duplicado: " + factor.getType());
+                throw invalidXml(
+                        "ucp.import.validation.environmentalFactor.duplicate",
+                        factor.getType()
+                );
             }
+
             if (factor.getDegreeOfInfluence() == null
                     || factor.getDegreeOfInfluence() < 0
                     || factor.getDegreeOfInfluence() > 5) {
-                throw new InvalidUseCasePointXmlException(
-                        "Grado de influencia fuera de rango [0..5] para factor ambiental: " + factor.getType());
+                throw invalidXml(
+                        "ucp.import.validation.environmentalFactor.degreeOutOfRange",
+                        factor.getType()
+                );
             }
         }
     }
 
     private UseCasePointAnalysis buildAnalysis(EstimationProject project,
-                                                UseCasePointAnalysisXmlDto dto) {
+                                               UseCasePointAnalysisXmlDto dto) {
         String boundary = dto.getSystemBoundaryDescription();
+
         if (boundary != null) {
             boundary = boundary.trim();
         }
+
         if (boundary == null || boundary.isBlank()) {
             boundary = "-";
         }
@@ -236,6 +322,7 @@ public class UseCasePointXmlImportService {
 
         Map<String, UseCaseActor> actorMap = buildActors(analysis, dto.getActors());
         Map<String, UseCasePointModule> moduleMap = buildModules(analysis, dto.getModules());
+
         buildUseCases(analysis, moduleMap, actorMap, dto.getUseCases());
         buildTechnicalFactors(analysis, dto.getTechnicalFactors());
         buildEnvironmentalFactors(analysis, dto.getEnvironmentalFactors());
@@ -244,8 +331,9 @@ public class UseCasePointXmlImportService {
     }
 
     private Map<String, UseCaseActor> buildActors(UseCasePointAnalysis analysis,
-                                                   List<UseCaseActorXmlDto> actorDtos) {
+                                                  List<UseCaseActorXmlDto> actorDtos) {
         Map<String, UseCaseActor> actorMap = new HashMap<>();
+
         if (actorDtos == null) {
             return actorMap;
         }
@@ -254,12 +342,17 @@ public class UseCasePointXmlImportService {
             UseCaseActor actor = new UseCaseActor();
             actor.setName(actorDto.getName().trim());
 
-            String desc = actorDto.getDescription();
-            actor.setDescription(desc != null && !desc.isBlank() ? desc.trim() : null);
+            String description = actorDto.getDescription();
+            actor.setDescription(
+                    description != null && !description.isBlank()
+                            ? description.trim()
+                            : null
+            );
 
             actor.setComplexity(UseCaseActorComplexity.valueOf(actorDto.getComplexity()));
             actor.setWeight(0);
             actor.setUseCasePointAnalysis(analysis);
+
             analysis.getActors().add(actor);
             actorMap.put(actorDto.getRef(), actor);
         }
@@ -268,8 +361,9 @@ public class UseCasePointXmlImportService {
     }
 
     private Map<String, UseCasePointModule> buildModules(UseCasePointAnalysis analysis,
-                                                          List<UseCasePointModuleXmlDto> moduleDtos) {
+                                                         List<UseCasePointModuleXmlDto> moduleDtos) {
         Map<String, UseCasePointModule> moduleMap = new HashMap<>();
+
         if (moduleDtos == null) {
             return moduleMap;
         }
@@ -278,8 +372,12 @@ public class UseCasePointXmlImportService {
             UseCasePointModule module = new UseCasePointModule();
             module.setName(moduleDto.getName().trim());
 
-            String desc = moduleDto.getDescription();
-            module.setDescription(desc != null && !desc.isBlank() ? desc.trim() : null);
+            String description = moduleDto.getDescription();
+            module.setDescription(
+                    description != null && !description.isBlank()
+                            ? description.trim()
+                            : null
+            );
 
             module.setUseCasePointAnalysis(analysis);
             analysis.getModules().add(module);
@@ -290,81 +388,109 @@ public class UseCasePointXmlImportService {
     }
 
     private void buildUseCases(UseCasePointAnalysis analysis,
-                                Map<String, UseCasePointModule> moduleMap,
-                                Map<String, UseCaseActor> actorMap,
-                                List<UseCaseEntryXmlDto> useCaseDtos) {
+                               Map<String, UseCasePointModule> moduleMap,
+                               Map<String, UseCaseActor> actorMap,
+                               List<UseCaseEntryXmlDto> useCaseDtos) {
         if (useCaseDtos == null) {
             return;
         }
 
-        for (UseCaseEntryXmlDto ucDto : useCaseDtos) {
-            UseCaseEntry uc = new UseCaseEntry();
-            uc.setName(ucDto.getName().trim());
+        for (UseCaseEntryXmlDto useCaseDto : useCaseDtos) {
+            UseCaseEntry useCase = new UseCaseEntry();
+            useCase.setName(useCaseDto.getName().trim());
 
-            String desc = ucDto.getDescription();
-            uc.setDescription(desc != null && !desc.isBlank() ? desc.trim() : null);
+            String description = useCaseDto.getDescription();
+            useCase.setDescription(
+                    description != null && !description.isBlank()
+                            ? description.trim()
+                            : null
+            );
 
-            setNullableText(uc, ucDto);
+            setNullableText(useCase, useCaseDto);
 
-            uc.setTransactionCount(ucDto.getTransactionCount());
-            uc.setComplexity(deriveComplexity(ucDto.getTransactionCount()));
-            uc.setWeight(0);
+            useCase.setTransactionCount(useCaseDto.getTransactionCount());
+            useCase.setComplexity(deriveComplexity(useCaseDto.getTransactionCount()));
+            useCase.setWeight(0);
 
-            UseCasePointModule module = moduleMap.get(ucDto.getModuleRef());
-            uc.setUseCasePointModule(module);
-            uc.setUseCasePointAnalysis(analysis);
-            module.getUseCases().add(uc);
-            analysis.getUseCases().add(uc);
+            UseCasePointModule module = moduleMap.get(useCaseDto.getModuleRef());
+            useCase.setUseCasePointModule(module);
+            useCase.setUseCasePointAnalysis(analysis);
 
-            if (ucDto.getActorRefs() != null) {
-                for (String actorRef : ucDto.getActorRefs()) {
+            module.getUseCases().add(useCase);
+            analysis.getUseCases().add(useCase);
+
+            if (useCaseDto.getActorRefs() != null) {
+                for (String actorRef : useCaseDto.getActorRefs()) {
                     UseCaseActor actor = actorMap.get(actorRef);
+
                     if (actor != null) {
-                        uc.addActor(actor);
+                        useCase.addActor(actor);
                     }
                 }
             }
         }
     }
 
-    private void setNullableText(UseCaseEntry uc, UseCaseEntryXmlDto ucDto) {
-        String trigger = ucDto.getTriggerCondition();
-        uc.setTriggerCondition(trigger != null && !trigger.isBlank() ? trigger.trim() : null);
+    private void setNullableText(UseCaseEntry useCase, UseCaseEntryXmlDto useCaseDto) {
+        String trigger = useCaseDto.getTriggerCondition();
+        useCase.setTriggerCondition(trigger != null && !trigger.isBlank() ? trigger.trim() : null);
 
-        String pre = ucDto.getPreconditions();
-        uc.setPreconditions(pre != null && !pre.isBlank() ? pre.trim() : null);
+        String preconditions = useCaseDto.getPreconditions();
+        useCase.setPreconditions(
+                preconditions != null && !preconditions.isBlank()
+                        ? preconditions.trim()
+                        : null
+        );
 
-        String post = ucDto.getPostconditions();
-        uc.setPostconditions(post != null && !post.isBlank() ? post.trim() : null);
+        String postconditions = useCaseDto.getPostconditions();
+        useCase.setPostconditions(
+                postconditions != null && !postconditions.isBlank()
+                        ? postconditions.trim()
+                        : null
+        );
 
-        String normal = ucDto.getNormalFlow();
-        uc.setNormalFlow(normal != null && !normal.isBlank() ? normal.trim() : null);
+        String normalFlow = useCaseDto.getNormalFlow();
+        useCase.setNormalFlow(
+                normalFlow != null && !normalFlow.isBlank()
+                        ? normalFlow.trim()
+                        : null
+        );
 
-        String alt = ucDto.getAlternativeFlows();
-        uc.setAlternativeFlows(alt != null && !alt.isBlank() ? alt.trim() : null);
+        String alternativeFlows = useCaseDto.getAlternativeFlows();
+        useCase.setAlternativeFlows(
+                alternativeFlows != null && !alternativeFlows.isBlank()
+                        ? alternativeFlows.trim()
+                        : null
+        );
 
-        String exc = ucDto.getExceptionFlows();
-        uc.setExceptionFlows(exc != null && !exc.isBlank() ? exc.trim() : null);
+        String exceptionFlows = useCaseDto.getExceptionFlows();
+        useCase.setExceptionFlows(
+                exceptionFlows != null && !exceptionFlows.isBlank()
+                        ? exceptionFlows.trim()
+                        : null
+        );
     }
 
     private UseCaseComplexity deriveComplexity(Integer transactionCount) {
-        if (transactionCount == null || transactionCount <= 3) {
+        if (transactionCount <= 3) {
             return UseCaseComplexity.SIMPLE;
         }
+
         if (transactionCount <= 7) {
             return UseCaseComplexity.AVERAGE;
         }
+
         return UseCaseComplexity.COMPLEX;
     }
 
     private void buildTechnicalFactors(UseCasePointAnalysis analysis,
-                                        List<UseCaseTechnicalFactorXmlDto> factorDtos) {
+                                       List<UseCaseTechnicalFactorXmlDto> factorDtos) {
         Map<TechnicalFactorType, Integer> providedDegrees = new HashMap<>();
 
         if (factorDtos != null) {
-            for (UseCaseTechnicalFactorXmlDto dto : factorDtos) {
-                TechnicalFactorType type = TechnicalFactorType.valueOf(dto.getType());
-                providedDegrees.put(type, dto.getDegreeOfInfluence());
+            for (UseCaseTechnicalFactorXmlDto factorDto : factorDtos) {
+                TechnicalFactorType type = TechnicalFactorType.valueOf(factorDto.getType());
+                providedDegrees.put(type, factorDto.getDegreeOfInfluence());
             }
         }
 
@@ -380,13 +506,13 @@ public class UseCasePointXmlImportService {
     }
 
     private void buildEnvironmentalFactors(UseCasePointAnalysis analysis,
-                                            List<UseCaseEnvironmentalFactorXmlDto> factorDtos) {
+                                           List<UseCaseEnvironmentalFactorXmlDto> factorDtos) {
         Map<EnvironmentalFactorType, Integer> providedDegrees = new HashMap<>();
 
         if (factorDtos != null) {
-            for (UseCaseEnvironmentalFactorXmlDto dto : factorDtos) {
-                EnvironmentalFactorType type = EnvironmentalFactorType.valueOf(dto.getType());
-                providedDegrees.put(type, dto.getDegreeOfInfluence());
+            for (UseCaseEnvironmentalFactorXmlDto factorDto : factorDtos) {
+                EnvironmentalFactorType type = EnvironmentalFactorType.valueOf(factorDto.getType());
+                providedDegrees.put(type, factorDto.getDegreeOfInfluence());
             }
         }
 
@@ -399,5 +525,23 @@ public class UseCasePointXmlImportService {
             assessment.setDegreeOfInfluence(degree);
             analysis.getEnvironmentalFactorAssessments().add(assessment);
         }
+    }
+
+    private InvalidUseCasePointXmlException invalidXml(String messageKey, Object... args) {
+        return new InvalidUseCasePointXmlException(resolveMessage(messageKey, args));
+    }
+
+    private InvalidUseCasePointXmlException invalidXml(String messageKey,
+                                                       Throwable cause,
+                                                       Object... args) {
+        return new InvalidUseCasePointXmlException(resolveMessage(messageKey, args), cause);
+    }
+
+    private String resolveMessage(String messageKey, Object... args) {
+        return messageSource.getMessage(
+                messageKey,
+                args,
+                LocaleContextHolder.getLocale()
+        );
     }
 }

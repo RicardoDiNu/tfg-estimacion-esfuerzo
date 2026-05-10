@@ -126,7 +126,7 @@ public class FunctionPointXmlController {
             return redirectToFunctionPointDetails(projectId);
         } catch (InvalidFunctionPointXmlException e) {
             model.addAttribute("project", project);
-            model.addAttribute("errorKey", "fp.import.error.invalid");
+            model.addAttribute("errorKey", e.getMessage());
             return "fp/import";
         } catch (IOException e) {
             model.addAttribute("project", project);

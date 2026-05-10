@@ -126,7 +126,7 @@ public class UseCasePointXmlController {
             return redirectToUseCasePointDetails(projectId);
         } catch (InvalidUseCasePointXmlException e) {
             model.addAttribute("project", project);
-            model.addAttribute("errorKey", "ucp.import.error.invalid");
+            model.addAttribute("errorKey", e.getMessage());
             return "ucp/import";
         } catch (IOException e) {
             model.addAttribute("project", project);
