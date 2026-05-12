@@ -160,9 +160,10 @@ public class UserRequirementService {
 
     @Transactional
     public UserRequirement createForModule(FunctionPointModule module, UserRequirement requirement) {
-        requirement.setFunctionPointModule(module);
         requirement.setIdentifier(normalize(requirement.getIdentifier()));
         requirement.setStatement(normalize(requirement.getStatement()));
+
+        module.addUserRequirement(requirement);
 
         return userRequirementRepository.save(requirement);
     }

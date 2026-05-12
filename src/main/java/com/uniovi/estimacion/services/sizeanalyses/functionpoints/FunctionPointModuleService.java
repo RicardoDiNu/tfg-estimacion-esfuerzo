@@ -11,6 +11,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
+
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import java.util.List;
 import java.util.Optional;
@@ -112,23 +117,28 @@ public class FunctionPointModuleService {
         Hibernate.initialize(analysis.getDataFunctions());
         Hibernate.initialize(analysis.getTransactionalFunctions());
 
+        List<UserRequirement> requirementsToDelete =
+                new ArrayList<>(module.getUserRequirements());
+
         analysis.getDataFunctions().removeIf(dataFunction ->
                 dataFunction.getUserRequirement() != null
-                        && dataFunction.getUserRequirement().getFunctionPointModule() != null
-                        && dataFunction.getUserRequirement().getFunctionPointModule().getId().equals(moduleId)
+                        && requirementsToDelete.contains(dataFunction.getUserRequirement())
         );
 
         analysis.getTransactionalFunctions().removeIf(transactionalFunction ->
                 transactionalFunction.getUserRequirement() != null
-                        && transactionalFunction.getUserRequirement().getFunctionPointModule() != null
-                        && transactionalFunction.getUserRequirement().getFunctionPointModule().getId().equals(moduleId)
+                        && requirementsToDelete.contains(transactionalFunction.getUserRequirement())
         );
 
-        analysis.removeModule(module);
-
         functionPointAnalysisService.recalculateAndDeleteDerivedEfforts(analysis);
-        functionPointAnalysisRepository.save(analysis);
 
+        for (UserRequirement requirement : requirementsToDelete) {
+            module.removeUserRequirement(requirement);
+        }
+
+        analysis.getModules().remove(module);
+
+        functionPointAnalysisRepository.save(analysis);
         return true;
     }
 

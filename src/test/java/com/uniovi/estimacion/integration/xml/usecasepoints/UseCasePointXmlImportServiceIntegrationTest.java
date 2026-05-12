@@ -111,7 +111,7 @@ class UseCasePointXmlImportServiceIntegrationTest extends AbstractIntegrationTes
             // SIMPLE(1) + COMPLEX(3) = UAW=4
             // UC1: transactionCount=2 → SIMPLE(5), UC2: transactionCount=5 → AVERAGE(10) → UUCW=15
             // UUCP = 4 + 15 = 19
-            assertThat(analysis.getUnadjustedUseCasePoints()).isEqualTo(19.0);
+            assertThat(analysis.getUnadjustedUseCasePoints()).isEqualTo(19);
         }
 
         @Test
