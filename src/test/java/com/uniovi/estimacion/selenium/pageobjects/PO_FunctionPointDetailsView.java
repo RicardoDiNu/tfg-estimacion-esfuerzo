@@ -5,7 +5,7 @@ import org.openqa.selenium.WebDriver;
 public class PO_FunctionPointDetailsView extends PO_NavView {
 
     public static void checkFunctionPointDetails(WebDriver driver) {
-        checkMessageIsPresent(driver, "fp.details.title");
+        checkTextIsPresent(driver, "Puntos Función");
     }
 
     public static void checkResultsAreVisible(WebDriver driver) {

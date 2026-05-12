@@ -5,6 +5,10 @@ import com.uniovi.estimacion.entities.users.User;
 import com.uniovi.estimacion.selenium.pageobjects.*;
 import org.junit.jupiter.api.*;
 
+import org.openqa.selenium.By;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.math.BigDecimal;
 import java.nio.file.Paths;
 
@@ -271,7 +275,12 @@ class EstimationSeleniumTests extends AbstractSeleniumTest {
         PO_ProjectListView.open(driver, baseUrl);
         PO_ProjectListView.openProjectDetails(driver, PROJECT_NAME);
         // when: edita nombre y descripción
-        PO_NavView.clickOptionAndWaitForMessage(driver, "/projects/", "project.edit.title");
+        PO_NavView.clickOption(
+                driver,
+                "/projects/edit/",
+                "id",
+                "name"
+        );
         PO_ProjectListView.fillProjectForm(driver, "Proyecto Editado Selenium",
                 "Nueva descripción editada", "60", "USD");
         // then: el detalle muestra el nuevo nombre
@@ -589,8 +598,15 @@ class EstimationSeleniumTests extends AbstractSeleniumTest {
         PO_ProjectListView.openProjectDetails(driver, PROJECT_NAME);
         PO_ProjectDetailsView.openUseCasePointAnalysis(driver);
         // then: no ve la sección de conversiones Delphi/transformación
-        PO_View.checkTextIsNotPresent(driver,
-                PO_View.getMessage("project.details.ucp.delphi.title"));
+        assertTrue(
+                driver.findElements(By.xpath("//a[contains(@href,'/delphi')]")).isEmpty(),
+                "No debería aparecer ningún enlace de gestión Delphi"
+        );
+
+        assertTrue(
+                driver.findElements(By.xpath("//a[contains(@href,'/transformation')]")).isEmpty(),
+                "No debería aparecer ningún enlace de gestión de función de transformación"
+        );
     }
 
     @Test

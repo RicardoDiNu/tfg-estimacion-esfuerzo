@@ -1,6 +1,7 @@
 package com.uniovi.estimacion.selenium.pageobjects;
 
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 public class PO_ProjectDetailsView extends PO_NavView {
 
@@ -30,11 +31,17 @@ public class PO_ProjectDetailsView extends PO_NavView {
     }
 
     public static void openFunctionPointAnalysis(WebDriver driver) {
-        clickOptionAndWaitForMessage(driver, "/function-points/access", "fp.details.title");
+        WebElement link = checkElementBy(driver, "@href", "/function-points/access").get(0);
+        safeClick(driver, link);
+
+        PO_FunctionPointDetailsView.checkFunctionPointDetails(driver);
     }
 
     public static void openUseCasePointAnalysis(WebDriver driver) {
-        clickOptionAndWaitForMessage(driver, "/use-case-points/access", "ucp.details.title");
+        WebElement link = checkElementBy(driver, "@href", "/use-case-points/access").get(0);
+        safeClick(driver, link);
+
+        PO_UseCasePointDetailsView.checkUseCasePointDetails(driver);
     }
 
     public static void openFunctionPointImport(WebDriver driver) {

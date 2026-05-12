@@ -17,9 +17,16 @@ public class PO_NavView extends PO_View {
         List<WebElement> elements =
                 SeleniumUtils.waitLoadElementsBy(driver, "@href", hrefText, getTimeout());
 
-        Assertions.assertFalse(elements.isEmpty());
+        Assertions.assertFalse(elements.isEmpty(),
+                "No se encontró ningún enlace con href que contenga: " + hrefText);
 
-        elements.get(0).click();
+        String href = elements.get(0).getAttribute("href");
+
+        try {
+            safeClick(driver, elements.get(0));
+        } catch (Exception e) {
+            driver.get(href);
+        }
 
         SeleniumUtils.waitLoadElementsBy(driver, targetCriterion, targetText, getTimeout());
     }
@@ -68,12 +75,14 @@ public class PO_NavView extends PO_View {
     }
 
     public static void switchToEnglish(WebDriver driver) {
-        checkElementBy(driver, "id", "btnEnglish").get(0).click();
+        WebElement element = checkElementBy(driver, "id", "btnEnglish").get(0);
+        safeClick(driver, element);
         checkMessageIsPresent(driver, "index.title", PO_Properties.ENGLISH);
     }
 
     public static void switchToSpanish(WebDriver driver) {
-        checkElementBy(driver, "id", "btnSpanish").get(0).click();
-        checkMessageIsPresent(driver, "index.title", PO_Properties.SPANISH);
+        WebElement element = checkElementBy(driver, "id", "btnSpanish").get(0);
+        safeClick(driver, element);
+        checkMessageIsPresent(driver, "index.title");
     }
 }

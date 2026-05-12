@@ -1,10 +1,15 @@
 package com.uniovi.estimacion.selenium.pageobjects;
 
 import com.uniovi.estimacion.selenium.util.SeleniumUtils;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 
 public class PO_FunctionPointWeightMatrixView extends PO_NavView {
@@ -43,10 +48,26 @@ public class PO_FunctionPointWeightMatrixView extends PO_NavView {
     }
 
     public static void resetWeightMatrix(WebDriver driver) {
-        List<WebElement> resetButtons =
-                SeleniumUtils.waitLoadElementsBy(driver, "free",
-                        "//button[@type='submit' and @onclick]", getTimeout());
-        resetButtons.get(0).click();
-        checkMessageIsPresent(driver, "fp.weights.details.title");
+        List<WebElement> candidates = driver.findElements(By.xpath(
+                "//a[contains(@href,'reset')]" +
+                        " | //button[contains(normalize-space(.),'Restaurar')]" +
+                        " | //button[contains(normalize-space(.),'Restablecer')]" +
+                        " | //button[contains(normalize-space(.),'Reiniciar')]"
+        ));
+
+        Assertions.assertFalse(candidates.isEmpty(),
+                "No se encontró botón/enlace para restaurar la matriz de pesos");
+
+        safeClick(driver, candidates.get(0));
+
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(getTimeout()))
+                    .until(ExpectedConditions.alertIsPresent())
+                    .accept();
+        } catch (TimeoutException ignored) {
+            // Si no hay confirm, seguimos.
+        }
+
+        checkTextIsPresent(driver, "Matriz de pesos");
     }
 }

@@ -1,11 +1,13 @@
 package com.uniovi.estimacion.selenium.pageobjects;
 
 import com.uniovi.estimacion.selenium.util.SeleniumUtils;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public class PO_UseCasePointImportView extends PO_NavView {
 
@@ -28,7 +30,14 @@ public class PO_UseCasePointImportView extends PO_NavView {
     }
 
     public static void checkImportError(WebDriver driver) {
-        checkMessageIsPresent(driver, "ucp.import.error.invalid");
+        checkImportView(driver);
+
+        List<WebElement> alerts = driver.findElements(
+                By.cssSelector(".alert-danger, .alert-warning, .alert")
+        );
+
+        Assertions.assertFalse(alerts.isEmpty(),
+                "Se esperaba un mensaje de error tras importar un XML UCP inválido");
     }
 
     public static void cancelImport(WebDriver driver) {

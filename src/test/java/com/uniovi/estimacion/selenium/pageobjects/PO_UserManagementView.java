@@ -72,20 +72,15 @@ public class PO_UserManagementView extends PO_NavView {
         passwordInput.clear();
         passwordInput.sendKeys(password);
 
-        WebElement roleSelect =
-                SeleniumUtils.waitLoadElementsBy(driver, "id", "role", getTimeout()).get(0);
-        new Select(roleSelect).selectByValue("ROLE_PROJECT_WORKER");
+        List<WebElement> repeatPasswordInputs =
+                driver.findElements(By.id("passwordConfirm"));
 
-        List<WebElement> pmSelects =
-                SeleniumUtils.waitLoadElementsBy(driver, "id", "projectManagerId", getTimeout());
-        if (!pmSelects.isEmpty()) {
-            Select pmSelect = new Select(pmSelects.get(0));
-            if (pmSelect.getOptions().size() > 1) {
-                pmSelect.selectByIndex(1);
-            }
+        if (!repeatPasswordInputs.isEmpty()) {
+            repeatPasswordInputs.get(0).clear();
+            repeatPasswordInputs.get(0).sendKeys(password);
         }
 
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        safeClick(driver, driver.findElement(By.cssSelector("button[type='submit']")));
     }
 
     public static void clickEditForUser(WebDriver driver, String username) {

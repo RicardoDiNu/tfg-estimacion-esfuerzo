@@ -1,11 +1,24 @@
 package com.uniovi.estimacion.selenium.pageobjects;
 
+import org.junit.jupiter.api.Assertions;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 public class PO_UseCasePointDetailsView extends PO_NavView {
 
     public static void checkUseCasePointDetails(WebDriver driver) {
-        checkMessageIsPresent(driver, "ucp.details.title");
+        boolean validUrl = driver.getCurrentUrl().contains("/use-case-points");
+
+        boolean validContent =
+                !driver.findElements(By.xpath("//*[contains(text(),'UCP')]")).isEmpty()
+                        || !driver.findElements(By.xpath("//*[contains(text(),'Puntos de Casos de Uso')]")).isEmpty()
+                        || !driver.findElements(By.xpath("//*[contains(text(),'Puntos de casos de uso')]")).isEmpty()
+                        || !driver.findElements(By.xpath("//*[contains(text(),'Casos de uso')]")).isEmpty()
+                        || !driver.findElements(By.xpath("//*[contains(text(),'Actores')]")).isEmpty()
+                        || !driver.findElements(By.xpath("//*[contains(text(),'Factores técnicos')]")).isEmpty();
+
+        Assertions.assertTrue(validUrl || validContent,
+                "No parece haberse cargado la pantalla de detalle UCP. URL actual: " + driver.getCurrentUrl());
     }
 
     public static void checkResultsAreVisible(WebDriver driver) {

@@ -51,4 +51,13 @@ public class PO_View {
                                              Locale locale) {
         checkTextIsPresent(driver, getMessage(messageKey, locale));
     }
+
+    protected static void safeClick(WebDriver driver, WebElement element) {
+        try {
+            element.click();
+        } catch (Exception e) {
+            ((org.openqa.selenium.JavascriptExecutor) driver)
+                    .executeScript("arguments[0].click();", element);
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package com.uniovi.estimacion.selenium.pageobjects;
 
 import com.uniovi.estimacion.selenium.util.SeleniumUtils;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -33,12 +34,39 @@ public class PO_ProjectListView extends PO_NavView {
     public static void openProjectDetails(WebDriver driver, String projectName) {
         checkProjectIsPresent(driver, projectName);
 
-        List<WebElement> projectLinks =
-                SeleniumUtils.waitLoadElementsBy(driver, "text", projectName, getTimeout());
+        String escapedProjectName = xpathLiteral(projectName);
 
-        projectLinks.get(0).click();
+        List<WebElement> links = driver.findElements(By.xpath(
+                "//a[contains(normalize-space(.), " + escapedProjectName + ")]"
+        ));
+
+        if (links.isEmpty()) {
+            links = driver.findElements(By.xpath(
+                    "//*[contains(normalize-space(.), " + escapedProjectName + ")]" +
+                            "/ancestor::tr[1]//a[" +
+                            "contains(@href,'/projects') " +
+                            "and not(contains(@href,'edit')) " +
+                            "and not(contains(@href,'delete'))" +
+                            "]"
+            ));
+        }
+
+        Assertions.assertFalse(links.isEmpty(),
+                "No se encontró enlace de detalle para el proyecto: " + projectName);
+
+        safeClick(driver, links.get(0));
 
         PO_ProjectDetailsView.checkProjectDetails(driver, projectName);
+    }
+
+    private static String xpathLiteral(String text) {
+        if (!text.contains("'")) {
+            return "'" + text + "'";
+        }
+        if (!text.contains("\"")) {
+            return "\"" + text + "\"";
+        }
+        return "concat('" + text.replace("'", "',\"'\",'") + "')";
     }
 
     public static void fillProjectForm(WebDriver driver,
