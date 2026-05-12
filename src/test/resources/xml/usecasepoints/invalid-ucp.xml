@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thisIsNotAValidUseCasePointXml>
+    <someRandomElement>This XML does not match the expected schema</someRandomElement>
+    <anotherElement value="456"/>
+</thisIsNotAValidUseCasePointXml>

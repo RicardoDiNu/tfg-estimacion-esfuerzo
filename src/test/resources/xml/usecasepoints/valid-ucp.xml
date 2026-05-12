@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<useCasePointAnalysisExport version="1.0">
+    <systemBoundaryDescription>Sistema de gestión de proyectos de estimación software</systemBoundaryDescription>
+    <actors>
+        <actor ref="A1" complexity="SIMPLE">
+            <name>Sistema externo de autenticación</name>
+        </actor>
+        <actor ref="A2" complexity="AVERAGE">
+            <name>Jefe de proyecto</name>
+        </actor>
+        <actor ref="A3" complexity="COMPLEX">
+            <name>Administrador del sistema</name>
+        </actor>
+    </actors>
+    <modules>
+        <module ref="M1">
+            <name>Gestión de proyectos</name>
+        </module>
+        <module ref="M2">
+            <name>Gestión de usuarios</name>
+        </module>
+    </modules>
+    <useCases>
+        <useCase ref="UC1" moduleRef="M1" transactionCount="3">
+            <name>Crear proyecto</name>
+            <actorRefs>
+                <actorRef>A2</actorRef>
+            </actorRefs>
+        </useCase>
+        <useCase ref="UC2" moduleRef="M1" transactionCount="5">
+            <name>Editar proyecto</name>
+            <actorRefs>
+                <actorRef>A2</actorRef>
+            </actorRefs>
+        </useCase>
+        <useCase ref="UC3" moduleRef="M2" transactionCount="2">
+            <name>Registrar trabajador</name>
+            <actorRefs>
+                <actorRef>A2</actorRef>
+                <actorRef>A3</actorRef>
+            </actorRefs>
+        </useCase>
+        <useCase ref="UC4" moduleRef="M2" transactionCount="8">
+            <name>Gestionar permisos de proyecto</name>
+            <actorRefs>
+                <actorRef>A3</actorRef>
+            </actorRefs>
+        </useCase>
+    </useCases>
+    <technicalFactors>
+        <technicalFactor type="DISTRIBUTED_SYSTEM" degreeOfInfluence="2"/>
+        <technicalFactor type="RESPONSE_TIME" degreeOfInfluence="3"/>
+        <technicalFactor type="END_USER_EFFICIENCY" degreeOfInfluence="4"/>
+        <technicalFactor type="COMPLEX_PROCESSING" degreeOfInfluence="1"/>
+        <technicalFactor type="REUSABLE_CODE" degreeOfInfluence="3"/>
+        <technicalFactor type="EASY_TO_INSTALL" degreeOfInfluence="2"/>
+        <technicalFactor type="EASY_TO_USE" degreeOfInfluence="4"/>
+        <technicalFactor type="PORTABLE" degreeOfInfluence="2"/>
+        <technicalFactor type="EASY_TO_CHANGE" degreeOfInfluence="3"/>
+        <technicalFactor type="CONCURRENT" degreeOfInfluence="1"/>
+        <technicalFactor type="SECURITY" degreeOfInfluence="5"/>
+        <technicalFactor type="THIRD_PARTY_ACCESS" degreeOfInfluence="2"/>
+        <technicalFactor type="TRAINING" degreeOfInfluence="3"/>
+    </technicalFactors>
+    <environmentalFactors>
+        <environmentalFactor type="PROCESS_FAMILIARITY" degreeOfInfluence="3"/>
+        <environmentalFactor type="APPLICATION_EXPERIENCE" degreeOfInfluence="3"/>
+        <environmentalFactor type="OBJECT_ORIENTED_EXPERIENCE" degreeOfInfluence="4"/>
+        <environmentalFactor type="LEAD_ANALYST_CAPABILITY" degreeOfInfluence="4"/>
+        <environmentalFactor type="MOTIVATION" degreeOfInfluence="5"/>
+        <environmentalFactor type="STABLE_REQUIREMENTS" degreeOfInfluence="3"/>
+        <environmentalFactor type="PART_TIME_WORKERS" degreeOfInfluence="1"/>
+        <environmentalFactor type="DIFFICULT_LANGUAGE" degreeOfInfluence="0"/>
+    </environmentalFactors>
+</useCasePointAnalysisExport>
