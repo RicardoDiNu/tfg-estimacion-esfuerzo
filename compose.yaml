@@ -1,0 +1,35 @@
+services:
+  db:
+    image: public.ecr.aws/docker/library/postgres:16-alpine
+    container_name: tfg-estimacion-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tfg_estimacion_esfuerzo}
+      POSTGRES_USER: ${POSTGRES_USER:-tfg_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tfg_user} -d ${POSTGRES_DB:-tfg_estimacion_esfuerzo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: tfg-estimacion-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-tfg_estimacion_esfuerzo}
+      DB_USER: ${POSTGRES_USER:-tfg_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+      SPRING_JPA_SHOW_SQL: "false"
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+volumes:
+  postgres_data:
