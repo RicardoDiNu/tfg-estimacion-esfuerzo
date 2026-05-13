@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @DisplayName("Functional Selenium tests")
-class EstimationSeleniumTests extends AbstractSeleniumTest {
+class EstimationSeleniumIT extends AbstractSeleniumTest {
 
     private static final String PM_USERNAME = "pm_selenium";
     private static final String PM_EMAIL = "pm_selenium@test.com";

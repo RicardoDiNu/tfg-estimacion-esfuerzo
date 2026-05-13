@@ -128,6 +128,11 @@ public class ProjectMembershipService {
         return true;
     }
 
+    @Transactional
+    public void deleteAllByProjectId(Long projectId) {
+        projectMembershipRepository.deleteByProjectId(projectId);
+    }
+
     public List<User> findAssignableWorkers() {
         return userRepository.findByRoleOrderByUsernameAsc(UserRole.ROLE_PROJECT_WORKER);
     }

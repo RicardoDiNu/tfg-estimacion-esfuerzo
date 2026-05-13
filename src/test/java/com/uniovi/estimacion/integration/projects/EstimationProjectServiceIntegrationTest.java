@@ -528,6 +528,22 @@ class EstimationProjectServiceIntegrationTest extends AbstractIntegrationTest {
             assertThat(deleted).isTrue();
             assertThat(estimationProjectRepository.findById(projectA.getId())).isEmpty();
         }
+
+        @Test
+        @DisplayName("owner puede borrar proyecto con trabajadores asignados")
+        void ownerCanDeleteProjectWithAssignedWorkers() {
+            // given
+            EstimationProject project = saveProject("Proyecto con trabajador", pmAlpha);
+            projectMembershipService.assignOrUpdateWorker(project.getId(), workerAlpha.getId(), true, true);
+            authenticateAs(pmAlpha);
+
+            // when
+            boolean deleted = estimationProjectService.deleteAccessibleByIdForCurrentUser(project.getId());
+
+            // then
+            assertThat(deleted).isTrue();
+            assertThat(estimationProjectRepository.findById(project.getId())).isEmpty();
+        }
     }
 
     // =========================================================

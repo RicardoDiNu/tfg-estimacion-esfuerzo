@@ -202,6 +202,11 @@ public class TransformationFunctionService {
                 .ifPresent(transformationFunctionConversionRepository::delete);
     }
 
+    @Transactional
+    public void deleteAllConversionsByProjectId(Long projectId) {
+        transformationFunctionConversionRepository.deleteByEstimationProjectId(projectId);
+    }
+
     public double calculateEstimatedEffortHours(TransformationFunctionConversion conversion,
                                                 Double currentSize) {
         if (conversion == null || !conversion.isFinished()) {

@@ -5,8 +5,10 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInstance;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("selenium")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class AbstractSeleniumTest {
 
     protected static WebDriver driver;
@@ -31,8 +34,14 @@ public abstract class AbstractSeleniumTest {
     protected SeleniumTestDataFactory factory;
 
     @BeforeAll
-    static void openBrowser() {
-        driver = new FirefoxDriver();
+    void openBrowser() {
+        FirefoxOptions options = new FirefoxOptions();
+
+        if (headless) {
+            options.addArguments("-headless");
+        }
+
+        driver = new FirefoxDriver(options);
     }
 
     @BeforeEach
@@ -49,7 +58,7 @@ public abstract class AbstractSeleniumTest {
     }
 
     @AfterAll
-    static void closeBrowser() {
+    void closeBrowser() {
         if (driver != null) {
             driver.quit();
         }

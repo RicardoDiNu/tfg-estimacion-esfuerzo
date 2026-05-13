@@ -265,6 +265,11 @@ public class DelphiEstimationService {
         return true;
     }
 
+    @Transactional
+    public void deleteAllByProjectId(Long projectId) {
+        delphiEstimationRepository.deleteByEstimationProjectId(projectId);
+    }
+
     public boolean canStartCalibration(List<SizeAnalysisModuleResult> moduleResults) {
         List<SizeAnalysisModuleResult> validModules = moduleResults.stream()
                 .filter(module -> module.getSize() != null && module.getSize() > 0)

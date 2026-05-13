@@ -22,4 +22,6 @@ public interface TransformationFunctionConversionRepository extends JpaRepositor
             Long id,
             Long estimationProjectId
     );
+
+    void deleteByEstimationProjectId(Long projectId);
 }

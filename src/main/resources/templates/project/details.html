@@ -442,7 +442,7 @@
         <!-- ACCIONES FINALES -->
         <div class="mt-4 mb-4">
             <a class="btn btn-danger mr-2"
-               th:if="${canManageProject}"A
+               th:if="${canManageProject}"
                th:href="@{/projects/delete/{id}(id=${project.id})}"
                th:text="#{project.action.delete}"
                th:onclick="|return confirm('#{project.confirm.delete}');|">

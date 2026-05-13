@@ -5,6 +5,8 @@ import com.uniovi.estimacion.entities.users.User;
 import com.uniovi.estimacion.repositories.projects.EstimationProjectRepository;
 import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointAnalysisRepository;
 import com.uniovi.estimacion.repositories.sizeanalyses.usecasepoints.UseCasePointAnalysisRepository;
+import com.uniovi.estimacion.services.effortconversions.delphi.DelphiEstimationService;
+import com.uniovi.estimacion.services.effortconversions.transformationfunctions.TransformationFunctionService;
 import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
 import com.uniovi.estimacion.services.sizeanalyses.usecasepoints.UseCasePointAnalysisService;
 import com.uniovi.estimacion.services.users.CurrentUserService;
@@ -32,6 +34,9 @@ public class EstimationProjectService {
 
     private final ProjectMembershipService projectMembershipService;
     private final CurrentUserService currentUserService;
+
+    private final DelphiEstimationService delphiEstimationService;
+    private final TransformationFunctionService transformationFunctionService;
 
     public Page<EstimationProject> findPageForCurrentUser(Pageable pageable) {
         if (currentUserService.isAdmin()) {
@@ -136,6 +141,9 @@ public class EstimationProjectService {
             return false;
         }
 
+        transformationFunctionService.deleteAllConversionsByProjectId(projectId);
+        delphiEstimationService.deleteAllByProjectId(projectId);
+
         if (functionPointAnalysisRepository.findByEstimationProjectId(projectId).isPresent()) {
             functionPointAnalysisService.deleteByProjectId(projectId);
         }
@@ -143,6 +151,8 @@ public class EstimationProjectService {
         if (useCasePointAnalysisRepository.findByEstimationProjectId(projectId).isPresent()) {
             useCasePointAnalysisService.deleteByProjectId(projectId);
         }
+
+        projectMembershipService.deleteAllByProjectId(projectId);
 
         estimationProjectRepository.delete(optionalProject.get());
         estimationProjectRepository.flush();

@@ -38,13 +38,18 @@ En Windows PowerShell:
 copy .env.example .env
 ```
 
-Editar el fichero `.env` si se desea cambiar la contraseña de la base de datos o el puerto de la aplicación:
+Editar el fichero `.env` si se desea cambiar la contraseña de la base de datos, el puerto de la aplicación o el usuario administrador inicial:
 
 ```env
 POSTGRES_DB=tfg_estimacion_esfuerzo
 POSTGRES_USER=tfg_user
 POSTGRES_PASSWORD=cambia_esta_password
 APP_PORT=8080
+
+APP_INITIAL_ADMIN_ENABLED=true
+APP_INITIAL_ADMIN_USERNAME=admin
+APP_INITIAL_ADMIN_EMAIL=admin@estimacion.local
+APP_INITIAL_ADMIN_PASSWORD=change_this_admin_password
 ```
 
 Levantar la aplicación:
@@ -76,14 +81,27 @@ docker compose down -v
 
 ## Datos iniciales
 
-Al arrancar la aplicación se crea automáticamente un usuario administrador inicial:
+Al arrancar la aplicación se crea automáticamente un usuario administrador inicial si no existe previamente.
 
-```text
-Usuario: admin
-Contraseña: admin123
+Sus datos se configuran mediante variables de entorno en el fichero `.env`:
+
+```env
+APP_INITIAL_ADMIN_ENABLED=true
+APP_INITIAL_ADMIN_USERNAME=admin
+APP_INITIAL_ADMIN_EMAIL=admin@estimacion.local
+APP_INITIAL_ADMIN_PASSWORD=change_this_admin_password
 ```
 
-También se registra una función de transformación predefinida para Puntos Función basada en el modelo de Matson, Barrett y Mellichamp (1994):
+El usuario administrador solo se crea si no existe ya un usuario con ese nombre. Si se cambia la contraseña en `.env` después de haber arrancado la aplicación, la contraseña del usuario existente no se modifica automáticamente.
+
+Para regenerar la base de datos Docker desde cero y volver a crear el usuario inicial con los datos actuales del `.env`:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+También se registra automáticamente una función de transformación predefinida para Puntos Función basada en el modelo de Matson, Barrett y Mellichamp (1994):
 
 ```text
 E = 585.7 + 15.12 × FP
@@ -144,7 +162,7 @@ mvnw.cmd spring-boot:run
 
 ## Pruebas
 
-Para ejecutar las pruebas:
+Para ejecutar las pruebas unitarias y de integración:
 
 ```bash
 ./mvnw test
@@ -154,6 +172,32 @@ En Windows:
 
 ```powershell
 mvnw.cmd test
+```
+
+Las pruebas de sistema con Selenium se ejecutan mediante un perfil específico:
+
+```bash
+./mvnw verify -Pselenium
+```
+
+En Windows:
+
+```powershell
+mvnw.cmd verify -Pselenium
+```
+
+Estas pruebas requieren tener Firefox instalado. Por defecto se ejecutan abriendo una ventana del navegador, para poder observar visualmente el flujo de prueba.
+
+Si se desea ejecutarlas en modo headless, puede indicarse la propiedad correspondiente:
+
+```bash
+./mvnw verify -Pselenium -Dselenium.headless=true
+```
+
+En Windows:
+
+```powershell
+mvnw.cmd verify -Pselenium -Dselenium.headless=true
 ```
 
 ## Estructura principal del proyecto

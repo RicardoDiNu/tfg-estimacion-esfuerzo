@@ -23,4 +23,6 @@ public interface DelphiEstimationRepository extends JpaRepository<DelphiEstimati
     Optional<DelphiEstimation> findByIdAndEstimationProjectId(Long id, Long estimationProjectId);
 
     List<DelphiEstimation> findAllBySourceAnalysisIdAndSourceTechniqueCode(Long id, String techniqueCode);
+
+    void deleteByEstimationProjectId(Long projectId);
 }
