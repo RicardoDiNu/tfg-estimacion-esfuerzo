@@ -50,7 +50,7 @@ public class PO_UserManagementView extends PO_NavView {
         passwordInput.clear();
         passwordInput.sendKeys(password);
 
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        driver.findElement(By.xpath("//button[@type='submit' and not(ancestor::nav)]")).click();
     }
 
     public static void fillWorkerForm(WebDriver driver,
@@ -80,7 +80,7 @@ public class PO_UserManagementView extends PO_NavView {
             repeatPasswordInputs.get(0).sendKeys(password);
         }
 
-        safeClick(driver, driver.findElement(By.cssSelector("button[type='submit']")));
+        safeClick(driver, driver.findElement(By.xpath("//button[@type='submit' and not(ancestor::nav)]")));
     }
 
     public static void clickEditForUser(WebDriver driver, String username) {
@@ -98,7 +98,7 @@ public class PO_UserManagementView extends PO_NavView {
         emailInput.clear();
         emailInput.sendKeys(newEmail);
 
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        driver.findElement(By.xpath("//button[@type='submit' and not(ancestor::nav)]")).click();
     }
 
     public static void checkWorkerRoleIsVisible(WebDriver driver) {

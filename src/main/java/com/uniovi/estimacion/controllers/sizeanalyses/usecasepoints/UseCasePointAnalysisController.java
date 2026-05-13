@@ -21,6 +21,8 @@ import com.uniovi.estimacion.services.sizeanalyses.usecasepoints.UseCasePointSiz
 import com.uniovi.estimacion.validators.sizeanalyses.usecasepoints.*;
 import com.uniovi.estimacion.web.forms.sizeanalyses.usecasepoints.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
@@ -56,6 +59,8 @@ public class UseCasePointAnalysisController {
     private final CostCalculationService costCalculationService;
     private final UseCasePointSizeAnalysisProvider useCasePointSizeAnalysisProvider;
     private final ProjectAuthorizationService projectAuthorizationService;
+
+    private final MessageSource messageSource;
 
     private static final int UCP_PAGE_SIZE = 5;
 
@@ -771,7 +776,8 @@ public class UseCasePointAnalysisController {
 
     @PostMapping("/actors/{actorId}/delete")
     public String deleteActor(@PathVariable Long projectId,
-                              @PathVariable Long actorId) {
+                              @PathVariable Long actorId,
+                              RedirectAttributes redirectAttributes) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);
 
@@ -783,7 +789,17 @@ public class UseCasePointAnalysisController {
             return redirectToDetails(projectId);
         }
 
-        useCasePointAnalysisService.deleteActor(projectId, actorId);
+        boolean deleted = useCasePointAnalysisService.deleteActor(projectId, actorId);
+
+        if (!deleted) {
+            String message = messageSource.getMessage(
+                    "ucp.actor.delete.error.used",
+                    null,
+                    LocaleContextHolder.getLocale()
+            );
+
+            redirectAttributes.addFlashAttribute("errorMessage", message);
+        }
 
         return redirectToDetails(projectId);
     }

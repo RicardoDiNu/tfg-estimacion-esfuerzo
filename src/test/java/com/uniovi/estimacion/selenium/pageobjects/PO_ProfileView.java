@@ -21,7 +21,7 @@ public class PO_ProfileView extends PO_NavView {
         emailInput.clear();
         emailInput.sendKeys(newEmail);
 
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        driver.findElement(By.xpath("//button[@type='submit' and not(ancestor::nav)]")).click();
     }
 
     public static void checkEmailIsPresent(WebDriver driver, String email) {

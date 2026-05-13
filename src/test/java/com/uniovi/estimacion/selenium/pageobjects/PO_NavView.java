@@ -71,7 +71,14 @@ public class PO_NavView extends PO_View {
     }
 
     public static void logout(WebDriver driver) {
-        clickOptionAndWaitForMessage(driver, "/logout", "login.title");
+        List<WebElement> logoutButtons = SeleniumUtils.waitLoadElementsBy(
+                driver, "free",
+                "//nav//form[contains(@action,'/logout')]//button[@type='submit']",
+                getTimeout());
+        Assertions.assertFalse(logoutButtons.isEmpty(),
+                "No se encontró el botón de logout en el nav");
+        safeClick(driver, logoutButtons.get(0));
+        checkMessageIsPresent(driver, "login.title");
     }
 
     public static void switchToEnglish(WebDriver driver) {

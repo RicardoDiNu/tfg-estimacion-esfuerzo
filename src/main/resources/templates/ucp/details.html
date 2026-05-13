@@ -24,6 +24,12 @@
             Análisis UCP
         </h1>
 
+        <div class="alert alert-danger"
+             th:if="${errorMessage != null}"
+             th:text="${errorMessage}">
+            No se puede completar la operación.
+        </div>
+
         <!-- CONTEXTO -->
         <div class="card mb-4">
             <div class="card-header" th:text="#{ucp.details.context}">

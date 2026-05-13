@@ -43,7 +43,7 @@ public class PO_FunctionPointWeightMatrixView extends PO_NavView {
     }
 
     public static void saveWeightMatrix(WebDriver driver) {
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        driver.findElement(By.xpath("//button[@type='submit' and not(ancestor::nav)]")).click();
         checkMessageIsPresent(driver, "fp.weights.details.title");
     }
 

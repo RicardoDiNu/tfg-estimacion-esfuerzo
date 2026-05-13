@@ -27,7 +27,7 @@ public class PO_LoginView extends PO_NavView {
         passwordInput.clear();
         passwordInput.sendKeys(password);
 
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        driver.findElement(By.xpath("//button[@type='submit' and not(ancestor::nav)]")).click();
     }
 
     public static void login(WebDriver driver, String username, String password) {

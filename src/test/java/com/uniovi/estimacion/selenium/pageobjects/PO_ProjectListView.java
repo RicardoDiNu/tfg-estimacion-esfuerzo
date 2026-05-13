@@ -94,6 +94,6 @@ public class PO_ProjectListView extends PO_NavView {
         currencyInput.clear();
         currencyInput.sendKeys(currencyCode);
 
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        driver.findElement(By.xpath("//button[@type='submit' and not(ancestor::nav)]")).click();
     }
 }

@@ -137,12 +137,13 @@
                         Mi cuenta
                     </a>
 
-                    <a class="dropdown-item"
-                       id="logout"
-                       th:href="@{/logout}"
-                       th:text="#{nav.logout}">
-                        Cerrar sesión
-                    </a>
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit"
+                                class="dropdown-item"
+                                th:text="#{nav.logout}">
+                            Desconectar
+                        </button>
+                    </form>
                 </div>
             </li>
 

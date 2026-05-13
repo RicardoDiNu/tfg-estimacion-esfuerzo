@@ -22,7 +22,7 @@ public class PO_FunctionPointImportView extends PO_NavView {
 
         fileInput.sendKeys(xmlPath.toAbsolutePath().toString());
 
-        driver.findElement(By.cssSelector("button[type='submit']")).click();
+        driver.findElement(By.xpath("//button[@type='submit' and not(ancestor::nav)]")).click();
     }
 
     public static void checkImportSuccess(WebDriver driver) {

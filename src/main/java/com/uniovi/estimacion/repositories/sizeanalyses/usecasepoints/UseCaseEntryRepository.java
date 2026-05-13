@@ -29,4 +29,6 @@ public interface UseCaseEntryRepository extends JpaRepository<UseCaseEntry, Long
 
     @EntityGraph(attributePaths = {"useCasePointModule", "actors"})
     List<UseCaseEntry> findByUseCasePointModuleIdOrderByIdAsc(Long moduleId);
+
+    boolean existsByActorsId(Long actorId);
 }

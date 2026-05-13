@@ -38,6 +38,7 @@ public class UseCasePointAnalysisService {
     private final UseCasePointModuleRepository useCasePointModuleRepository;
     private final UseCasePointCalculationService useCasePointCalculationService;
     private final EffortResultsInvalidationCoordinator effortResultsInvalidationCoordinator;
+    private final UseCaseEntryRepository useCaseUseCaseRepository;
 
     public Optional<UseCasePointAnalysis> findByProjectId(Long projectId) {
         return useCasePointAnalysisRepository.findByEstimationProjectId(projectId);
@@ -304,6 +305,17 @@ public class UseCasePointAnalysisService {
 
         UseCasePointAnalysis analysis = optionalAnalysis.get();
         Hibernate.initialize(analysis.getActors());
+
+        boolean actorBelongsToAnalysis = analysis.getActors().stream()
+                .anyMatch(actor -> actor.getId().equals(actorId));
+
+        if (!actorBelongsToAnalysis) {
+            return false;
+        }
+
+        if (useCaseUseCaseRepository.existsByActorsId(actorId)) {
+            return false;
+        }
 
         boolean removed = analysis.getActors()
                 .removeIf(actor -> actor.getId().equals(actorId));
