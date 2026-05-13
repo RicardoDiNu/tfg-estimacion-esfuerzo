@@ -114,15 +114,19 @@
                                         Editar
                                     </a>
 
-                                    <a class="btn btn-sm btn-outline-danger mb-2"
-                                       th:if="${canEditEstimationData == true}"
-                                       th:href="@{/projects/{projectId}/use-case-points/actors/{actorId}/delete(
-                                           projectId=${project.id},
-                                           actorId=${actor.id})}"
-                                       th:onclick="|return confirm('#{ucp.actor.confirm.delete}');|"
-                                       th:text="#{project.action.delete}">
-                                        Eliminar
-                                    </a>
+                                    <form th:if="${canEditEstimationData == true}"
+                                          th:action="@{/projects/{projectId}/use-case-points/actors/{actorId}/delete(
+                                              projectId=${project.id},
+                                              actorId=${actor.id})}"
+                                          method="post"
+                                          class="d-inline"
+                                          th:onsubmit="|return confirm('#{ucp.actor.confirm.delete}');|">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger mb-2"
+                                                th:text="#{project.action.delete}">
+                                            Eliminar
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -278,15 +282,19 @@
                                         Ver detalle
                                     </a>
 
-                                    <a class="btn btn-sm btn-outline-danger mb-2"
-                                       th:if="${canEditEstimationData == true}"
-                                       th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}/delete(
-                                           projectId=${project.id},
-                                           moduleId=${module.id})}"
-                                       th:onclick="|return confirm('#{ucp.module.confirm.delete}');|"
-                                       th:text="#{project.action.delete}">
-                                        Eliminar
-                                    </a>
+                                    <form th:if="${canEditEstimationData == true}"
+                                          th:action="@{/projects/{projectId}/use-case-points/modules/{moduleId}/delete(
+                                              projectId=${project.id},
+                                              moduleId=${module.id})}"
+                                          method="post"
+                                          class="d-inline"
+                                          th:onsubmit="|return confirm('#{ucp.module.confirm.delete}');|">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger mb-2"
+                                                th:text="#{project.action.delete}">
+                                            Eliminar
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -756,13 +764,17 @@
                 Exportar XML
             </a>
 
-            <a class="btn btn-danger mr-2"
-               th:if="${canManageProject == true}"
-               th:href="@{/projects/{projectId}/use-case-points/delete(projectId=${project.id})}"
-               th:onclick="|return confirm('#{ucp.confirm.deleteAnalysis}');|"
-               th:text="#{project.action.delete}">
-                Eliminar análisis
-            </a>
+            <form th:if="${canManageProject == true}"
+                  th:action="@{/projects/{projectId}/use-case-points/delete(projectId=${project.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{ucp.confirm.deleteAnalysis}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{project.action.delete}">
+                    Eliminar análisis
+                </button>
+            </form>
 
             <a class="btn btn-secondary"
                th:href="@{/projects/{id}(id=${project.id})}"

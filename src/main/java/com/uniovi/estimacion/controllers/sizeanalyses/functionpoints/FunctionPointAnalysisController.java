@@ -589,7 +589,7 @@ public class FunctionPointAnalysisController {
         return redirectToFunctionPointDetails(projectId);
     }
 
-    @GetMapping("/function-points/delete")
+    @PostMapping("/function-points/delete")
     public String deleteFunctionPointAnalysis(@PathVariable Long projectId) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);

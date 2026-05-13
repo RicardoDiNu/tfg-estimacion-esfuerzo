@@ -347,7 +347,7 @@ public class EstimationProjectController {
         return redirectToList(page);
     }
 
-    @GetMapping("/delete/{projectId}")
+    @PostMapping("/delete/{projectId}")
     public String deleteProject(@PathVariable Long projectId,
                                 @RequestParam(name = "page", required = false) Integer page) {
         estimationProjectService.deleteAccessibleByIdForCurrentUser(projectId);

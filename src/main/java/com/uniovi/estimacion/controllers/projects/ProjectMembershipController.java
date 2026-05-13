@@ -76,7 +76,7 @@ public class ProjectMembershipController {
         return redirectToMemberships(projectId);
     }
 
-    @GetMapping("/{workerId}/remove")
+    @PostMapping("/{workerId}/remove")
     public String removeWorker(@PathVariable Long projectId,
                                @PathVariable Long workerId) {
         Optional<EstimationProject> optionalProject =

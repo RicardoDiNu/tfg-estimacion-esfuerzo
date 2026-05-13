@@ -254,7 +254,7 @@ public class TransformationFunctionController {
         return "effortconversions/transformationfunctions/details";
     }
 
-    @GetMapping("/{conversionId}/delete")
+    @PostMapping("/{conversionId}/delete")
     public String deleteConversion(@PathVariable Long projectId,
                                    @PathVariable String sourceTechniqueCode,
                                    @PathVariable Long conversionId) {

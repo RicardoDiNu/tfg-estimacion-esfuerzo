@@ -601,7 +601,7 @@ public class UseCasePointAnalysisController {
         return redirectToModuleDetails(projectId, moduleId);
     }
 
-    @GetMapping("/modules/{moduleId}/delete")
+    @PostMapping("/modules/{moduleId}/delete")
     public String deleteModule(@PathVariable Long projectId,
                                @PathVariable Long moduleId) {
         Optional<EstimationProject> optionalProject =
@@ -769,7 +769,7 @@ public class UseCasePointAnalysisController {
         return redirectToDetails(projectId);
     }
 
-    @GetMapping("/actors/{actorId}/delete")
+    @PostMapping("/actors/{actorId}/delete")
     public String deleteActor(@PathVariable Long projectId,
                               @PathVariable Long actorId) {
         Optional<EstimationProject> optionalProject =
@@ -979,7 +979,7 @@ public class UseCasePointAnalysisController {
         return redirectToModuleDetails(projectId, moduleId);
     }
 
-    @GetMapping("/modules/{moduleId}/use-cases/{useCaseId}/delete")
+    @PostMapping("/modules/{moduleId}/use-cases/{useCaseId}/delete")
     public String deleteUseCase(@PathVariable Long projectId,
                                 @PathVariable Long moduleId,
                                 @PathVariable Long useCaseId) {
@@ -1139,7 +1139,7 @@ public class UseCasePointAnalysisController {
         return redirectToDetails(projectId);
     }
 
-    @GetMapping("/delete")
+    @PostMapping("/delete")
     public String deleteAnalysis(@PathVariable Long projectId) {
         Optional<EstimationProject> optionalProject =
                 estimationProjectService.findAccessibleByIdForCurrentUser(projectId);

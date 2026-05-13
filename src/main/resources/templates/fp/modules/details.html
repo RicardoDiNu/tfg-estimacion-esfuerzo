@@ -132,17 +132,21 @@
                     Ver detalle
                   </a>
 
-                  <a class="btn btn-sm btn-outline-danger mb-2"
-                     th:if="${canEditEstimationData == true}"
-                     th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/delete/{requirementId}(
-                       projectId=${project.id},
-                       moduleId=${module.id},
-                       requirementId=${requirement.id},
-                       requirementsPage=${requirementsPage.number})}"
-                     th:onclick="|return confirm('#{fp.confirm.deleteRequirement}');|"
-                     th:text="#{project.action.delete}">
-                    Eliminar
-                  </a>
+                  <form th:if="${canEditEstimationData == true}"
+                        th:action="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/delete/{requirementId}(
+                          projectId=${project.id},
+                          moduleId=${module.id},
+                          requirementId=${requirement.id},
+                          requirementsPage=${requirementsPage.number})}"
+                        method="post"
+                        class="d-inline"
+                        th:onsubmit="|return confirm('#{fp.confirm.deleteRequirement}');|">
+                      <button type="submit"
+                              class="btn btn-sm btn-outline-danger mb-2"
+                              th:text="#{project.action.delete}">
+                          Eliminar
+                      </button>
+                  </form>
                 </div>
               </td>
             </tr>
@@ -676,15 +680,19 @@
     </div>
 
     <div class="mt-4">
-      <a class="btn btn-danger mr-2"
-         th:if="${canEditEstimationData == true}"
-         th:href="@{/projects/{projectId}/function-points/modules/delete/{moduleId}(
-           projectId=${project.id},
-           moduleId=${module.id})}"
-         th:onclick="|return confirm('#{fp.modules.confirm.delete}');|"
-         th:text="#{project.action.delete}">
-        Eliminar
-      </a>
+      <form th:if="${canEditEstimationData == true}"
+            th:action="@{/projects/{projectId}/function-points/modules/delete/{moduleId}(
+              projectId=${project.id},
+              moduleId=${module.id})}"
+            method="post"
+            class="d-inline"
+            th:onsubmit="|return confirm('#{fp.modules.confirm.delete}');|">
+          <button type="submit"
+                  class="btn btn-danger mr-2"
+                  th:text="#{project.action.delete}">
+              Eliminar
+          </button>
+      </form>
 
       <a class="btn btn-secondary"
          th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"

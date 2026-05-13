@@ -281,16 +281,20 @@
 
 
         <div class="mt-4">
-            <a class="btn btn-danger mr-2"
-               th:if="${canManageEffortConversions}"
-               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/delete(
-                projectId=${project.id},
-                sourceTechniqueCode=${sourceTechniqueCode},
-                delphiEstimationId=${estimation.id})}"
-               th:onclick="|return confirm('#{delphi.confirm.delete}');|"
-               th:text="#{project.action.delete}">
-                Eliminar
-            </a>
+            <form th:if="${canManageEffortConversions}"
+                  th:action="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/delete(
+                      projectId=${project.id},
+                      sourceTechniqueCode=${sourceTechniqueCode},
+                      delphiEstimationId=${estimation.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{delphi.confirm.delete}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{project.action.delete}">
+                    Eliminar
+                </button>
+            </form>
 
             <a class="btn btn-secondary"
                th:href="${sourceAnalysisDetailsPath}"

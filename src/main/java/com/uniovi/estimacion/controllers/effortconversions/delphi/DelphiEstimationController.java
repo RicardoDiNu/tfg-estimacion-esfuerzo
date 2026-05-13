@@ -346,7 +346,7 @@ public class DelphiEstimationController {
         return redirectToDelphiDetails(projectId, sourceTechniqueCode, delphiEstimationId);
     }
 
-    @GetMapping("/{delphiEstimationId}/delete")
+    @PostMapping("/{delphiEstimationId}/delete")
     public String deleteEstimation(@PathVariable Long projectId,
                                    @PathVariable String sourceTechniqueCode,
                                    @PathVariable Long delphiEstimationId) {

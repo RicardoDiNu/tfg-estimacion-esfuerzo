@@ -226,7 +226,7 @@ public class FunctionPointModuleController {
         return redirectToModuleDetails(projectId, moduleId);
     }
 
-    @GetMapping("/delete/{moduleId}")
+    @PostMapping("/delete/{moduleId}")
     public String deleteModule(@PathVariable Long projectId,
                                @PathVariable Long moduleId) {
         Optional<EstimationProject> optionalProject =

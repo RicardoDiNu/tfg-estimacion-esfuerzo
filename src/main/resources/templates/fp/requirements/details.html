@@ -122,15 +122,19 @@
                                                 Editar
                                             </a>
 
-                                            <a class="btn btn-sm btn-outline-danger mb-2"
-                                               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/delete/{dataFunctionId}(
-                                                   projectId=${project.id},
-                                                   moduleId=${module.id},
-                                                   requirementId=${requirement.id},
-                                                   dataFunctionId=${dataFunction.id})}"
-                                               th:text="#{project.action.delete}">
-                                                Eliminar
-                                            </a>
+                                            <form th:action="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/delete/{dataFunctionId}(
+                                                      projectId=${project.id},
+                                                      moduleId=${module.id},
+                                                      requirementId=${requirement.id},
+                                                      dataFunctionId=${dataFunction.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger mb-2"
+                                                        th:text="#{project.action.delete}">
+                                                    Eliminar
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -305,15 +309,19 @@
                                                 Editar
                                             </a>
 
-                                            <a class="btn btn-sm btn-outline-danger mb-2"
-                                               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/delete/{transactionalFunctionId}(
-                                                   projectId=${project.id},
-                                                   moduleId=${module.id},
-                                                   requirementId=${requirement.id},
-                                                   transactionalFunctionId=${transactionalFunction.id})}"
-                                               th:text="#{project.action.delete}">
-                                                Eliminar
-                                            </a>
+                                            <form th:action="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/delete/{transactionalFunctionId}(
+                                                      projectId=${project.id},
+                                                      moduleId=${module.id},
+                                                      requirementId=${requirement.id},
+                                                      transactionalFunctionId=${transactionalFunction.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger mb-2"
+                                                        th:text="#{project.action.delete}">
+                                                    Eliminar
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -437,16 +445,20 @@
         </div>
 
         <div class="mt-4">
-            <a class="btn btn-danger mr-2"
-               th:if="${canEditEstimationData}"
-               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/delete/{requirementId}(
-                   projectId=${project.id},
-                   moduleId=${module.id},
-                   requirementId=${requirement.id})}"
-               th:onclick="|return confirm('#{requirement.confirm.delete}');|"
-               th:text="#{project.action.delete}">
-                Eliminar requisito
-            </a>
+            <form th:if="${canEditEstimationData}"
+                  th:action="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/delete/{requirementId}(
+                      projectId=${project.id},
+                      moduleId=${module.id},
+                      requirementId=${requirement.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{requirement.confirm.delete}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{project.action.delete}">
+                    Eliminar requisito
+                </button>
+            </form>
 
             <a class="btn btn-secondary"
                th:href="@{/projects/{projectId}/function-points/modules/{moduleId}(

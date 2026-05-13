@@ -113,16 +113,20 @@
                 Cambiar función
             </a>
 
-            <a class="btn btn-danger mr-2"
-               th:if="${canManageEffortConversions}"
-               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/{conversionId}/delete(
-                   projectId=${project.id},
-                   sourceTechniqueCode=${sourceTechniqueCode},
-                   conversionId=${conversion.id})}"
-               th:onclick="|return confirm('#{transformationFunction.confirm.deleteConversion}');|"
-               th:text="#{common.delete}">
-                Eliminar
-            </a>
+            <form th:if="${canManageEffortConversions}"
+                  th:action="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/{conversionId}/delete(
+                      projectId=${project.id},
+                      sourceTechniqueCode=${sourceTechniqueCode},
+                      conversionId=${conversion.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{transformationFunction.confirm.deleteConversion}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{common.delete}">
+                    Eliminar
+                </button>
+            </form>
 
             <a class="btn btn-secondary"
                th:href="${sourceAnalysisDetailsPath}"

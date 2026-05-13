@@ -325,7 +325,7 @@ public class UserRequirementController {
         return redirectToRequirementDetails(projectId, moduleId, requirementId);
     }
 
-    @GetMapping("/delete/{requirementId}")
+    @PostMapping("/delete/{requirementId}")
     public String deleteRequirement(@PathVariable Long projectId,
                                     @PathVariable Long moduleId,
                                     @PathVariable Long requirementId,
@@ -704,7 +704,7 @@ public class UserRequirementController {
         return redirectToRequirementDetails(projectId, moduleId, requirementId);
     }
 
-    @GetMapping("/{requirementId}/data-functions/delete/{dataFunctionId}")
+    @PostMapping("/{requirementId}/data-functions/delete/{dataFunctionId}")
     public String deleteDataFunction(@PathVariable Long projectId,
                                      @PathVariable Long moduleId,
                                      @PathVariable Long requirementId,
@@ -736,7 +736,7 @@ public class UserRequirementController {
         return redirectToRequirementDetails(projectId, moduleId, requirementId);
     }
 
-    @GetMapping("/{requirementId}/transactional-functions/delete/{transactionalFunctionId}")
+    @PostMapping("/{requirementId}/transactional-functions/delete/{transactionalFunctionId}")
     public String deleteTransactionalFunction(@PathVariable Long projectId,
                                               @PathVariable Long moduleId,
                                               @PathVariable Long requirementId,

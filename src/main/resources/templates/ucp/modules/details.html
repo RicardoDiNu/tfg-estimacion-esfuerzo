@@ -178,16 +178,20 @@
                                         Ver detalle
                                     </a>
 
-                                    <a class="btn btn-sm btn-outline-danger mb-2"
-                                       th:if="${canEditEstimationData == true}"
-                                       th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}/use-cases/{useCaseId}/delete(
-                                           projectId=${project.id},
-                                           moduleId=${module.id},
-                                           useCaseId=${useCase.id})}"
-                                       th:onclick="|return confirm('#{ucp.useCase.confirm.delete}');|"
-                                       th:text="#{project.action.delete}">
-                                        Eliminar
-                                    </a>
+                                    <form th:if="${canEditEstimationData == true}"
+                                          th:action="@{/projects/{projectId}/use-case-points/modules/{moduleId}/use-cases/{useCaseId}/delete(
+                                              projectId=${project.id},
+                                              moduleId=${module.id},
+                                              useCaseId=${useCase.id})}"
+                                          method="post"
+                                          class="d-inline"
+                                          th:onsubmit="|return confirm('#{ucp.useCase.confirm.delete}');|">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger mb-2"
+                                                th:text="#{project.action.delete}">
+                                            Eliminar
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

@@ -166,7 +166,7 @@ public class UserManagementController {
         return redirectToUsers();
     }
 
-    @GetMapping("/{userId}/delete")
+    @PostMapping("/{userId}/delete")
     public String deleteUser(@PathVariable Long userId) {
         userManagementService.deleteUserForCurrentUser(userId);
         return redirectToUsers();

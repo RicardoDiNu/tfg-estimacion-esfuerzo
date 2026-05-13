@@ -116,14 +116,18 @@
                             </td>
 
                             <td>
-                                <a class="btn btn-sm btn-outline-danger"
-                                   th:href="@{/projects/{projectId}/memberships/{workerId}/remove(
-                                       projectId=${project.id},
-                                       workerId=${membership.worker.id})}"
-                                   th:onclick="|return confirm('#{project.membership.confirm.remove}');|"
-                                   th:text="#{project.membership.action.remove}">
-                                    Quitar
-                                </a>
+                                <form th:action="@{/projects/{projectId}/memberships/{workerId}/remove(
+                                          projectId=${project.id},
+                                          workerId=${membership.worker.id})}"
+                                      method="post"
+                                      class="d-inline"
+                                      th:onsubmit="|return confirm('#{project.membership.confirm.remove}');|">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            th:text="#{project.membership.action.remove}">
+                                        Quitar
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         </tbody>
