@@ -464,7 +464,9 @@
 
     <tbody>
     <tr th:each="assessment : ${analysis.generalSystemCharacteristicAssessments}">
-        <td th:text="${#messages.msg(assessment.characteristicType.messageKey)}">
+        <td th:text="${assessment.customText != null and !#strings.isEmpty(assessment.customText)
+        ? assessment.customText
+        : #messages.msg(assessment.characteristicType.messageKey)}">
             Característica
         </td>
 

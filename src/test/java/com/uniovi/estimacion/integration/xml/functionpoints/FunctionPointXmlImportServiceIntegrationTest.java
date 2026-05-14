@@ -2,6 +2,8 @@ package com.uniovi.estimacion.integration.xml.functionpoints;
 
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.FunctionPointAnalysis;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicType;
 import com.uniovi.estimacion.entities.users.User;
 import com.uniovi.estimacion.entities.users.UserRole;
 import com.uniovi.estimacion.integration.AbstractIntegrationTest;
@@ -198,6 +200,40 @@ class FunctionPointXmlImportServiceIntegrationTest extends AbstractIntegrationTe
             FunctionPointAnalysis analysis =
                     fpAnalysisRepository.findByEstimationProjectId(project.getId()).orElseThrow();
             assertThat(analysis.getUnadjustedFunctionPoints()).isZero();
+        }
+
+        @Test
+        @DisplayName("XML con texto personalizado en GSC conserva el customText")
+        void xmlWithGscCustomTextPreservesCustomText() {
+            // given
+            String customText = "Comunicación personalizada para este análisis";
+
+            String xml = """
+            <functionPointAnalysisExport version="1.0">
+                <systemBoundaryDescription>Sistema de prueba</systemBoundaryDescription>
+                <gscs>
+                    <gsc type="DATA_COMMUNICATIONS" degreeOfInfluence="2">
+                        <customText>Comunicación personalizada para este análisis</customText>
+                    </gsc>
+                </gscs>
+            </functionPointAnalysisExport>
+            """;
+
+            // when
+            fpXmlImportService.importFromXml(project, bytes(xml));
+
+            // then
+            FunctionPointAnalysis analysis = fpAnalysisRepository
+                    .findByEstimationProjectId(project.getId())
+                    .orElseThrow();
+
+            GeneralSystemCharacteristicAssessment gsc =
+                    findGsc(analysis, GeneralSystemCharacteristicType.DATA_COMMUNICATIONS);
+
+            assertThat(gsc.getDegreeOfInfluence()).isEqualTo(2);
+            assertThat(gsc.getCustomText()).isEqualTo(customText);
+            assertThat(analysis.getGeneralSystemCharacteristicAssessments())
+                    .hasSize(GeneralSystemCharacteristicType.values().length);
         }
     }
 
@@ -448,6 +484,28 @@ class FunctionPointXmlImportServiceIntegrationTest extends AbstractIntegrationTe
             assertThatThrownBy(() -> fpXmlImportService.importFromXml(project, bytes(VALID_XML)))
                     .isInstanceOf(InvalidFunctionPointXmlException.class);
         }
+
+        @Test
+        @DisplayName("Texto personalizado de GSC demasiado largo lanza excepción")
+        void gscCustomTextTooLongThrows() {
+            // given
+            String tooLongCustomText = "x".repeat(501);
+
+            String xml = """
+            <functionPointAnalysisExport version="1.0">
+                <systemBoundaryDescription>Sistema de prueba</systemBoundaryDescription>
+                <gscs>
+                    <gsc type="DATA_COMMUNICATIONS" degreeOfInfluence="2">
+                        <customText>%s</customText>
+                    </gsc>
+                </gscs>
+            </functionPointAnalysisExport>
+            """.formatted(tooLongCustomText);
+
+            // when / then
+            assertThatThrownBy(() -> fpXmlImportService.importFromXml(project, bytes(xml)))
+                    .isInstanceOf(InvalidFunctionPointXmlException.class);
+        }
     }
 
     // =========================================================
@@ -495,5 +553,16 @@ class FunctionPointXmlImportServiceIntegrationTest extends AbstractIntegrationTe
 
     private static byte[] bytes(String xml) {
         return xml.getBytes(StandardCharsets.UTF_8);
+    }
+
+    private GeneralSystemCharacteristicAssessment findGsc(
+            FunctionPointAnalysis analysis,
+            GeneralSystemCharacteristicType type
+    ) {
+        return analysis.getGeneralSystemCharacteristicAssessments()
+                .stream()
+                .filter(gsc -> gsc.getCharacteristicType() == type)
+                .findFirst()
+                .orElseThrow();
     }
 }

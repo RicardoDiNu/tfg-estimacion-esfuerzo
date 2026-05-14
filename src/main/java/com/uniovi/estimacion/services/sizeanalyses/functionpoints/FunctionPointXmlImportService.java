@@ -25,6 +25,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class FunctionPointXmlImportService {
 
+    private static final int GSC_CUSTOM_TEXT_MAX_LENGTH = 500;
+
     private static final XmlMapper XML_MAPPER = new XmlMapper();
 
     private final FunctionPointAnalysisRepository functionPointAnalysisRepository;
@@ -340,6 +342,13 @@ public class FunctionPointXmlImportService {
                         gsc.getType()
                 );
             }
+
+            if (gsc.getCustomText() != null && gsc.getCustomText().length() > GSC_CUSTOM_TEXT_MAX_LENGTH) {
+                throw invalidXml(
+                        "fp.import.validation.gsc.customTextTooLong",
+                        gsc.getType()
+                );
+            }
         }
     }
 
@@ -401,24 +410,35 @@ public class FunctionPointXmlImportService {
 
     private void buildGscs(FunctionPointAnalysis analysis,
                            List<FunctionPointGscXmlDto> gscDtos) {
-        Map<GeneralSystemCharacteristicType, Integer> providedDegrees = new HashMap<>();
+        Map<GeneralSystemCharacteristicType, FunctionPointGscXmlDto> providedGscs = new HashMap<>();
 
         if (gscDtos != null) {
             for (FunctionPointGscXmlDto gscDto : gscDtos) {
                 GeneralSystemCharacteristicType type =
                         GeneralSystemCharacteristicType.valueOf(gscDto.getType());
-                providedDegrees.put(type, gscDto.getDegreeOfInfluence());
+
+                providedGscs.put(type, gscDto);
             }
         }
 
         for (GeneralSystemCharacteristicType type : GeneralSystemCharacteristicType.values()) {
-            int degree = providedDegrees.getOrDefault(type, 0);
+            FunctionPointGscXmlDto gscDto = providedGscs.get(type);
+
+            int degree = gscDto != null
+                    ? gscDto.getDegreeOfInfluence()
+                    : 0;
 
             GeneralSystemCharacteristicAssessment assessment =
                     new GeneralSystemCharacteristicAssessment();
+
             assessment.setFunctionPointAnalysis(analysis);
             assessment.setCharacteristicType(type);
             assessment.setDegreeOfInfluence(degree);
+
+            if (gscDto != null) {
+                assessment.setCustomText(normalizeNullableText(gscDto.getCustomText()));
+            }
+
             analysis.getGeneralSystemCharacteristicAssessments().add(assessment);
         }
     }
@@ -553,6 +573,15 @@ public class FunctionPointXmlImportService {
 
     private InvalidFunctionPointXmlException invalidXml(String messageKey, Throwable cause, Object... args) {
         return new InvalidFunctionPointXmlException(resolveMessage(messageKey, args), cause);
+    }
+
+    private String normalizeNullableText(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private String resolveMessage(String messageKey, Object... args) {

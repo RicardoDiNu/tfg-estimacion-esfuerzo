@@ -320,6 +320,62 @@ class FunctionPointAnalysisIntegrationTest extends AbstractIntegrationTest {
             double expectedAfp = 10.0 * expectedVaf; // UFP=10 (ILF AVERAGE), AFP = 10 * 1.35 = 13.5
             assertThat(analysis.getAdjustedFunctionPoints()).isCloseTo(expectedAfp, within(0.001));
         }
+
+        @Test
+        @DisplayName("modificar solo el texto personalizado de una GSC no cambia los resultados PF")
+        void editOnlyGscCustomTextDoesNotChangeCalculatedResults() {
+            // given
+            functionPointAnalysisService.createInitialAnalysis(project, "Límite");
+
+            FunctionPointModule module = createModule("Módulo");
+            UserRequirement req = createRequirement(module, "RU-001", "Req");
+
+            functionPointAnalysisService.addDataFunctionToRequirement(
+                    project.getId(),
+                    req.getId(),
+                    buildDataFunction("ILF Test", DataFunctionType.ILF, FunctionPointComplexity.AVERAGE)
+            );
+
+            FunctionPointAnalysis before = functionPointAnalysisRepository
+                    .findByEstimationProjectId(project.getId())
+                    .orElseThrow();
+
+            Integer initialUfp = before.getUnadjustedFunctionPoints();
+            Integer initialTdi = before.getTotalDegreeOfInfluence();
+            Double initialVaf = before.getValueAdjustmentFactor();
+            Double initialAfp = before.getAdjustedFunctionPoints();
+
+            String customText = "Comunicación de datos adaptada al proyecto";
+
+            FunctionPointAnalysis formAnalysis = buildGscFormAnalysisWithCustomText(
+                    0,
+                    GeneralSystemCharacteristicType.DATA_COMMUNICATIONS,
+                    customText
+            );
+
+            // when
+            boolean updated = functionPointAnalysisService.updateGeneralSystemCharacteristics(
+                    project.getId(),
+                    formAnalysis
+            );
+
+            // then
+            assertThat(updated).isTrue();
+
+            FunctionPointAnalysis after = functionPointAnalysisRepository
+                    .findByEstimationProjectId(project.getId())
+                    .orElseThrow();
+
+            assertThat(after.getUnadjustedFunctionPoints()).isEqualTo(initialUfp);
+            assertThat(after.getTotalDegreeOfInfluence()).isEqualTo(initialTdi);
+            assertThat(after.getValueAdjustmentFactor()).isEqualTo(initialVaf);
+            assertThat(after.getAdjustedFunctionPoints()).isEqualTo(initialAfp);
+
+            GeneralSystemCharacteristicAssessment customizedGsc =
+                    findGsc(after, GeneralSystemCharacteristicType.DATA_COMMUNICATIONS);
+
+            assertThat(customizedGsc.getCustomText()).isEqualTo(customText);
+        }
     }
 
     // =========================================================
@@ -550,5 +606,28 @@ class FunctionPointAnalysisIntegrationTest extends AbstractIntegrationTest {
             form.getRows().add(row);
         }
         return form;
+    }
+
+    private FunctionPointAnalysis buildGscFormAnalysisWithCustomText(
+            int degree,
+            GeneralSystemCharacteristicType targetType,
+            String customText
+    ) {
+        FunctionPointAnalysis formAnalysis = buildGscFormAnalysis(degree);
+
+        findGsc(formAnalysis, targetType).setCustomText(customText);
+
+        return formAnalysis;
+    }
+
+    private GeneralSystemCharacteristicAssessment findGsc(
+            FunctionPointAnalysis analysis,
+            GeneralSystemCharacteristicType type
+    ) {
+        return analysis.getGeneralSystemCharacteristicAssessments()
+                .stream()
+                .filter(gsc -> gsc.getCharacteristicType() == type)
+                .findFirst()
+                .orElseThrow();
     }
 }

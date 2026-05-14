@@ -30,4 +30,7 @@ public class GeneralSystemCharacteristicAssessment {
 
     @Column(nullable = false)
     private Integer degreeOfInfluence;
+
+    @Column(name = "custom_text", length = 500)
+    private String customText;
 }

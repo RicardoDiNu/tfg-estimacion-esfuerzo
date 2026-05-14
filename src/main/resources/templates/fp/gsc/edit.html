@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head}"></head>
+
 <body class="app-page">
 
 <nav th:replace="~{fragments/nav :: nav}"></nav>
@@ -12,18 +13,33 @@
                 <li class="breadcrumb-item">
                     <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
                 </li>
+
                 <li class="breadcrumb-item">
                     <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
                 </li>
+
                 <li class="breadcrumb-item">
-                    <a th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}" th:text="#{fp.details.title}">Análisis PF</a>
+                    <a th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
+                       th:text="#{fp.details.title}">
+                        Análisis PF
+                    </a>
                 </li>
-                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editGsc}">Editar GSC</li>
+
+                <li class="breadcrumb-item active"
+                    aria-current="page"
+                    th:text="#{breadcrumb.editGsc}">
+                    Editar GSC
+                </li>
             </ol>
         </nav>
 
-        <h1 th:text="#{fp.gsc.edit.title}">Editar características generales del sistema</h1>
-        <p th:text="#{fp.gsc.edit.subtitle}">Asigna un valor de 0 a 5 a cada característica</p>
+        <h1 th:text="#{fp.gsc.edit.title}">
+            Editar características generales del sistema
+        </h1>
+
+        <p th:text="#{fp.gsc.edit.subtitle}">
+            Asigna un valor de 0 a 5 a cada característica
+        </p>
 
         <form method="post"
               th:action="@{/projects/{projectId}/function-points/gsc/edit(projectId=${project.id})}"
@@ -38,16 +54,23 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle">
                     <thead>
                     <tr>
-                        <th th:text="#{fp.gsc.field.name}">Característica</th>
-                        <th th:text="#{fp.gsc.field.degree}">Grado de influencia</th>
+                        <th th:text="#{fp.gsc.field.defaultText}">
+                            Texto por defecto
+                        </th>
+                        <th th:text="#{fp.gsc.field.customText}">
+                            Texto personalizado
+                        </th>
+                        <th th:text="#{fp.gsc.field.degree}">
+                            Grado de influencia
+                        </th>
                     </tr>
                     </thead>
+
                     <tbody>
                     <tr th:each="assessment, iterStat : *{generalSystemCharacteristicAssessments}">
-                        <td th:text="${#messages.msg(assessment.characteristicType.messageKey)}">Característica</td>
                         <td>
                             <input type="hidden"
                                    th:field="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].id}"/>
@@ -55,6 +78,37 @@
                             <input type="hidden"
                                    th:field="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].characteristicType}"/>
 
+                            <span th:text="${#messages.msg(assessment.characteristicType.messageKey)}">
+                                Característica
+                            </span>
+                        </td>
+
+                        <td>
+                            <label class="sr-only"
+                                   th:for="|generalSystemCharacteristicAssessments${iterStat.index}.customText|"
+                                   th:text="#{fp.gsc.field.customText}">
+                                Texto personalizado
+                            </label>
+
+                            <textarea class="form-control"
+                                      rows="2"
+                                      maxlength="500"
+                                      th:field="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].customText}"
+                                      th:placeholder="#{fp.gsc.customText.placeholder}">
+                            </textarea>
+
+                            <small class="form-text text-muted"
+                                   th:text="#{fp.gsc.customText.help}">
+                                Deja este campo vacío para usar el texto por defecto.
+                            </small>
+
+                            <span class="text-danger"
+                                  th:if="${#fields.hasErrors('generalSystemCharacteristicAssessments[' + iterStat.index + '].customText')}"
+                                  th:errors="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].customText}">
+                            </span>
+                        </td>
+
+                        <td style="min-width: 160px;">
                             <label class="sr-only"
                                    th:for="|generalSystemCharacteristicAssessments${iterStat.index}.degreeOfInfluence|"
                                    th:text="#{fp.gsc.edit.degreeLabel(${#messages.msg(assessment.characteristicType.messageKey)})}">
@@ -69,7 +123,8 @@
 
                             <span class="text-danger"
                                   th:if="${#fields.hasErrors('generalSystemCharacteristicAssessments[' + iterStat.index + '].degreeOfInfluence')}"
-                                  th:errors="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].degreeOfInfluence}"></span>
+                                  th:errors="*{generalSystemCharacteristicAssessments[__${iterStat.index}__].degreeOfInfluence}">
+                            </span>
                         </td>
                     </tr>
                     </tbody>

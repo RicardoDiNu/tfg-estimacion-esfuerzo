@@ -107,8 +107,11 @@ public class FunctionPointXmlExportService {
 
         for (GeneralSystemCharacteristicAssessment gsc : analysis.getGeneralSystemCharacteristicAssessments()) {
             FunctionPointGscXmlDto gscDto = new FunctionPointGscXmlDto();
+
             gscDto.setType(gsc.getCharacteristicType().name());
             gscDto.setDegreeOfInfluence(gsc.getDegreeOfInfluence());
+            gscDto.setCustomText(normalizeNullableText(gsc.getCustomText()));
+
             gscs.add(gscDto);
         }
 
@@ -180,6 +183,15 @@ public class FunctionPointXmlExportService {
         }
 
         return dtos;
+    }
+
+    private String normalizeNullableText(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private List<FunctionPointTransactionalFunctionXmlDto> buildTransactionalFunctionsDto(
