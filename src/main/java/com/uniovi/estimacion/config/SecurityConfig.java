@@ -1,5 +1,6 @@
 package com.uniovi.estimacion.config;
 
+import com.uniovi.estimacion.entities.users.UserRole;
 import com.uniovi.estimacion.services.users.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +9,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -23,48 +23,47 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Recursos públicos y autenticación
                         .requestMatchers(
                                 "/",
+                                "/about",
+                                "/help",
                                 "/login",
                                 "/signup",
                                 "/logout",
+                                "/error",
+                                "/favicon.ico",
                                 "/css/**",
                                 "/js/**",
-                                "/images/**"
+                                "/images/**",
+                                "/webjars/**"
                         ).permitAll()
 
-                        // 2. Flujo público de estimación temporal / anónima
-                        .requestMatchers(
-                                "/estimate/**"
-                        ).permitAll()
+                        .requestMatchers("/admin/**")
+                        .hasAuthority(UserRole.ROLE_ADMIN.getAuthority())
 
-                        // 3. Rutas solo para admin
-                        .requestMatchers(
-                                "/admin/**",
-                                "/users/**"
-                        ).hasAuthority("ROLE_ADMIN")
+                        .requestMatchers("/users/**")
+                        .hasAnyAuthority(
+                                UserRole.ROLE_ADMIN.getAuthority(),
+                                UserRole.ROLE_PROJECT_MANAGER.getAuthority(),
+                                UserRole.ROLE_USER.getAuthority()
+                        )
 
-                        // 4. Zona autenticada normal
                         .requestMatchers(
-                                "/home",
-                                "/projects/**"
+                                "/projects/**",
+                                "/account/**"
                         ).authenticated()
 
-                        // 5. Lo demás, autenticado por defecto
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/home", true)
+                        .defaultSuccessUrl("/projects", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/")
                         .permitAll()
-                )
-                .csrf(csrf -> csrf.disable())
-                .httpBasic(Customizer.withDefaults());
+                );
 
         return http.build();
     }

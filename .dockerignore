@@ -1,0 +1,12 @@
+.git
+.gitignore
+.idea
+.claude
+.vscode
+target
+*.iml
+*.iws
+*.ipr
+application-local.properties
+HELP.md
+README_DOCKER.md

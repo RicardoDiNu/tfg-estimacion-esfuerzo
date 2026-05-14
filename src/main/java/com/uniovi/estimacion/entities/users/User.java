@@ -28,7 +28,7 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     private UserRole role;
 
     @Column(nullable = false)
@@ -40,6 +40,10 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_manager_id")
+    private User projectManager;
+
     @PrePersist
     public void onCreate() {
         LocalDateTime now = LocalDateTime.now();
@@ -49,7 +53,7 @@ public class User {
             this.enabled = true;
         }
         if (this.role == null) {
-            this.role = UserRole.ROLE_USER;
+            this.role = UserRole.ROLE_PROJECT_MANAGER;
         }
     }
 

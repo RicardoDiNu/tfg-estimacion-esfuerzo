@@ -1,18 +1,158 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{fragments/head :: head}"></head>
+
 <body class="app-page">
 
-<nav th:replace="fragments/nav :: nav"></nav>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
 
 <main class="app-content">
-    <div class="container text-center">
-        <h1 th:text="#{home.title}">Aplicación de estimación de esfuerzo</h1>
-        <p th:text="#{home.subtitle}">Página de inicio del proyecto</p>
+    <div class="container">
+
+        <!-- HERO -->
+        <div class="row justify-content-center text-center mb-5">
+            <div class="col-12 col-lg-9">
+                <h1 class="mb-3" th:text="#{index.title}">
+                    Sistema para estimación en proyectos de software
+                </h1>
+
+                <p class="lead text-muted mb-4" th:text="#{index.subtitle}">
+                    Aplicación web para estimar tamaño, esfuerzo y coste de proyectos software mediante técnicas como Puntos Función, UCP, Delphi y funciones de transformación.
+                </p>
+
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="btn btn-primary mr-2 mb-2"
+                       th:href="@{/login}"
+                       th:text="#{nav.login}">
+                        Iniciar sesión
+                    </a>
+
+                    <a class="btn btn-outline-primary mb-2"
+                       th:href="@{/signup}"
+                       th:text="#{nav.signup}">
+                        Registrarse
+                    </a>
+                </div>
+
+                <div sec:authorize="isAuthenticated()">
+                    <a class="btn btn-primary"
+                       th:href="@{/projects}"
+                       th:text="#{index.action.projects}">
+                        Ir a mis proyectos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- FUNCIONALIDADES -->
+        <div class="row mb-5">
+            <div class="col-12 col-md-6 col-lg-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="#{index.feature.projects.title}">
+                            Gestión de proyectos
+                        </h5>
+                        <p class="card-text text-muted" th:text="#{index.feature.projects.text}">
+                            Crea proyectos de estimación y organiza la información necesaria para aplicar distintas técnicas.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="#{index.feature.size.title}">
+                            Estimación de tamaño
+                        </h5>
+                        <p class="card-text text-muted" th:text="#{index.feature.size.text}">
+                            Calcula el tamaño funcional mediante Puntos Función y Use Case Points.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="#{index.feature.effort.title}">
+                            Conversión a esfuerzo
+                        </h5>
+                        <p class="card-text text-muted" th:text="#{index.feature.effort.text}">
+                            Convierte el tamaño estimado en horas-persona mediante Delphi o funciones de transformación.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-3 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="#{index.feature.cost.title}">
+                            Estimación de coste
+                        </h5>
+                        <p class="card-text text-muted" th:text="#{index.feature.cost.text}">
+                            Obtén una estimación económica a partir del esfuerzo calculado y la tarifa por hora del proyecto.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FLUJO -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{index.workflow.title}">
+                Flujo general de uso
+            </div>
+
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-12 col-md-3 mb-3 mb-md-0">
+                        <h6 class="text-muted" th:text="#{index.workflow.step1.title}">
+                            1. Proyecto
+                        </h6>
+                        <p class="mb-0" th:text="#{index.workflow.step1.text}">
+                            Crea un proyecto de estimación.
+                        </p>
+                    </div>
+
+                    <div class="col-12 col-md-3 mb-3 mb-md-0">
+                        <h6 class="text-muted" th:text="#{index.workflow.step2.title}">
+                            2. Tamaño
+                        </h6>
+                        <p class="mb-0" th:text="#{index.workflow.step2.text}">
+                            Aplica PF o UCP.
+                        </p>
+                    </div>
+
+                    <div class="col-12 col-md-3 mb-3 mb-md-0">
+                        <h6 class="text-muted" th:text="#{index.workflow.step3.title}">
+                            3. Esfuerzo
+                        </h6>
+                        <p class="mb-0" th:text="#{index.workflow.step3.text}">
+                            Usa Delphi o una función.
+                        </p>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <h6 class="text-muted" th:text="#{index.workflow.step4.title}">
+                            4. Coste
+                        </h6>
+                        <p class="mb-0" th:text="#{index.workflow.step4.text}">
+                            Calcula el coste estimado.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </main>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>
 </html>

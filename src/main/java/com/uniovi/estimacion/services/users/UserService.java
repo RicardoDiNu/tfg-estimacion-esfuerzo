@@ -3,7 +3,7 @@ package com.uniovi.estimacion.services.users;
 import com.uniovi.estimacion.entities.users.User;
 import com.uniovi.estimacion.entities.users.UserRole;
 import com.uniovi.estimacion.repositories.users.UserRepository;
-import com.uniovi.estimacion.web.forms.auth.SignUpForm;
+import com.uniovi.estimacion.web.forms.users.SignUpForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -46,7 +46,7 @@ public class UserService {
         user.setUsername(normalize(username));
         user.setEmail(normalize(email));
         user.setPassword(passwordEncoder.encode(rawPassword));
-        user.setRole(role != null ? role : UserRole.ROLE_USER);
+        user.setRole(role != null ? role : UserRole.ROLE_PROJECT_MANAGER);
         user.setEnabled(true);
 
         return userRepository.save(user);
@@ -58,7 +58,8 @@ public class UserService {
         user.setUsername(normalize(form.getUsername()));
         user.setEmail(normalize(form.getEmail()));
         user.setPassword(passwordEncoder.encode(form.getPassword()));
-        user.setRole(UserRole.ROLE_USER);
+        user.setRole(UserRole.ROLE_PROJECT_MANAGER);
+        user.setProjectManager(null);
         user.setEnabled(true);
 
         return userRepository.save(user);

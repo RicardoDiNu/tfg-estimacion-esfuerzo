@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="#{ucp.report.pdf.title}">Informe de análisis Use Case Points</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 22mm 18mm 20mm 18mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #222;
+            line-height: 1.4;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        h2 {
+            font-size: 16.5px;
+            margin-top: 24px;
+            margin-bottom: 9px;
+            border-bottom: 1px solid #cccccc;
+            padding-bottom: 4px;
+        }
+
+        h3 {
+            font-size: 14px;
+            margin-top: 16px;
+            margin-bottom: 7px;
+        }
+
+        h4 {
+            font-size: 13px;
+            margin-top: 11px;
+            margin-bottom: 6px;
+            color: #333333;
+        }
+
+        .muted {
+            color: #666666;
+        }
+
+        .cover-page {
+            page-break-after: always;
+        }
+
+        .header-box {
+            border: 1px solid #dddddd;
+            padding: 13px;
+            margin-bottom: 18px;
+            background: #f7f7f7;
+        }
+
+        .toc {
+            border: 1px solid #dddddd;
+            padding: 18px 20px;
+            margin-top: 18px;
+            margin-bottom: 24px;
+            background: #fafafa;
+        }
+
+        .toc-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 14px;
+        }
+
+        .toc ul {
+            margin: 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .toc li {
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .toc a {
+            color: #222222;
+            text-decoration: none;
+        }
+
+        .toc-sublist {
+            margin-top: 6px;
+            margin-bottom: 8px;
+            padding-left: 22px !important;
+        }
+
+        .toc-sublist li {
+            margin-bottom: 5px;
+            font-size: 12.5px;
+        }
+
+        .field-label {
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            margin-bottom: 14px;
+            font-size: 11.5px;
+        }
+
+        th {
+            background: #eeeeee;
+            font-weight: bold;
+        }
+
+        th, td {
+            border: 1px solid #cccccc;
+            padding: 5.5px 6.5px;
+            vertical-align: top;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .result-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px;
+            margin-top: 6px;
+        }
+
+        .result-box {
+            border: 1px solid #dddddd;
+            padding: 9px;
+            background: #fafafa;
+        }
+
+        .result-value {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .module-block {
+            margin-top: 18px;
+            margin-bottom: 20px;
+            border: 1px solid #d8d8d8;
+            background: #fcfcfc;
+        }
+
+        .module-header {
+            background: #f0f0f0;
+            border-bottom: 1px solid #d8d8d8;
+            padding: 8px 10px;
+        }
+
+        .module-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .module-body {
+            padding: 10px;
+        }
+
+        .module-summary {
+            margin-bottom: 12px;
+            padding: 8px;
+            border: 1px solid #e1e1e1;
+            background: #f8f8f8;
+        }
+
+        .section-label {
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            color: #2f2f2f;
+        }
+
+        .use-case-block {
+            margin-top: 10px;
+            margin-bottom: 14px;
+            padding: 8px 10px;
+            border-left: 4px solid #bdbdbd;
+            background: #fafafa;
+        }
+
+        .use-case-title {
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        .subsection-note {
+            margin-top: 6px;
+            margin-bottom: 4px;
+            font-weight: bold;
+            color: #444444;
+        }
+
+        .footer {
+            margin-top: 24px;
+            font-size: 10px;
+            color: #777777;
+            border-top: 1px solid #dddddd;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="cover-page">
+
+    <h1 th:text="#{ucp.report.pdf.title}">
+        Informe de análisis Use Case Points
+    </h1>
+
+    <p class="muted">
+        <span th:text="#{ucp.report.pdf.generatedAt}">Generado el</span>
+        <span th:text="${generatedAt}">01/01/2026 12:00</span>
+    </p>
+
+    <div class="header-box">
+        <p>
+            <span class="field-label" th:text="#{ucp.report.pdf.project}">Proyecto:</span>
+            <span th:text="${project.name}">Proyecto</span>
+        </p>
+
+        <p>
+            <span class="field-label" th:text="#{ucp.report.pdf.projectManager}">Jefe de proyecto:</span>
+            <span th:text="${project.owner != null ? project.owner.username : '-'}">
+        jefe
+    </span>
+        </p>
+
+        <p th:if="${project.description != null and !#strings.isEmpty(project.description)}">
+            <span class="field-label" th:text="#{ucp.report.pdf.description}">Descripción:</span>
+            <span th:text="${project.description}">Descripción del proyecto</span>
+        </p>
+
+        <p>
+            <span class="field-label" th:text="#{ucp.report.pdf.sizeUnit}">Unidad de tamaño:</span>
+            <span th:text="${analysis.sizeUnitCode}">UCP</span>
+        </p>
+    </div>
+
+    <div class="toc">
+        <div class="toc-title" th:text="#{ucp.report.pdf.tableOfContents}">
+            Tabla de contenidos
+        </div>
+
+        <ul>
+            <li>
+                <a href="#section-results" th:text="#{ucp.report.pdf.toc.results}">
+                    1. Resultados globales
+                </a>
+            </li>
+
+            <li>
+                <a href="#section-context" th:text="#{ucp.report.pdf.toc.context}">
+                    2. Contexto del análisis
+                </a>
+            </li>
+
+            <li>
+                <a href="#section-measurement" th:text="#{ucp.report.pdf.toc.measurement}">
+                    3. Medición UCP
+                </a>
+                <ul class="toc-sublist">
+                    <li>
+                        <a href="#section-actors" th:text="#{ucp.report.pdf.toc.actors}">
+                            3.1. Actores
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#section-usecases" th:text="#{ucp.report.pdf.toc.useCases}">
+                            3.2. Resumen de casos de uso
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#section-technical-factors" th:text="#{ucp.report.pdf.toc.technicalFactors}">
+                            3.3. Factores técnicos
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#section-environmental-factors" th:text="#{ucp.report.pdf.toc.environmentalFactors}">
+                            3.4. Factores ambientales
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a href="#section-modules" th:text="#{ucp.report.pdf.toc.modules}">
+                    4. Módulos del análisis
+                </a>
+                <ul class="toc-sublist">
+                    <li>
+                        <a href="#section-module-detail" th:text="#{ucp.report.pdf.toc.moduleDetail}">
+                            4.1. Detalle estructurado por módulo
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            <li>
+                <a href="#section-conversions" th:text="#{ucp.report.pdf.toc.conversions}">
+                    5. Conversiones a esfuerzo
+                </a>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+<h2 id="section-results" th:text="#{ucp.report.pdf.section.results}">
+    1. Resultados globales
+</h2>
+
+<table class="result-grid">
+    <tr>
+        <td class="result-box">
+            <div class="muted" th:text="#{ucp.report.pdf.uaw}">UAW</div>
+            <div class="result-value" th:text="${results.unadjustedActorWeight}">0</div>
+        </td>
+
+        <td class="result-box">
+            <div class="muted" th:text="#{ucp.report.pdf.uucw}">UUCW</div>
+            <div class="result-value" th:text="${results.unadjustedUseCaseWeight}">0</div>
+        </td>
+    </tr>
+
+    <tr>
+        <td class="result-box">
+            <div class="muted" th:text="#{ucp.report.pdf.tcf}">TCF</div>
+            <div class="result-value"
+                 th:text="${#numbers.formatDecimal(results.technicalComplexityFactor, 1, 2)}">
+                0.00
+            </div>
+        </td>
+
+        <td class="result-box">
+            <div class="muted" th:text="#{ucp.report.pdf.ecf}">ECF</div>
+            <div class="result-value"
+                 th:text="${#numbers.formatDecimal(results.environmentalComplexityFactor, 1, 2)}">
+                0.00
+            </div>
+        </td>
+    </tr>
+
+    <tr>
+        <td class="result-box" colspan="2">
+            <div class="muted" th:text="#{ucp.report.pdf.ucp}">Use Case Points</div>
+            <div class="result-value">
+                <span th:text="${#numbers.formatDecimal(results.adjustedUseCasePoints, 1, 2)}">
+                    0.00
+                </span>
+                <span th:text="${analysis.sizeUnitCode}">UCP</span>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<h2 id="section-context" th:text="#{ucp.report.pdf.section.context}">
+    2. Contexto del análisis
+</h2>
+
+<p>
+    <span class="field-label" th:text="#{ucp.report.pdf.systemBoundary}">Límite del sistema:</span>
+</p>
+
+<p th:text="${analysis.systemBoundaryDescription != null and !#strings.isEmpty(analysis.systemBoundaryDescription) ? analysis.systemBoundaryDescription : '-'}">
+    Límite del sistema
+</p>
+
+<h2 id="section-measurement" th:text="#{ucp.report.pdf.section.measurement}">
+    3. Medición UCP
+</h2>
+
+<h3 id="section-actors" th:text="#{ucp.report.pdf.section.actors}">
+    3.1. Actores
+</h3>
+
+<table th:if="${actors != null and !actors.isEmpty()}">
+    <thead>
+    <tr>
+        <th th:text="#{ucp.report.pdf.name}">Nombre</th>
+        <th th:text="#{ucp.report.pdf.descriptionTableHeader}">Descripción</th>
+        <th th:text="#{ucp.report.pdf.complexity}">Complejidad</th>
+        <th class="text-center" th:text="#{ucp.report.pdf.weight}">Peso</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="actor : ${actors}">
+        <td th:text="${actor.name}">Actor</td>
+        <td th:text="${actor.description != null and !#strings.isEmpty(actor.description) ? actor.description : '-'}">-</td>
+        <td th:text="${#messages.msg(actor.complexity.messageKey)}">Simple</td>
+        <td class="text-center" th:text="${actor.weight}">0</td>
+    </tr>
+    </tbody>
+</table>
+
+<p th:if="${actors == null or actors.isEmpty()}"
+   th:text="#{ucp.report.pdf.noActors}">
+    No hay actores registrados.
+</p>
+
+<h3 id="section-usecases" th:text="#{ucp.report.pdf.section.useCases}">
+    3.2. Resumen de casos de uso
+</h3>
+
+<table>
+    <thead>
+    <tr>
+        <th th:text="#{ucp.report.pdf.complexity}">Complejidad</th>
+        <th class="text-center" th:text="#{ucp.report.pdf.useCaseCount}">Nº casos de uso</th>
+        <th class="text-center" th:text="#{ucp.report.pdf.weightContribution}">Contribución UUCW</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="row : ${results.useCaseBreakdownRows}">
+        <td th:text="${#messages.msg(row['labelKey'])}">Simple</td>
+        <td class="text-center" th:text="${row['totalCount']}">0</td>
+        <td class="text-center" th:text="${row['weightContribution']}">0</td>
+    </tr>
+
+    <tr>
+        <td><strong th:text="#{ucp.report.pdf.total}">Total</strong></td>
+        <td class="text-center" th:text="${results.useCaseBreakdownTotalUseCases}">0</td>
+        <td class="text-center" th:text="${results.useCaseBreakdownTotalWeight}">0</td>
+    </tr>
+    </tbody>
+</table>
+
+<h3 id="section-technical-factors" th:text="#{ucp.report.pdf.section.technicalFactors}">
+    3.3. Factores técnicos
+</h3>
+
+<table>
+    <thead>
+    <tr>
+        <th th:text="#{ucp.report.pdf.factor}">Factor</th>
+        <th class="text-center" th:text="#{ucp.report.pdf.weight}">Peso</th>
+        <th class="text-center" th:text="#{ucp.report.pdf.degreeOfInfluence}">Grado</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="factor : ${technicalFactors}">
+        <td th:text="${#messages.msg(factor.factorType.messageKey)}">Factor</td>
+        <td class="text-center" th:text="${#numbers.formatDecimal(factor.factorType.weight, 1, 2)}">0.00</td>
+        <td class="text-center" th:text="${factor.degreeOfInfluence}">0</td>
+    </tr>
+    </tbody>
+</table>
+
+<h3 id="section-environmental-factors" th:text="#{ucp.report.pdf.section.environmentalFactors}">
+    3.4. Factores ambientales
+</h3>
+
+<table>
+    <thead>
+    <tr>
+        <th th:text="#{ucp.report.pdf.factor}">Factor</th>
+        <th class="text-center" th:text="#{ucp.report.pdf.weight}">Peso</th>
+        <th class="text-center" th:text="#{ucp.report.pdf.degreeOfInfluence}">Grado</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="factor : ${environmentalFactors}">
+        <td th:text="${#messages.msg(factor.factorType.messageKey)}">Factor</td>
+        <td class="text-center" th:text="${#numbers.formatDecimal(factor.factorType.weight, 1, 2)}">0.00</td>
+        <td class="text-center" th:text="${factor.degreeOfInfluence}">0</td>
+    </tr>
+    </tbody>
+</table>
+
+<h2 id="section-modules" th:text="#{ucp.report.pdf.section.modules}">
+    4. Módulos del análisis
+</h2>
+
+<p th:if="${moduleRows == null or moduleRows.isEmpty()}"
+   th:text="#{ucp.report.pdf.noModules}">
+    No hay módulos registrados para este análisis.
+</p>
+
+<table th:if="${moduleRows != null and !moduleRows.isEmpty()}">
+    <thead>
+    <tr>
+        <th th:text="#{ucp.report.pdf.module}">Módulo</th>
+        <th th:text="#{ucp.report.pdf.descriptionTableHeader}">Descripción</th>
+        <th class="text-center" th:text="#{ucp.report.pdf.useCaseWeight}">Peso CU</th>
+        <th class="text-center" th:text="#{ucp.report.pdf.ucp}">UCP</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="row : ${moduleRows}">
+        <td th:text="${row.module.name}">Módulo</td>
+        <td th:text="${row.module.description != null and !#strings.isEmpty(row.module.description) ? row.module.description : '-'}">-</td>
+        <td class="text-center" th:text="${row.useCaseWeight}">0</td>
+        <td class="text-center" th:text="${#numbers.formatDecimal(row.adjustedUseCasePoints, 1, 2)}">0.00</td>
+    </tr>
+    </tbody>
+</table>
+
+<h3 id="section-module-detail" th:text="#{ucp.report.pdf.section.moduleDetail}">
+    4.1. Detalle estructurado por módulo
+</h3>
+
+<div th:if="${moduleRows != null and !moduleRows.isEmpty()}">
+
+    <div class="module-block" th:each="row : ${moduleRows}">
+        <div class="module-header">
+            <p class="module-title" th:text="${row.module.name}">
+                Nombre del módulo
+            </p>
+        </div>
+
+        <div class="module-body">
+
+            <div class="module-summary">
+                <span class="field-label" th:text="#{ucp.report.pdf.description}">Descripción:</span>
+                <span th:text="${row.module.description != null and !#strings.isEmpty(row.module.description) ? row.module.description : '-'}">
+                    Descripción del módulo
+                </span>
+                <br/>
+
+                <span class="field-label" th:text="#{ucp.report.pdf.moduleResult}">Resultado del módulo:</span>
+                <span th:text="${row.useCaseWeight}">0</span>
+                <span th:text="#{ucp.report.pdf.useCaseWeight.short}">peso CU</span>
+                ·
+                <span th:text="${#numbers.formatDecimal(row.adjustedUseCasePoints, 1, 2)}">0.00</span>
+                <span th:text="${analysis.sizeUnitCode}">UCP</span>
+            </div>
+
+            <div class="section-label" th:text="#{ucp.report.pdf.moduleUseCases}">
+                4.1.1. Casos de uso del módulo
+            </div>
+
+            <p th:if="${row.useCases == null or row.useCases.isEmpty()}"
+               th:text="#{ucp.report.pdf.noUseCasesInModule}">
+                No hay casos de uso registrados en este módulo.
+            </p>
+
+            <div th:if="${row.useCases != null and !row.useCases.isEmpty()}">
+                <div class="use-case-block" th:each="useCase : ${row.useCases}">
+                    <div class="use-case-title" th:text="${useCase.name}">
+                        Nombre del caso de uso
+                    </div>
+
+                    <table>
+                        <tbody>
+                        <tr>
+                            <th style="width: 28%;" th:text="#{ucp.report.pdf.associatedActors}">
+                                Actores asociados
+                            </th>
+                            <td>
+                                <span th:if="${useCase.actors == null or useCase.actors.isEmpty()}">-</span>
+
+                                <span th:if="${useCase.actors != null and !useCase.actors.isEmpty()}"
+                                      th:each="actor, stat : ${useCase.actors}">
+                                    <span th:text="${actor.name}">Actor</span><span th:if="${!stat.last}">, </span>
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.descriptionTableHeader}">Descripción</th>
+                            <td th:text="${useCase.description != null and !#strings.isEmpty(useCase.description) ? useCase.description : '-'}">
+                                -
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.triggerCondition}">Condición de inicio</th>
+                            <td th:text="${useCase.triggerCondition != null and !#strings.isEmpty(useCase.triggerCondition) ? useCase.triggerCondition : '-'}">
+                                -
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.preconditions}">Precondiciones</th>
+                            <td th:text="${useCase.preconditions != null and !#strings.isEmpty(useCase.preconditions) ? useCase.preconditions : '-'}">
+                                -
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.postconditions}">Postcondiciones</th>
+                            <td th:text="${useCase.postconditions != null and !#strings.isEmpty(useCase.postconditions) ? useCase.postconditions : '-'}">
+                                -
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.normalFlow}">Flujo normal</th>
+                            <td th:text="${useCase.normalFlow != null and !#strings.isEmpty(useCase.normalFlow) ? useCase.normalFlow : '-'}">
+                                -
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.alternativeFlows}">Flujos alternativos</th>
+                            <td th:text="${useCase.alternativeFlows != null and !#strings.isEmpty(useCase.alternativeFlows) ? useCase.alternativeFlows : '-'}">
+                                -
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.exceptionFlows}">Excepciones</th>
+                            <td th:text="${useCase.exceptionFlows != null and !#strings.isEmpty(useCase.exceptionFlows) ? useCase.exceptionFlows : '-'}">
+                                -
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.transactionCount}">Número de transacciones</th>
+                            <td th:text="${useCase.transactionCount != null ? useCase.transactionCount : '-'}">
+                                -
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.complexity}">Complejidad</th>
+                            <td th:text="${#messages.msg(useCase.complexity.messageKey)}">
+                                Complejidad
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th th:text="#{ucp.report.pdf.weight}">Peso</th>
+                            <td th:text="${useCase.weight}">
+                                0
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<h2 id="section-conversions" th:text="#{ucp.report.pdf.section.conversions}">
+    5. Conversiones a esfuerzo
+</h2>
+
+<p th:if="${activeUseCasePointDelphi == null}" th:text="#{ucp.report.pdf.noDelphi}">
+    No hay una conversión Delphi activa para este análisis.
+</p>
+
+<div th:if="${activeUseCasePointDelphi != null}">
+    <table>
+        <tbody>
+        <tr>
+            <th style="width: 35%;" th:text="#{ucp.report.pdf.status}">Estado</th>
+            <td>
+                <span th:if="${activeUseCasePointDelphi.regressionIntercept == null}"
+                      th:text="#{ucp.report.pdf.inProgress}">
+                    En progreso
+                </span>
+                <span th:if="${activeUseCasePointDelphi.regressionIntercept != null}"
+                      th:text="#{ucp.report.pdf.finished}">
+                    Finalizada
+                </span>
+            </td>
+        </tr>
+
+        <tr>
+            <th th:text="#{ucp.report.pdf.registeredIterations}">Iteraciones registradas</th>
+            <td th:text="${activeUseCasePointDelphiIterationsCount}">0</td>
+        </tr>
+
+        <tr>
+            <th th:text="#{ucp.report.pdf.maximumIterations}">Número máximo de iteraciones</th>
+            <td th:text="${activeUseCasePointDelphi.maximumIterations}">0</td>
+        </tr>
+
+        <tr>
+            <th th:text="#{ucp.report.pdf.acceptableDeviation}">Desviación aceptable</th>
+            <td>
+                <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.acceptableDeviationPercentage, 1, 2)}">
+                    0.00
+                </span>
+                %
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${activeUseCasePointDelphi.regressionIntercept != null}">
+        <h4 th:text="#{ucp.report.pdf.delphiResult}">Resultado Delphi</h4>
+
+        <table>
+            <tbody>
+            <tr>
+                <th style="width: 35%;" th:text="#{ucp.report.pdf.estimatedTotalEffort}">
+                    Esfuerzo estimado total
+                </th>
+                <td>
+                    <span th:if="${useCasePointDelphiEstimatedTotalHours != null}">
+                        <span th:text="${#numbers.formatDecimal(useCasePointDelphiEstimatedTotalHours, 1, 2)}">0.00</span>
+                        <span th:text="#{ucp.report.pdf.hoursPersonUnit}">H-Persona</span>
+                    </span>
+                    <span th:if="${useCasePointDelphiEstimatedTotalHours == null}">-</span>
+                </td>
+            </tr>
+
+            <tr>
+                <th th:text="#{ucp.report.pdf.estimatedCost}">Coste estimado</th>
+                <td>
+                    <span th:if="${useCasePointDelphiEstimatedCost != null}">
+                        <span th:text="${#numbers.formatDecimal(useCasePointDelphiEstimatedCost, 1, 2)}">0.00</span>
+                        <span th:text="${project.currencyCode}">EUR</span>
+                    </span>
+                    <span th:if="${useCasePointDelphiEstimatedCost == null}">-</span>
+                </td>
+            </tr>
+
+            <tr>
+                <th th:text="#{ucp.report.pdf.resultingFunction}">Función resultante</th>
+                <td>
+                    E =
+                    <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.regressionIntercept, 1, 2)}">0.00</span>
+                    +
+                    <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.regressionSlope, 1, 2)}">0.00</span>
+                    ×
+                    <span th:text="${analysis.sizeUnitCode}">UCP</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<h3 th:text="#{ucp.report.pdf.section.transformation}">
+    5.1. Conversión mediante función de transformación
+</h3>
+
+<p th:if="${activeUseCasePointTransformationConversion == null}"
+   th:text="#{ucp.report.pdf.noTransformation}">
+    No hay una conversión mediante función de transformación activa para este análisis.
+</p>
+
+<div th:if="${activeUseCasePointTransformationConversion != null}">
+    <table>
+        <tbody>
+        <tr>
+            <th style="width: 35%;" th:text="#{ucp.report.pdf.appliedFunction}">
+                Función aplicada
+            </th>
+            <td th:text="${activeUseCasePointTransformationConversion.functionNameSnapshot}">
+                Función
+            </td>
+        </tr>
+
+        <tr>
+            <th th:text="#{ucp.report.pdf.formula}">Fórmula</th>
+            <td>
+                E =
+                <span th:text="${#numbers.formatDecimal(activeUseCasePointTransformationConversion.interceptSnapshot, 1, 2)}">0.00</span>
+                +
+                <span th:text="${#numbers.formatDecimal(activeUseCasePointTransformationConversion.slopeSnapshot, 1, 2)}">0.00</span>
+                ×
+                <span th:text="${analysis.sizeUnitCode}">UCP</span>
+            </td>
+        </tr>
+
+        <tr>
+            <th th:text="#{ucp.report.pdf.estimatedTotalEffort}">Esfuerzo estimado total</th>
+            <td>
+                <span th:if="${useCasePointTransformationEstimatedHours != null}">
+                    <span th:text="${#numbers.formatDecimal(useCasePointTransformationEstimatedHours, 1, 2)}">0.00</span>
+                    <span th:text="#{ucp.report.pdf.hoursPersonUnit}">H-Persona</span>
+                </span>
+                <span th:if="${useCasePointTransformationEstimatedHours == null}">-</span>
+            </td>
+        </tr>
+
+        <tr>
+            <th th:text="#{ucp.report.pdf.estimatedCost}">Coste estimado</th>
+            <td>
+                <span th:if="${useCasePointTransformationEstimatedCost != null}">
+                    <span th:text="${#numbers.formatDecimal(useCasePointTransformationEstimatedCost, 1, 2)}">0.00</span>
+                    <span th:text="${project.currencyCode}">EUR</span>
+                </span>
+                <span th:if="${useCasePointTransformationEstimatedCost == null}">-</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="footer" th:text="#{ucp.report.pdf.footer}">
+    Sistema para estimación en proyectos de software · Informe generado automáticamente.
+</div>
+
+</body>
+</html>

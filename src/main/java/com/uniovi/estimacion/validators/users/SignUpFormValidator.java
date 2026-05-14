@@ -1,7 +1,7 @@
 package com.uniovi.estimacion.validators.users;
 
 import com.uniovi.estimacion.services.users.UserService;
-import com.uniovi.estimacion.web.forms.auth.SignUpForm;
+import com.uniovi.estimacion.web.forms.users.SignUpForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

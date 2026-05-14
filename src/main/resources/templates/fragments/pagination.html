@@ -7,9 +7,8 @@
 
         <li class="page-item" th:classappend="${page.number == 0} ? 'disabled'">
             <a class="page-link"
-               th:href="@{'?page=0&size=' + ${page.size}}">
-                Primera
-            </a>
+               th:href="@{'?page=0&size=' + ${page.size}}"
+               th:text="#{pagination.first}">Primera</a>
         </li>
 
         <li class="page-item" th:if="${page.number - 1 >= 0}">
@@ -38,9 +37,8 @@
 
         <li class="page-item" th:classappend="${page.number == page.totalPages - 1} ? 'disabled'">
             <a class="page-link"
-               th:href="@{'?page=' + ${page.totalPages - 1} + '&size=' + ${page.size}}">
-                Última
-            </a>
+               th:href="@{'?page=' + ${page.totalPages - 1} + '&size=' + ${page.size}}"
+               th:text="#{pagination.last}">Última</a>
         </li>
     </ul>
 </div>

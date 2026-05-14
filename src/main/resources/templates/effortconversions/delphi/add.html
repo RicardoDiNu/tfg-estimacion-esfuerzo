@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container"
+         th:with="sizeUnitLabel=${#messages.msgOrNull('size.unit.' + analysis.sizeUnitCode) != null ? #messages.msg('size.unit.' + analysis.sizeUnitCode) : analysis.sizeUnitCode}">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:if="${sourceTechniqueCode == 'FUNCTION_POINTS'}"
+                       th:href="@{/projects/{pid}/function-points(pid=${project.id})}"
+                       th:text="#{fp.details.title}">Análisis PF</a>
+                    <a th:if="${sourceTechniqueCode == 'USE_CASE_POINTS'}"
+                       th:href="@{/projects/{pid}/use-case-points(pid=${project.id})}"
+                       th:text="#{ucp.details.title}">Análisis UCP</a>
+                    <span th:if="${sourceTechniqueCode != 'FUNCTION_POINTS' and sourceTechniqueCode != 'USE_CASE_POINTS'}"
+                          th:text="#{breadcrumb.sizeAnalysis}">Análisis de tamaño</span>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.createDelphi}">Crear conversión Delphi</li>
+            </ol>
+        </nav>
+
+        <h1 th:text="#{delphi.add.title}">Iniciar conversión Delphi</h1>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{delphi.add.sourceAnalysis.title}">Análisis de tamaño origen</div>
+            <div class="card-body">
+                <p>
+                    <strong th:text="#{delphi.details.projectName}">Nombre del proyecto</strong>:
+                    <span th:text="${project.name}">Proyecto</span>
+                </p>
+
+                <p>
+                    <strong th:text="#{delphi.details.sourceTechnique}">Técnica origen</strong>:
+                    <span th:text="${#messages.msgOrNull('technique.' + analysis.techniqueCode) != null ? #messages.msg('technique.' + analysis.techniqueCode) : analysis.techniqueCode}">
+                        Puntos Función
+                    </span>
+                </p>
+
+                <p>
+                    <strong th:text="#{delphi.details.sourceUnit}">Unidad</strong>:
+                    <span th:text="${sizeUnitLabel}">PF</span>
+                </p>
+
+                <p class="mb-0">
+                    <strong th:text="#{delphi.details.projectSize}">Tamaño del proyecto</strong>:
+                    <span th:text="${#numbers.formatDecimal(analysis.calculatedSizeValue, 1, 2)}">0.00</span>
+                    <span th:text="${sizeUnitLabel}">PF</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{delphi.add.modules.title}">Módulos y tamaños</div>
+            <div class="card-body">
+                <div th:if="${moduleResults == null or moduleResults.isEmpty()}"
+                     class="alert alert-light border mb-0"
+                     th:text="#{delphi.add.modules.empty}">
+                    No hay módulos registrados.
+                </div>
+
+                <div class="table-responsive" th:if="${moduleResults != null and !moduleResults.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{fp.modules.field.name}">Nombre</th>
+                            <th th:text="#{delphi.add.modules.size}">Tamaño</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="moduleResult : ${moduleResults}">
+                            <td th:text="${moduleResult.moduleName}">
+                                Módulo
+                            </td>
+                            <td>
+                                <span th:text="${#numbers.formatDecimal(moduleResult.size, 1, 2)}">
+                                    0.00
+                                </span>
+                                <span th:text="${analysis.sizeUnitCode}">
+                                    UCP
+                                </span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:unless="${canStartDelphi}"
+                     class="alert alert-warning mt-3 mb-0"
+                     th:text="#{delphi.add.modules.validationError}">
+                    Delphi necesita al menos dos módulos distintos con tamaño positivo y diferente.
+                </div>
+            </div>
+        </div>
+
+        <form method="post"
+              th:action="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/add(projectId=${project.id}, sourceTechniqueCode=${sourceTechniqueCode})}"
+              th:object="${createForm}">
+
+            <div class="form-group">
+                <label for="acceptableDeviationPercentage" th:text="#{delphi.add.field.acceptableDeviationPercentage}">
+                    Desviación aceptable (%)
+                </label>
+                <input id="acceptableDeviationPercentage"
+                       type="number"
+                       class="form-control"
+                       th:field="*{acceptableDeviationPercentage}"
+                       min="0.01"
+                       max="100"
+                       step="0.01">
+                <small class="form-text text-muted"
+                       th:text="#{delphi.field.acceptableDeviationPercentage.help}">
+                    Porcentaje máximo de dispersión permitido entre expertos para considerar que la iteración ha convergido.
+                </small>
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('acceptableDeviationPercentage')}"
+                      th:errors="*{acceptableDeviationPercentage}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="maximumIterations" th:text="#{delphi.field.maximumIterations}">
+                    Número máximo de iteraciones
+                </label>
+                <input id="maximumIterations"
+                       type="number"
+                       class="form-control"
+                       th:field="*{maximumIterations}"
+                       min="1"
+                       step="1">
+                <small class="form-text text-muted"
+                       th:text="#{delphi.field.maximumIterations.help}">
+                    Número máximo de rondas Delphi antes de cerrar la conversión aunque no se alcance la desviación objetivo.
+                </small>
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('maximumIterations')}"
+                      th:errors="*{maximumIterations}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="expertCount" th:text="#{delphi.field.expertCount}">
+                    Número de expertos
+                </label>
+                <input id="expertCount"
+                       type="number"
+                       class="form-control"
+                       th:field="*{expertCount}"
+                       min="2"
+                       step="1">
+                <small class="form-text text-muted"
+                       th:text="#{delphi.field.expertCount.help}">
+                    Número de expertos que participarán en cada iteración. El mínimo recomendable es 3.
+                </small>
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('expertCount')}"
+                      th:errors="*{expertCount}"></span>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary mr-2"
+                    th:disabled="${!canStartDelphi}"
+                    th:text="#{delphi.add.submit}">
+                Crear conversión
+            </button>
+
+            <a class="btn btn-secondary"
+               th:href="${sourceAnalysisDetailsPath}"
+               th:text="#{common.action.back}">
+                Volver
+            </a>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

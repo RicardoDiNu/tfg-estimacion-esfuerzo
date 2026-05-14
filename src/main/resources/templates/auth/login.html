@@ -9,11 +9,25 @@
     <div class="container">
         <h2 th:text="#{login.title}">Identifícate</h2>
 
-        <div class="alert alert-success" th:if="${param.signupSuccess}">
+        <div class="alert alert-success"
+             th:if="${param.signupSuccess}"
+             th:text="#{auth.signup.success}">
             Cuenta creada correctamente. Ya puedes iniciar sesión.
         </div>
 
-        <form class="form-horizontal" method="post" action="/login">
+        <div class="alert alert-danger"
+             th:if="${param.error}"
+             th:text="#{login.error}">
+            Usuario o contraseña incorrectos.
+        </div>
+
+        <div class="alert alert-info"
+             th:if="${param.logout}"
+             th:text="#{login.logoutSuccess}">
+            Has cerrado sesión correctamente.
+        </div>
+
+        <form class="form-horizontal" method="post" th:action="@{/login}">
             <div class="form-group">
                 <label class="control-label col-sm-2" for="username" th:text="#{login.username}">Usuario</label>
                 <div class="col-sm-10">

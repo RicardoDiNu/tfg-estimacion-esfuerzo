@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container-fluid fp-analysis-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}" th:text="#{fp.details.title}">Análisis PF</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/function-points/modules/{moduleId}(projectId=${project.id},moduleId=${module.id})}" th:text="${module.name}">Módulo</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${requirement.identifier}">Requisito</li>
+            </ol>
+        </nav>
+
+        <h1 th:text="#{requirement.details.title}">Detalle del requisito de usuario</h1>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{requirement.details.data}">Datos del requisito</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.name}">Proyecto</h6>
+                    <p class="card-text mb-0" th:text="${project.name}">Proyecto</p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{fp.modules.field.name}">Módulo</h6>
+                    <p class="card-text mb-0" th:text="${module.name}">Módulo</p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{requirement.field.identifier}">Identificador</h6>
+                    <p class="card-text mb-0"
+                       th:text="${requirement.identifier != null and !#strings.isEmpty(requirement.identifier) ? requirement.identifier : '-'}">
+                        RU-01
+                    </p>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="text-muted" th:text="#{requirement.field.statement}">Requisito</h6>
+                    <p class="card-text mb-0"
+                       th:text="${requirement.statement != null and !#strings.isEmpty(requirement.statement) ? requirement.statement : '-'}">
+                        Requisito
+                    </p>
+                </div>
+
+                <a class="btn btn-outline-primary mr-2"
+                   th:if="${canEditEstimationData}"
+                   th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/edit/{requirementId}(
+                       projectId=${project.id},
+                       moduleId=${module.id},
+                       requirementId=${requirement.id})}"
+                   th:text="#{requirement.action.edit}">
+                    Editar requisito
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- FUNCIONES DE DATOS -->
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4" id="data-functions-container" th:fragment="dataFunctionsSection">
+                    <div class="card-header" th:text="#{requirement.decompose.dataFunctions}">Funciones de datos derivadas</div>
+                    <div class="card-body">
+
+                        <div class="mb-3" th:if="${canEditEstimationData}">
+                            <a class="btn btn-outline-primary"
+                               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/add(
+                                   projectId=${project.id},
+                                   moduleId=${module.id},
+                                   requirementId=${requirement.id})}"
+                               th:text="#{requirement.decompose.addDataFunction}">
+                                Añadir función de datos
+                            </a>
+                        </div>
+
+                        <div th:if="${dataFunctionsList == null or dataFunctionsList.isEmpty()}"
+                             class="alert alert-light border mb-0"
+                             th:text="#{requirement.decompose.emptyDataFunctions}">
+                            No hay funciones de datos derivadas todavía.
+                        </div>
+
+                        <div class="table-responsive"
+                             th:if="${dataFunctionsList != null and !dataFunctionsList.isEmpty()}">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th th:text="#{fp.dataFunction.field.type}">Tipo</th>
+                                    <th th:text="#{fp.dataFunction.field.name}">Nombre</th>
+                                    <th th:text="#{fp.dataFunction.field.complexity}">Complejidad</th>
+                                    <th th:text="#{fp.dataFunction.field.weight}">Peso</th>
+                                    <th class="text-right"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="dataFunction : ${dataFunctionsList}">
+                                    <td th:text="${dataFunction.type}">ILF</td>
+                                    <td th:text="${dataFunction.name}">Clientes</td>
+                                    <td th:text="${#messages.msg('fp.complexity.' + #strings.toLowerCase(dataFunction.complexity.name()))}">Media</td>
+                                    <td th:text="${dataFunction.weight}">10</td>
+                                    <td th:if="${canEditEstimationData}">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <a class="btn btn-sm btn-outline-secondary mr-2 mb-2"
+                                               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/edit/{dataFunctionId}(
+                                                   projectId=${project.id},
+                                                   moduleId=${module.id},
+                                                   requirementId=${requirement.id},
+                                                   dataFunctionId=${dataFunction.id})}"
+                                               th:text="#{project.action.edit}">
+                                                Editar
+                                            </a>
+
+                                            <form th:action="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/delete/{dataFunctionId}(
+                                                      projectId=${project.id},
+                                                      moduleId=${module.id},
+                                                      requirementId=${requirement.id},
+                                                      dataFunctionId=${dataFunction.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger mb-2"
+                                                        th:text="#{project.action.delete}">
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-center mt-4" th:if="${dataFunctionsPage.totalPages > 1}">
+                            <ul class="pagination justify-content-center mb-0">
+
+                                <li class="page-item" th:classappend="${dataFunctionsPage.number == 0} ? 'disabled'">
+                                    <a class="page-link data-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=0,
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=0,
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:text="#{pagination.first}">
+                                        Primera
+                                    </a>
+                                </li>
+
+                                <li class="page-item" th:if="${dataFunctionsPage.number - 1 >= 0}">
+                                    <a class="page-link data-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsPage.number - 1},
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsPage.number - 1},
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:text="${dataFunctionsPage.number}">
+                                        1
+                                    </a>
+                                </li>
+
+                                <li class="page-item active">
+                                    <a class="page-link data-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsPage.number},
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsPage.number},
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:text="${dataFunctionsPage.number + 1}">
+                                        2
+                                    </a>
+                                </li>
+
+                                <li class="page-item" th:if="${dataFunctionsPage.number + 1 <= dataFunctionsPage.totalPages - 1}">
+                                    <a class="page-link data-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsPage.number + 1},
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsPage.number + 1},
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:text="${dataFunctionsPage.number + 2}">
+                                        3
+                                    </a>
+                                </li>
+
+                                <li class="page-item" th:classappend="${dataFunctionsPage.number == dataFunctionsPage.totalPages - 1} ? 'disabled'">
+                                    <a class="page-link data-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/data-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsPage.totalPages - 1},
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsPage.totalPages - 1},
+                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                       th:text="#{pagination.last}">
+                                        Última
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- FUNCIONES TRANSACCIONALES -->
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4" id="transactional-functions-container" th:fragment="transactionalFunctionsSection">
+                    <div class="card-header" th:text="#{requirement.decompose.transactionalFunctions}">Funciones transaccionales derivadas</div>
+                    <div class="card-body">
+
+                        <div class="mb-3" th:if="${canEditEstimationData}">
+                            <a class="btn btn-outline-primary"
+                               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/add(
+                                   projectId=${project.id},
+                                   moduleId=${module.id},
+                                   requirementId=${requirement.id})}"
+                               th:text="#{requirement.decompose.addTransactionalFunction}">
+                                Añadir función transaccional
+                            </a>
+                        </div>
+
+                        <div th:if="${transactionalFunctionsList == null or transactionalFunctionsList.isEmpty()}"
+                             class="alert alert-light border mb-0"
+                             th:text="#{requirement.decompose.emptyTransactionalFunctions}">
+                            No hay funciones transaccionales derivadas todavía.
+                        </div>
+
+                        <div class="table-responsive"
+                             th:if="${transactionalFunctionsList != null and !transactionalFunctionsList.isEmpty()}">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th th:text="#{fp.transactionalFunction.field.type}">Tipo</th>
+                                    <th th:text="#{fp.transactionalFunction.field.name}">Nombre</th>
+                                    <th th:text="#{fp.transactionalFunction.field.complexity}">Complejidad</th>
+                                    <th th:text="#{fp.transactionalFunction.field.weight}">Peso</th>
+                                    <th class="text-right"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="transactionalFunction : ${transactionalFunctionsList}">
+                                    <td th:text="${transactionalFunction.type}">EI</td>
+                                    <td th:text="${transactionalFunction.name}">Alta cliente</td>
+                                    <td th:text="${#messages.msg('fp.complexity.' + #strings.toLowerCase(transactionalFunction.complexity.name()))}">Media</td>
+                                    <td th:text="${transactionalFunction.weight}">4</td>
+                                    <td th:if="${canEditEstimationData}">
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <a class="btn btn-sm btn-outline-secondary mr-2 mb-2"
+                                               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/edit/{transactionalFunctionId}(
+                                                   projectId=${project.id},
+                                                   moduleId=${module.id},
+                                                   requirementId=${requirement.id},
+                                                   transactionalFunctionId=${transactionalFunction.id})}"
+                                               th:text="#{project.action.edit}">
+                                                Editar
+                                            </a>
+
+                                            <form th:action="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/delete/{transactionalFunctionId}(
+                                                      projectId=${project.id},
+                                                      moduleId=${module.id},
+                                                      requirementId=${requirement.id},
+                                                      transactionalFunctionId=${transactionalFunction.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger mb-2"
+                                                        th:text="#{project.action.delete}">
+                                                    Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-center mt-4" th:if="${transactionalFunctionsPage.totalPages > 1}">
+                            <ul class="pagination justify-content-center mb-0">
+
+                                <li class="page-item" th:classappend="${transactionalFunctionsPage.number == 0} ? 'disabled'">
+                                    <a class="page-link transactional-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=0)}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=0)}"
+                                       th:text="#{pagination.first}">
+                                        Primera
+                                    </a>
+                                </li>
+
+                                <li class="page-item" th:if="${transactionalFunctionsPage.number - 1 >= 0}">
+                                    <a class="page-link transactional-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.number - 1})}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.number - 1})}"
+                                       th:text="${transactionalFunctionsPage.number}">
+                                        1
+                                    </a>
+                                </li>
+
+                                <li class="page-item active">
+                                    <a class="page-link transactional-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
+                                       th:text="${transactionalFunctionsPage.number + 1}">
+                                        2
+                                    </a>
+                                </li>
+
+                                <li class="page-item" th:if="${transactionalFunctionsPage.number + 1 <= transactionalFunctionsPage.totalPages - 1}">
+                                    <a class="page-link transactional-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.number + 1})}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.number + 1})}"
+                                       th:text="${transactionalFunctionsPage.number + 2}">
+                                        3
+                                    </a>
+                                </li>
+
+                                <li class="page-item" th:classappend="${transactionalFunctionsPage.number == transactionalFunctionsPage.totalPages - 1} ? 'disabled'">
+                                    <a class="page-link transactional-functions-page-link"
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}/transactional-functions/update(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}"
+                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/{requirementId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id},
+                                           requirementId=${requirement.id},
+                                           requirementsPage=${requirementsPage},
+                                           dataFunctionsPage=${dataFunctionsCurrentPage},
+                                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}"
+                                       th:text="#{pagination.last}">
+                                        Última
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <form th:if="${canEditEstimationData}"
+                  th:action="@{/projects/{projectId}/function-points/modules/{moduleId}/requirements/delete/{requirementId}(
+                      projectId=${project.id},
+                      moduleId=${module.id},
+                      requirementId=${requirement.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{requirement.confirm.delete}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{project.action.delete}">
+                    Eliminar requisito
+                </button>
+            </form>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/function-points/modules/{moduleId}(
+                   projectId=${project.id},
+                   moduleId=${module.id})}"
+               th:text="#{requirement.details.backToModule}">
+                Volver al módulo
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

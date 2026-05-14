@@ -7,98 +7,223 @@
 
 <main class="app-content">
     <div class="container-fluid fp-analysis-container">
-        <h1 class="mb-4">Análisis PF</h1>
 
-        <!-- CONTEXTO DEL ANÁLISIS -->
-        <div class="card mb-4">
-            <div class="card-header">Contexto del análisis</div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <a class="btn btn-outline-primary"
-                       th:href="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}">
-                        Editar análisis
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{nav.projects}">
+                        Proyectos
                     </a>
-                </div>
+                </li>
 
-                <div class="fp-context-item mb-3">
-                    <h6 class="text-muted">Proyecto</h6>
-                    <p class="card-text mb-1" th:text="${project.name}">Proyecto</p>
-                    <p class="card-text text-muted mb-0"
-                       th:if="${project.description != null and !#strings.isEmpty(project.description)}"
-                       th:text="${project.description}">
-                        Descripción del proyecto
-                    </p>
-                </div>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}"
+                       th:text="${project.name}">
+                        Proyecto
+                    </a>
+                </li>
 
-                <div class="fp-context-item pt-3 border-top">
-                    <h6 class="text-muted">Límite del sistema</h6>
-                    <p class="card-text mb-0"
-                       th:text="${analysis.systemBoundaryDescription != null and !#strings.isEmpty(analysis.systemBoundaryDescription) ? analysis.systemBoundaryDescription : '-'}">
-                        Descripción del límite del sistema
-                    </p>
+                <li class="breadcrumb-item active"
+                    aria-current="page"
+                    th:text="#{fp.details.title}">
+                    Análisis PF
+                </li>
+            </ol>
+        </nav>
+
+        <h1 class="mb-4" th:text="#{fp.details.title}">Análisis PF</h1>
+
+        <!-- CONTEXTO DEL ANÁLISIS + MATRIZ DE PESOS -->
+        <div class="row mb-4">
+
+            <!-- CONTEXTO DEL ANÁLISIS -->
+            <div class="col-12 col-xl-6 mb-4 mb-xl-0">
+                <div class="card h-100">
+                    <div class="card-header" th:text="#{fp.details.context}">
+                        Contexto del análisis
+                    </div>
+
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary mr-2"
+                               th:if="${canEditEstimationData}"
+                               th:href="@{/projects/{projectId}/function-points/edit(projectId=${project.id})}"
+                               th:text="#{fp.details.editAnalysis}">
+                                Editar análisis
+                            </a>
+                        </div>
+
+                        <div class="fp-context-item mb-3">
+                            <h6 class="text-muted" th:text="#{fp.details.project}">
+                                Proyecto
+                            </h6>
+
+                            <p class="card-text mb-1" th:text="${project.name}">
+                                Proyecto
+                            </p>
+
+                            <p class="card-text text-muted mb-0"
+                               th:if="${project.description != null and !#strings.isEmpty(project.description)}"
+                               th:text="${project.description}">
+                                Descripción del proyecto
+                            </p>
+                        </div>
+
+                        <div class="fp-context-item pt-3 border-top">
+                            <h6 class="text-muted" th:text="#{fp.field.systemBoundary}">
+                                Límite del sistema
+                            </h6>
+
+                            <p class="card-text mb-0"
+                               th:text="${analysis.systemBoundaryDescription != null and !#strings.isEmpty(analysis.systemBoundaryDescription) ? analysis.systemBoundaryDescription : '-'}">
+                                Descripción del límite del sistema
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- MATRIZ DE PESOS DE FUNCIONES -->
+            <div class="col-12 col-xl-6">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                <span th:text="#{fp.weights.details.title}">
+                    Matriz de pesos de funciones
+                </span>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary"
+                               th:if="${canManageProject}"
+                               th:href="@{/projects/{projectId}/function-points/weights/edit(projectId=${project.id})}"
+                               th:text="#{fp.weights.edit.button}">
+                                Editar matriz de pesos de funciones
+                            </a>
+                        </div>
+
+                        <div th:if="${weightMatrixForm == null or weightMatrixForm.rows == null or weightMatrixForm.rows.isEmpty()}"
+                             class="alert alert-light border mb-0"
+                             th:text="#{fp.weights.details.empty}">
+                            No hay matriz de pesos configurada para este análisis.
+                        </div>
+
+                        <div class="table-responsive"
+                             th:if="${weightMatrixForm != null and weightMatrixForm.rows != null and !weightMatrixForm.rows.isEmpty()}">
+
+                            <table class="table table-bordered table-sm text-center align-middle mb-0 fp-weight-matrix-compact">
+                                <thead>
+                                <tr>
+                                    <th class="text-left" th:text="#{fp.weights.field.functionType}">
+                                        Tipo funcional
+                                    </th>
+                                    <th th:text="#{fp.complexity.low}">
+                                        Simple
+                                    </th>
+                                    <th th:text="#{fp.complexity.average}">
+                                        Media
+                                    </th>
+                                    <th th:text="#{fp.complexity.high}">
+                                        Compleja
+                                    </th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr th:each="row : ${weightMatrixForm.rows}">
+                                    <td class="text-left">
+                                        <strong th:text="${#messages.msg(row.functionType.labelKey)}">
+                                            Tipo funcional
+                                        </strong>
+                                    </td>
+
+                                    <td th:text="${row.lowWeight}">
+                                        0
+                                    </td>
+
+                                    <td th:text="${row.averageWeight}">
+                                        0
+                                    </td>
+
+                                    <td th:text="${row.highWeight}">
+                                        0
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <small class="text-muted d-block mt-3"
+                               th:text="#{fp.weights.details.help}">
+                            Estos valores se utilizan para calcular los Puntos Función No Ajustados.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- REQUISITOS A ANCHO COMPLETO -->
-        <div class="card mb-4" id="requirements-container" th:fragment="requirementsSection">
-            <div class="card-header">Requisitos de usuario</div>
+        <!-- MÓDULOS DEL PROYECTO -->
+        <div class="card mb-4" id="modules-container" th:fragment="modulesSection">
+            <div class="card-header" th:text="#{fp.modules.title}">Módulos del proyecto</div>
             <div class="card-body">
 
                 <div class="mb-3">
                     <a class="btn btn-outline-primary"
-                       th:href="@{/projects/{projectId}/requirements/add(projectId=${project.id})}">
-                        Añadir requisito
+                       th:if="${canEditEstimationData}"
+                       th:href="@{/projects/{projectId}/function-points/modules/add(projectId=${project.id})}"
+                       th:text="#{fp.modules.add}">
+                        Añadir módulo
                     </a>
                 </div>
 
-                <div th:if="${requirementsList == null or requirementsList.isEmpty()}"
-                     class="alert alert-light border mb-0">
-                    Todavía no hay requisitos de usuario registrados.
+                <div th:if="${modulesList == null or modulesList.isEmpty()}"
+                     class="alert alert-light border mb-0"
+                     th:text="#{fp.modules.empty}">
+                    Todavía no hay módulos registrados para este proyecto.
                 </div>
 
                 <div class="table-responsive"
-                     th:if="${requirementsList != null and !requirementsList.isEmpty()}">
+                     th:if="${modulesList != null and !modulesList.isEmpty()}">
                     <table class="table table-hover">
                         <thead>
                         <tr>
-                            <th>Identificador</th>
-                            <th>Requisito</th>
+                            <th th:text="#{fp.modules.field.name}">Nombre del módulo</th>
+                            <th th:text="#{fp.field.ufp}">Puntos Función No Ajustados</th>
+                            <th th:text="#{fp.field.afp}">Puntos Función Ajustados</th>
                             <th class="text-right"></th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="requirement : ${requirementsList}">
-                            <td th:text="${requirement.identifier != null and !#strings.isEmpty(requirement.identifier) ? requirement.identifier : '-'}">
-                                RU-01
-                            </td>
-                            <td class="text-truncate-cell"
-                                th:text="${requirement.statement != null and !#strings.isEmpty(requirement.statement) ? requirement.statement : '-'}"
-                                th:title="${requirement.statement != null and !#strings.isEmpty(requirement.statement) ? requirement.statement : '-'}">
-                                El sistema pedirá el nombre al usuario
-                            </td>
+                        <tr th:each="module : ${modulesList}">
+                            <td th:text="${module.name}">Módulo</td>
+                            <td th:text="${moduleResultsMap[module.id].unadjustedFunctionPoints}">0</td>
+                            <td th:text="${#numbers.formatDecimal(moduleResultsMap[module.id].adjustedFunctionPoints, 1, 2)}">0.00</td>
                             <td>
                                 <div class="d-flex flex-wrap gap-2">
                                     <a class="btn btn-sm btn-outline-primary mr-2 mb-2"
-                                       th:href="@{/projects/{projectId}/requirements/{requirementId}(
+                                       th:href="@{/projects/{projectId}/function-points/modules/{moduleId}(
                                            projectId=${project.id},
-                                           requirementId=${requirement.id},
-                                           requirementsPage=${requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}">
+                                           moduleId=${module.id})}"
+                                       th:text="#{project.action.details}">
                                         Ver detalle
                                     </a>
 
-                                    <a class="btn btn-sm btn-outline-danger mb-2"
-                                       th:href="@{/projects/{projectId}/requirements/delete/{requirementId}(
-                                           projectId=${project.id},
-                                           requirementId=${requirement.id},
-                                           requirementsPage=${requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
-                                       onclick="return confirm('¿Seguro que deseas eliminar este requisito de usuario?');">
-                                        Eliminar
-                                    </a>
+                                    <form th:if="${canEditEstimationData}"
+                                          th:action="@{/projects/{projectId}/function-points/modules/delete/{moduleId}(
+                                              projectId=${project.id},
+                                              moduleId=${module.id},
+                                              modulesPage=${modulesPage.number})}"
+                                          method="post"
+                                          class="d-inline"
+                                          th:onsubmit="|return confirm('#{fp.modules.confirm.delete}');|">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger mb-2"
+                                                th:text="#{project.action.delete}">
+                                            Eliminar
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -106,88 +231,70 @@
                     </table>
                 </div>
 
-                <div class="text-center mt-4" th:if="${requirementsPage.totalPages > 1}">
+                <div class="text-center mt-4" th:if="${modulesPage.totalPages > 1}">
                     <ul class="pagination justify-content-center mb-0">
 
-                        <li class="page-item" th:classappend="${requirementsPage.number == 0} ? 'disabled'">
-                            <a class="page-link requirements-page-link"
-                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                        <li class="page-item" th:classappend="${modulesPage.number == 0} ? 'disabled'">
+                            <a class="page-link modules-page-link"
+                               th:href="@{/projects/{projectId}/function-points/modules/update(
                                    projectId=${project.id},
-                                   requirementsPage=0,
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                   modulesPage=0)}"
                                th:attr="data-browser-url=@{/projects/{projectId}/function-points(
                                    projectId=${project.id},
-                                   requirementsPage=0,
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}">
+                                   modulesPage=0)}"
+                               th:text="#{pagination.first}">
                                 Primera
                             </a>
                         </li>
 
-                        <li class="page-item" th:if="${requirementsPage.number - 1 >= 0}">
-                            <a class="page-link requirements-page-link"
-                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                        <li class="page-item" th:if="${modulesPage.number - 1 >= 0}">
+                            <a class="page-link modules-page-link"
+                               th:href="@{/projects/{projectId}/function-points/modules/update(
                                    projectId=${project.id},
-                                   requirementsPage=${requirementsPage.number - 1},
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                   modulesPage=${modulesPage.number - 1})}"
                                th:attr="data-browser-url=@{/projects/{projectId}/function-points(
                                    projectId=${project.id},
-                                   requirementsPage=${requirementsPage.number - 1},
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
-                               th:text="${requirementsPage.number}">
+                                   modulesPage=${modulesPage.number - 1})}"
+                               th:text="${modulesPage.number}">
                                 1
                             </a>
                         </li>
 
                         <li class="page-item active">
-                            <a class="page-link requirements-page-link"
-                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                            <a class="page-link modules-page-link"
+                               th:href="@{/projects/{projectId}/function-points/modules/update(
                                    projectId=${project.id},
-                                   requirementsPage=${requirementsPage.number},
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                   modulesPage=${modulesPage.number})}"
                                th:attr="data-browser-url=@{/projects/{projectId}/function-points(
                                    projectId=${project.id},
-                                   requirementsPage=${requirementsPage.number},
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
-                               th:text="${requirementsPage.number + 1}">
+                                   modulesPage=${modulesPage.number})}"
+                               th:text="${modulesPage.number + 1}">
                                 2
                             </a>
                         </li>
 
-                        <li class="page-item" th:if="${requirementsPage.number + 1 <= requirementsPage.totalPages - 1}">
-                            <a class="page-link requirements-page-link"
-                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                        <li class="page-item" th:if="${modulesPage.number + 1 <= modulesPage.totalPages - 1}">
+                            <a class="page-link modules-page-link"
+                               th:href="@{/projects/{projectId}/function-points/modules/update(
                                    projectId=${project.id},
-                                   requirementsPage=${requirementsPage.number + 1},
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                   modulesPage=${modulesPage.number + 1})}"
                                th:attr="data-browser-url=@{/projects/{projectId}/function-points(
                                    projectId=${project.id},
-                                   requirementsPage=${requirementsPage.number + 1},
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
-                               th:text="${requirementsPage.number + 2}">
+                                   modulesPage=${modulesPage.number + 1})}"
+                               th:text="${modulesPage.number + 2}">
                                 3
                             </a>
                         </li>
 
-                        <li class="page-item" th:classappend="${requirementsPage.number == requirementsPage.totalPages - 1} ? 'disabled'">
-                            <a class="page-link requirements-page-link"
-                               th:href="@{/projects/{projectId}/function-points/requirements/update(
+                        <li class="page-item" th:classappend="${modulesPage.number == modulesPage.totalPages - 1} ? 'disabled'">
+                            <a class="page-link modules-page-link"
+                               th:href="@{/projects/{projectId}/function-points/modules/update(
                                    projectId=${project.id},
-                                   requirementsPage=${requirementsPage.totalPages - 1},
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}"
+                                   modulesPage=${modulesPage.totalPages - 1})}"
                                th:attr="data-browser-url=@{/projects/{projectId}/function-points(
                                    projectId=${project.id},
-                                   requirementsPage=${requirementsPage.totalPages - 1},
-                                   dataFunctionsPage=${dataFunctionsCurrentPage},
-                                   transactionalFunctionsPage=${transactionalFunctionsCurrentPage})}">
+                                   modulesPage=${modulesPage.totalPages - 1})}"
+                               th:text="#{pagination.last}">
                                 Última
                             </a>
                         </li>
@@ -197,309 +304,25 @@
             </div>
         </div>
 
-        <!-- FUNCIONES 50/50 -->
-        <div class="row">
-            <!-- FUNCIONES DE DATOS -->
-            <div class="col-12 col-lg-6 fp-analysis-column">
-                <div class="card mb-4" id="data-functions-container" th:fragment="dataFunctionsSection">
-                    <div class="card-header">Funciones de datos derivadas</div>
-                    <div class="card-body">
-
-                        <div th:if="${dataFunctionsList == null or dataFunctionsList.isEmpty()}"
-                             class="alert alert-light border mb-0">
-                            Todavía no hay funciones de datos registradas.
-                        </div>
-
-                        <div class="table-responsive"
-                             th:if="${dataFunctionsList != null and !dataFunctionsList.isEmpty()}">
-                            <table class="table table-hover">
-                                <thead>
-                                <tr>
-                                    <th>Tipo</th>
-                                    <th>Nombre</th>
-                                    <th>Requisito asociado</th>
-                                    <th>Complejidad</th>
-                                    <th>Peso</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="dataFunction : ${dataFunctionsList}">
-                                    <td th:text="${dataFunction.type}">ILF</td>
-                                    <td th:text="${dataFunction.name}">Clientes</td>
-                                    <td>
-                                        <span th:if="${dataFunction.userRequirement == null}">-</span>
-
-                                        <a th:if="${dataFunction.userRequirement != null}"
-                                           th:href="@{/projects/{projectId}/requirements/{requirementId}(
-                                               projectId=${project.id},
-                                               requirementId=${dataFunction.userRequirement.id},
-                                               requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                               dataFunctionsPage=${dataFunctionsPage.number},
-                                               transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
-                                           th:text="${dataFunction.userRequirement.identifier != null and !#strings.isEmpty(dataFunction.userRequirement.identifier)
-                                               ? dataFunction.userRequirement.identifier
-                                               : 'Ver requisito'}">
-                                            Ver requisito
-                                        </a>
-                                    </td>
-                                    <td th:text="${dataFunction.complexity}">AVERAGE</td>
-                                    <td th:text="${dataFunction.weight}">10</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="text-center mt-4" th:if="${dataFunctionsPage.totalPages > 1}">
-                            <ul class="pagination justify-content-center mb-0">
-
-                                <li class="page-item" th:classappend="${dataFunctionsPage.number == 0} ? 'disabled'">
-                                    <a class="page-link data-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/data-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=0,
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=0,
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}">
-                                        Primera
-                                    </a>
-                                </li>
-
-                                <li class="page-item" th:if="${dataFunctionsPage.number - 1 >= 0}">
-                                    <a class="page-link data-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/data-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsPage.number - 1},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsPage.number - 1},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
-                                       th:text="${dataFunctionsPage.number}">
-                                        1
-                                    </a>
-                                </li>
-
-                                <li class="page-item active">
-                                    <a class="page-link data-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/data-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
-                                       th:text="${dataFunctionsPage.number + 1}">
-                                        2
-                                    </a>
-                                </li>
-
-                                <li class="page-item" th:if="${dataFunctionsPage.number + 1 <= dataFunctionsPage.totalPages - 1}">
-                                    <a class="page-link data-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/data-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsPage.number + 1},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsPage.number + 1},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
-                                       th:text="${dataFunctionsPage.number + 2}">
-                                        3
-                                    </a>
-                                </li>
-
-                                <li class="page-item" th:classappend="${dataFunctionsPage.number == dataFunctionsPage.totalPages - 1} ? 'disabled'">
-                                    <a class="page-link data-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/data-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsPage.totalPages - 1},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsPage.totalPages - 1},
-                                           transactionalFunctionsPage=${transactionalFunctionsCurrentPage != null ? transactionalFunctionsCurrentPage : transactionalFunctionsPage.number})}">
-                                        Última
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            <!-- FUNCIONES TRANSACCIONALES -->
-            <div class="col-12 col-lg-6 fp-analysis-column">
-                <div class="card mb-4" id="transactional-functions-container" th:fragment="transactionalFunctionsSection">
-                    <div class="card-header">Funciones transaccionales derivadas</div>
-                    <div class="card-body">
-
-                        <div th:if="${transactionalFunctionsList == null or transactionalFunctionsList.isEmpty()}"
-                             class="alert alert-light border mb-0">
-                            Todavía no hay funciones transaccionales registradas.
-                        </div>
-
-                        <div class="table-responsive"
-                             th:if="${transactionalFunctionsList != null and !transactionalFunctionsList.isEmpty()}">
-                            <table class="table table-hover">
-                                <thead>
-                                <tr>
-                                    <th>Tipo</th>
-                                    <th>Nombre</th>
-                                    <th>Requisito asociado</th>
-                                    <th>Complejidad</th>
-                                    <th>Peso</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="transactionalFunction : ${transactionalFunctionsList}">
-                                    <td th:text="${transactionalFunction.type}">EI</td>
-                                    <td th:text="${transactionalFunction.name}">Alta cliente</td>
-                                    <td>
-                                        <span th:if="${transactionalFunction.userRequirement == null}">-</span>
-
-                                        <a th:if="${transactionalFunction.userRequirement != null}"
-                                           th:href="@{/projects/{projectId}/requirements/{requirementId}(
-                                               projectId=${project.id},
-                                               requirementId=${transactionalFunction.userRequirement.id},
-                                               requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                               dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                               transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
-                                           th:text="${transactionalFunction.userRequirement.identifier != null and !#strings.isEmpty(transactionalFunction.userRequirement.identifier)
-                                               ? transactionalFunction.userRequirement.identifier
-                                               : 'Ver requisito'}">
-                                            Ver requisito
-                                        </a>
-                                    </td>
-                                    <td th:text="${transactionalFunction.complexity}">AVERAGE</td>
-                                    <td th:text="${transactionalFunction.weight}">4</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="text-center mt-4" th:if="${transactionalFunctionsPage.totalPages > 1}">
-                            <ul class="pagination justify-content-center mb-0">
-
-                                <li class="page-item" th:classappend="${transactionalFunctionsPage.number == 0} ? 'disabled'">
-                                    <a class="page-link transactional-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=0)}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=0)}">
-                                        Primera
-                                    </a>
-                                </li>
-
-                                <li class="page-item" th:if="${transactionalFunctionsPage.number - 1 >= 0}">
-                                    <a class="page-link transactional-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.number - 1})}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.number - 1})}"
-                                       th:text="${transactionalFunctionsPage.number}">
-                                        1
-                                    </a>
-                                </li>
-
-                                <li class="page-item active">
-                                    <a class="page-link transactional-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.number})}"
-                                       th:text="${transactionalFunctionsPage.number + 1}">
-                                        2
-                                    </a>
-                                </li>
-
-                                <li class="page-item" th:if="${transactionalFunctionsPage.number + 1 <= transactionalFunctionsPage.totalPages - 1}">
-                                    <a class="page-link transactional-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.number + 1})}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.number + 1})}"
-                                       th:text="${transactionalFunctionsPage.number + 2}">
-                                        3
-                                    </a>
-                                </li>
-
-                                <li class="page-item" th:classappend="${transactionalFunctionsPage.number == transactionalFunctionsPage.totalPages - 1} ? 'disabled'">
-                                    <a class="page-link transactional-functions-page-link"
-                                       th:href="@{/projects/{projectId}/function-points/transactional-functions/update(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}"
-                                       th:attr="data-browser-url=@{/projects/{projectId}/function-points(
-                                           projectId=${project.id},
-                                           requirementsPage=${requirementsCurrentPage != null ? requirementsCurrentPage : requirementsPage.number},
-                                           dataFunctionsPage=${dataFunctionsCurrentPage != null ? dataFunctionsCurrentPage : dataFunctionsPage.number},
-                                           transactionalFunctionsPage=${transactionalFunctionsPage.totalPages - 1})}">
-                                        Última
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- GSC CENTRADO -->
+        <!-- GSC -->
         <div class="row">
             <div class="col-12">
                 <div class="card mb-4 fp-centered-narrow-card">
-                    <div class="card-header">Características generales del sistema</div>
+                    <div class="card-header" th:text="#{fp.gsc.list.title}">Características generales del sistema</div>
                     <div class="card-body">
 
                         <div class="mb-3">
                             <a class="btn btn-outline-primary"
-                               th:href="@{/projects/{projectId}/function-points/gsc/edit(projectId=${project.id})}">
+                               th:if="${canEditEstimationData}"
+                               th:href="@{/projects/{projectId}/function-points/gsc/edit(projectId=${project.id})}"
+                               th:text="#{fp.gsc.edit.button}">
                                 Editar GSC
                             </a>
                         </div>
 
                         <div th:if="${analysis.generalSystemCharacteristicAssessments == null or analysis.generalSystemCharacteristicAssessments.isEmpty()}"
-                             class="alert alert-light border mb-0">
+                             class="alert alert-light border mb-0"
+                             th:text="#{fp.gsc.list.empty}">
                             No hay características generales del sistema registradas.
                         </div>
 
@@ -508,8 +331,8 @@
                             <table class="table table-hover">
                                 <thead>
                                 <tr>
-                                    <th>Característica</th>
-                                    <th>Grado de influencia</th>
+                                    <th th:text="#{fp.gsc.field.name}">Característica</th>
+                                    <th th:text="#{fp.gsc.field.degree}">Grado de influencia</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -526,52 +349,292 @@
             </div>
         </div>
 
-        <!-- RESULTADOS ABAJO CENTRADOS -->
+        <!-- RESULTADOS + CONVERSIONES -->
         <div class="row">
-            <div class="col-12">
-                <div class="card mb-4 fp-centered-narrow-card">
-                    <div class="card-header">Resultados</div>
+            <!-- RESULTADOS -->
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4 h-100">
+                    <div class="card-header" th:text="#{fp.results.title}">Resultados</div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-12 col-sm-6 col-lg-3 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2">Puntos Función No Ajustados</h6>
-                                    <p class="card-text mb-0 fp-result-value" th:text="${analysis.unadjustedFunctionPoints}">0</p>
+                                    <h6 class="text-muted mb-2" th:text="#{fp.field.tdi}">Grado total de influencia</h6>
+                                    <p class="card-text mb-0 fp-result-value" th:text="${results.totalDegreeOfInfluence}">0</p>
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2">Grado total de influencia</h6>
-                                    <p class="card-text mb-0 fp-result-value" th:text="${analysis.totalDegreeOfInfluence}">0</p>
-                                </div>
-                            </div>
-
-                            <div class="col-12 col-sm-6 col-lg-3 mb-3">
-                                <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2">Factor de ajuste del valor</h6>
+                                    <h6 class="text-muted mb-2" th:text="#{fp.field.vaf}">Factor de ajuste del valor</h6>
                                     <p class="card-text mb-0 fp-result-value"
-                                       th:text="${#numbers.formatDecimal(analysis.valueAdjustmentFactor, 1, 2)}">0.65</p>
+                                       th:text="${#numbers.formatDecimal(results.valueAdjustmentFactor, 1, 2)}">0.65</p>
                                 </div>
                             </div>
 
-                            <div class="col-12 col-sm-6 col-lg-3 mb-3">
+                            <div class="col-12 col-sm-6 mb-3">
                                 <div class="border rounded p-3 bg-light h-100 fp-result-box">
-                                    <h6 class="text-muted mb-2">Puntos Función Ajustados</h6>
+                                    <h6 class="text-muted mb-2" th:text="#{fp.field.ufp}">Puntos Función No Ajustados</h6>
+                                    <p class="card-text mb-0 fp-result-value" th:text="${results.unadjustedFunctionPoints}">0</p>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6 mb-3">
+                                <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                                    <h6 class="text-muted mb-2" th:text="#{fp.field.afp}">Puntos Función Ajustados</h6>
                                     <p class="card-text mb-0 fp-result-value"
-                                       th:text="${#numbers.formatDecimal(analysis.adjustedFunctionPoints, 1, 2)}">0.00</p>
+                                       th:text="${#numbers.formatDecimal(results.adjustedFunctionPoints, 1, 2)}">0.00</p>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="mt-4">
+                            <h5 class="mb-3" th:text="#{fp.results.breakdown.title}">Conteo de funciones</h5>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover table-bordered mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th th:text="#{fp.results.field.type}">Tipo funcional</th>
+                                        <th th:text="#{fp.complexity.low}">Simple</th>
+                                        <th th:text="#{fp.complexity.average}">Media</th>
+                                        <th th:text="#{fp.complexity.high}">Compleja</th>
+                                        <th th:text="#{fp.results.field.total}">Total</th>
+                                        <th th:text="#{fp.results.field.ufpContribution}">Contribución UFP</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="row : ${results.breakdownRows}">
+                                        <td th:text="${#messages.msg(row['labelKey'])}">Entradas externas (EI)</td>
+                                        <td th:text="${row['simpleCount']}">0</td>
+                                        <td th:text="${row['averageCount']}">0</td>
+                                        <td th:text="${row['highCount']}">0</td>
+                                        <td th:text="${row['totalCount']}">0</td>
+                                        <td th:text="${row['ufpContribution']}">0</td>
+                                    </tr>
+                                    <tr class="font-weight-bold">
+                                        <td th:text="#{fp.results.type.total}">Total</td>
+                                        <td th:text="${results.breakdownTotalSimple}">0</td>
+                                        <td th:text="${results.breakdownTotalAverage}">0</td>
+                                        <td th:text="${results.breakdownTotalHigh}">0</td>
+                                        <td th:text="${results.breakdownTotalFunctions}">0</td>
+                                        <td th:text="${results.breakdownTotalUfp}">0</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONVERSIONES -->
+            <div class="col-12 col-lg-6">
+                <!-- CONVERSIÓN DELPHI -->
+                <div class="card mb-4">
+                    <div class="card-header" th:text="#{fp.delphi.title}">Conversión a esfuerzo Delphi</div>
+                    <div class="card-body">
+
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary"
+                               th:if="${canManageEffortConversions}"
+                               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/access(projectId=${project.id}, sourceTechniqueCode=${analysis.techniqueCode})}"
+                               th:text="${activeDelphiEstimation == null}
+        ? #{fp.delphi.action.start}
+        : (activeDelphiEstimation.regressionIntercept == null
+            ? #{fp.delphi.action.continue}
+            : #{fp.delphi.action.details})">
+                                Delphi
+                            </a>
+                        </div>
+
+                        <div th:if="${activeDelphiEstimation == null}"
+                             class="alert alert-light border mb-0"
+                             th:text="#{fp.delphi.empty}">
+                            Todavía no hay una conversión Delphi activa para este análisis.
+                        </div>
+
+                        <div th:if="${activeDelphiEstimation != null}">
+                            <p class="mb-2">
+                                <strong th:text="#{fp.delphi.field.status}">Estado</strong>:
+                                <span th:if="${activeDelphiEstimation.regressionIntercept == null}"
+                                      class="badge badge-primary"
+                                      th:text="#{fp.delphi.status.inProgress}">
+                        En progreso
+                    </span>
+                                <span th:if="${activeDelphiEstimation.regressionIntercept != null}"
+                                      class="badge badge-success"
+                                      th:text="#{fp.delphi.status.finished}">
+                        Finalizada
+                    </span>
+                            </p>
+
+                            <p class="mb-2">
+                                <strong th:text="#{fp.delphi.field.iterations}">Iteraciones registradas</strong>:
+                                <span th:text="${activeDelphiIterationsCount}">0</span>
+                            </p>
+
+                            <p class="mb-2">
+                                <strong th:text="#{fp.delphi.field.maximumIterations}">Número máximo de iteraciones</strong>:
+                                <span th:text="${activeDelphiEstimation.maximumIterations}">2</span>
+                            </p>
+
+                            <p class="mb-3">
+                                <strong th:text="#{fp.delphi.field.acceptableDeviationPercentage}">Desviación aceptable (%)</strong>:
+                                <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.acceptableDeviationPercentage, 1, 2)}">10.00</span>
+                                %
+                            </p>
+
+                            <div th:if="${activeDelphiEstimation.regressionIntercept != null and delphiEstimatedTotalHours != null}"
+                                 class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(delphiEstimatedTotalHours, 1, 2)}">0.00</strong>
+                                    <strong th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{fp.delphi.field.minimumModuleEffort}">H-Persona módulo mínimo</span>:
+                                    <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.minimumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                                    <span th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</span>
+                                </small>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{fp.delphi.field.maximumModuleEffort}">H-Persona módulo máximo</span>:
+                                    <span th:text="${#numbers.formatDecimal(activeDelphiEstimation.maximumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                                    <span th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</span>
+                                </small>
+
+                                <p class="card-text mb-1"
+                                   th:if="${delphiEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(delphiEstimatedCost, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="${project.currencyCode}">
+                                        EUR
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- CONVERSIÓN POR FUNCIÓN DE TRANSFORMACIÓN -->
+                <div class="card mb-4">
+                    <div class="card-header" th:text="#{fp.transformation.title}">
+                        Conversión a esfuerzo con función de transformación
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary"
+                               th:if="${canManageEffortConversions}"
+                               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/access(
+                   projectId=${project.id},
+                   sourceTechniqueCode=${analysis.techniqueCode})}"
+                               th:text="${activeTransformationConversion == null}
+                    ? #{fp.transformation.action.start}
+                    : #{fp.transformation.action.details}">
+                                Ver conversión
+                            </a>
+                        </div>
+
+                        <div th:if="${activeTransformationConversion == null}"
+                             class="alert alert-light border mb-0"
+                             th:text="#{fp.transformation.empty}">
+                            Todavía no hay una conversión mediante función de transformación disponible para este análisis.
+                        </div>
+
+                        <div th:if="${activeTransformationConversion != null and transformationEstimatedHours != null}"
+                             class="border rounded p-3 bg-light">
+                            <p class="card-text mb-1">
+                                <strong th:text="${#numbers.formatDecimal(transformationEstimatedHours, 1, 2)}">
+                                    0.00
+                                </strong>
+                                <strong th:text="#{fp.delphi.hoursPersonUnit}">
+                                    H-Persona
+                                </strong>
+                            </p>
+
+                            <small class="text-muted d-block">
+        <span th:text="#{fp.transformation.field.function}">
+            Función aplicada
+        </span>:
+                                <span th:text="${activeTransformationConversion.functionNameSnapshot}">
+            Matson, Barrett y Mellichamp (1994)
+        </span>
+                            </small>
+
+                            <small class="text-muted d-block">
+        <span th:text="#{fp.transformation.field.formula}">
+            Fórmula
+        </span>:
+                                <span>
+            E =
+            <span th:text="${#numbers.formatDecimal(activeTransformationConversion.interceptSnapshot, 1, 2)}">
+                585,70
+            </span>
+            +
+            <span th:text="${#numbers.formatDecimal(activeTransformationConversion.slopeSnapshot, 1, 2)}">
+                15,12
+            </span>
+            ×
+            <span th:text="${analysis.sizeUnitCode}">
+                FP
+            </span>
+        </span>
+                            </small>
+
+                            <p class="card-text mb-1"
+                               th:if="${transformationEstimatedCost != null}">
+                                <strong th:text="${#numbers.formatDecimal(transformationEstimatedCost, 1, 2)}">
+                                    0.00
+                                </strong>
+                                <strong th:text="${project.currencyCode}">
+                                    EUR
+                                </strong>
+                            </p>
+
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
 
-        <a class="btn btn-secondary"
-           th:href="@{/projects/{id}(id=${project.id})}">
-            Volver al proyecto
-        </a>
+        <div class="mt-4">
+            <a class="btn btn-primary mr-2"
+               th:href="@{/projects/{projectId}/function-points/report/pdf(projectId=${project.id})}"
+               th:text="#{fp.report.generate.button}">
+                Generar informe
+            </a>
+
+            <a class="btn btn-primary mr-2"
+               th:href="@{/projects/{projectId}/function-points/export/xml(projectId=${project.id})}"
+               th:text="#{fp.export.xml.button}">
+                Exportar XML
+            </a>
+
+            <form th:if="${canManageProject}"
+                  th:action="@{/projects/{projectId}/function-points/delete(projectId=${project.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{fp.confirm.deleteAnalysis}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{project.action.delete}">
+                    Eliminar análisis
+                </button>
+            </form>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{id}(id=${project.id})}"
+               th:text="#{fp.details.back}">
+                Volver al proyecto
+            </a>
+        </div>
     </div>
 </main>
 

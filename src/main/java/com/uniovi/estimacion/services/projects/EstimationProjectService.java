@@ -3,8 +3,12 @@ package com.uniovi.estimacion.services.projects;
 import com.uniovi.estimacion.entities.projects.EstimationProject;
 import com.uniovi.estimacion.entities.users.User;
 import com.uniovi.estimacion.repositories.projects.EstimationProjectRepository;
-import com.uniovi.estimacion.repositories.requirements.UserRequirementRepository;
-import com.uniovi.estimacion.services.functionpoints.FunctionPointAnalysisService;
+import com.uniovi.estimacion.repositories.sizeanalyses.functionpoints.FunctionPointAnalysisRepository;
+import com.uniovi.estimacion.repositories.sizeanalyses.usecasepoints.UseCasePointAnalysisRepository;
+import com.uniovi.estimacion.services.effortconversions.delphi.DelphiEstimationService;
+import com.uniovi.estimacion.services.effortconversions.transformationfunctions.TransformationFunctionService;
+import com.uniovi.estimacion.services.sizeanalyses.functionpoints.FunctionPointAnalysisService;
+import com.uniovi.estimacion.services.sizeanalyses.usecasepoints.UseCasePointAnalysisService;
 import com.uniovi.estimacion.services.users.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,18 +25,37 @@ import java.util.Optional;
 public class EstimationProjectService {
 
     private final EstimationProjectRepository estimationProjectRepository;
+
+    private final FunctionPointAnalysisRepository functionPointAnalysisRepository;
     private final FunctionPointAnalysisService functionPointAnalysisService;
-    private final UserRequirementRepository userRequirementRepository;
+
+    private final UseCasePointAnalysisRepository useCasePointAnalysisRepository;
+    private final UseCasePointAnalysisService useCasePointAnalysisService;
+
+    private final ProjectMembershipService projectMembershipService;
     private final CurrentUserService currentUserService;
+
+    private final DelphiEstimationService delphiEstimationService;
+    private final TransformationFunctionService transformationFunctionService;
 
     public Page<EstimationProject> findPageForCurrentUser(Pageable pageable) {
         if (currentUserService.isAdmin()) {
             return estimationProjectRepository.findAllByOrderByIdAsc(pageable);
         }
 
-        return currentUserService.getCurrentUsername()
-                .map(username -> estimationProjectRepository.findByOwnerUsernameOrderByIdAsc(username, pageable))
-                .orElse(Page.empty(pageable));
+        if (currentUserService.isProjectManager()) {
+            return currentUserService.getCurrentUsername()
+                    .map(username -> estimationProjectRepository.findByOwnerUsernameOrderByIdAsc(username, pageable))
+                    .orElse(Page.empty(pageable));
+        }
+
+        if (currentUserService.isProjectWorker()) {
+            return currentUserService.getCurrentUsername()
+                    .map(username -> projectMembershipService.findAssignedProjectsByWorkerUsername(username, pageable))
+                    .orElse(Page.empty(pageable));
+        }
+
+        return Page.empty(pageable);
     }
 
     public Optional<EstimationProject> findAccessibleByIdForCurrentUser(Long projectId) {
@@ -40,8 +63,31 @@ public class EstimationProjectService {
             return estimationProjectRepository.findById(projectId);
         }
 
-        return currentUserService.getCurrentUsername()
-                .flatMap(username -> estimationProjectRepository.findByIdAndOwnerUsername(projectId, username));
+        if (currentUserService.isProjectManager()) {
+            return currentUserService.getCurrentUsername()
+                    .flatMap(username -> estimationProjectRepository.findByIdAndOwnerUsername(projectId, username));
+        }
+
+        if (currentUserService.isProjectWorker()) {
+            return currentUserService.getCurrentUsername()
+                    .filter(username -> projectMembershipService.isWorkerAssignedToProject(projectId, username))
+                    .flatMap(username -> estimationProjectRepository.findById(projectId));
+        }
+
+        return Optional.empty();
+    }
+
+    public Optional<EstimationProject> findManageableByIdForCurrentUser(Long projectId) {
+        if (currentUserService.isAdmin()) {
+            return estimationProjectRepository.findById(projectId);
+        }
+
+        if (currentUserService.isProjectManager()) {
+            return currentUserService.getCurrentUsername()
+                    .flatMap(username -> estimationProjectRepository.findByIdAndOwnerUsername(projectId, username));
+        }
+
+        return Optional.empty();
     }
 
     public Optional<EstimationProject> findById(Long projectId) {
@@ -50,49 +96,67 @@ public class EstimationProjectService {
 
     @Transactional
     public EstimationProject create(EstimationProject project) {
+        if (!currentUserService.isAdminOrProjectManager()) {
+            throw new IllegalStateException("El usuario actual no puede crear proyectos");
+        }
+
         User currentUser = currentUserService.getCurrentUser()
                 .orElseThrow(() -> new IllegalStateException("No hay usuario autenticado"));
 
         project.setName(normalize(project.getName()));
         project.setDescription(normalize(project.getDescription()));
         project.setOwner(currentUser);
+        normalizeCostFields(project);
 
         return estimationProjectRepository.save(project);
     }
 
     @Transactional
     public boolean updateBasicDataForCurrentUser(Long projectId, EstimationProject formProject) {
-        Optional<EstimationProject> optionalProject = findAccessibleByIdForCurrentUser(projectId);
+        Optional<EstimationProject> optionalProject = findManageableByIdForCurrentUser(projectId);
 
         if (optionalProject.isEmpty()) {
             return false;
         }
 
         EstimationProject existingProject = optionalProject.get();
+
         existingProject.setName(normalize(formProject.getName()));
         existingProject.setDescription(normalize(formProject.getDescription()));
+
+        existingProject.setHourlyRate(formProject.getHourlyRate());
+        existingProject.setCurrencyCode(formProject.getCurrencyCode());
+        normalizeCostFields(existingProject);
+
+        estimationProjectRepository.save(existingProject);
 
         return true;
     }
 
     @Transactional
     public boolean deleteAccessibleByIdForCurrentUser(Long projectId) {
-        Optional<EstimationProject> optionalProject = findAccessibleByIdForCurrentUser(projectId);
+        Optional<EstimationProject> optionalProject = findManageableByIdForCurrentUser(projectId);
 
         if (optionalProject.isEmpty()) {
             return false;
         }
 
-        // 1) Borrar el análisis PF y, en cascada, sus funciones y GSC
-        functionPointAnalysisService.deleteByProjectId(projectId);
+        transformationFunctionService.deleteAllConversionsByProjectId(projectId);
+        delphiEstimationService.deleteAllByProjectId(projectId);
 
-        // 2) Borrar los requisitos del proyecto
-        userRequirementRepository.deleteAll(
-                userRequirementRepository.findByEstimationProjectIdOrderByIdAsc(projectId)
-        );
+        if (functionPointAnalysisRepository.findByEstimationProjectId(projectId).isPresent()) {
+            functionPointAnalysisService.deleteByProjectId(projectId);
+        }
 
-        // 3) Borrar finalmente el proyecto
+        if (useCasePointAnalysisRepository.findByEstimationProjectId(projectId).isPresent()) {
+            useCasePointAnalysisService.deleteByProjectId(projectId);
+        }
+
+        projectMembershipService.deleteAllByProjectId(projectId);
+
         estimationProjectRepository.delete(optionalProject.get());
+        estimationProjectRepository.flush();
+
         return true;
     }
 
@@ -100,6 +164,15 @@ public class EstimationProjectService {
         if (!StringUtils.hasText(value)) {
             return null;
         }
+
         return value.trim();
+    }
+
+    private void normalizeCostFields(EstimationProject project) {
+        if (project.getCurrencyCode() == null || project.getCurrencyCode().trim().isEmpty()) {
+            project.setCurrencyCode("EUR");
+        } else {
+            project.setCurrencyCode(project.getCurrencyCode().trim().toUpperCase());
+        }
     }
 }

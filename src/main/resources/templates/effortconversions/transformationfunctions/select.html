@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:if="${sourceTechniqueCode == 'FUNCTION_POINTS'}"
+                       th:href="@{/projects/{pid}/function-points(pid=${project.id})}"
+                       th:text="#{fp.details.title}">Análisis PF</a>
+                    <a th:if="${sourceTechniqueCode == 'USE_CASE_POINTS'}"
+                       th:href="@{/projects/{pid}/use-case-points(pid=${project.id})}"
+                       th:text="#{ucp.details.title}">Análisis UCP</a>
+                    <span th:if="${sourceTechniqueCode != 'FUNCTION_POINTS' and sourceTechniqueCode != 'USE_CASE_POINTS'}"
+                          th:text="#{breadcrumb.sizeAnalysis}">Análisis de tamaño</span>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.selectTransformationFunction}">Seleccionar función de transformación</li>
+            </ol>
+        </nav>
+
+        <div class="mb-4">
+            <h1 th:text="#{transformationFunction.select.title}">
+                Seleccionar función de transformación
+            </h1>
+            <p class="text-muted" th:text="#{transformationFunction.select.subtitle}">
+                Selecciona una función existente o crea una nueva función lineal para convertir tamaño en esfuerzo.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{transformationFunction.select.available.title}">
+                Funciones disponibles
+            </div>
+
+            <div class="card-body">
+                <div th:if="${#lists.isEmpty(availableFunctions)}"
+                     class="alert alert-light border"
+                     th:text="#{transformationFunction.select.available.empty}">
+                    No hay funciones disponibles para esta técnica de tamaño.
+                </div>
+
+                <form th:if="${!#lists.isEmpty(availableFunctions)}"
+                      th:action="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/select(
+                          projectId=${project.id},
+                          sourceTechniqueCode=${sourceTechniqueCode})}"
+                      th:object="${conversionForm}"
+                      method="post">
+
+                    <div class="form-group">
+                        <label for="transformationFunctionId"
+                               th:text="#{transformationFunction.select.field.function}">
+                            Función
+                        </label>
+
+                        <select id="transformationFunctionId"
+                                class="form-control"
+                                th:field="*{transformationFunctionId}">
+                            <option value=""
+                                    th:text="#{form.select.placeholder}">
+                                -- Selecciona una opción --
+                            </option>
+                            <option th:each="function : ${availableFunctions}"
+                                    th:value="${function.id}"
+                                    th:text="${function.name + ' — E = ' + #numbers.formatDecimal(function.intercept, 1, 2) + ' + ' + #numbers.formatDecimal(function.slope, 1, 2) + ' × ' + analysis.sizeUnitCode}">
+                                Matson — E = a + b × FP
+                            </option>
+                        </select>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('transformationFunctionId')}"
+                             th:errors="*{transformationFunctionId}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit"
+                                class="btn btn-outline-primary"
+                                th:text="#{transformationFunction.select.action.use}">
+                            Usar función
+                        </button>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{transformationFunction.custom.title}">
+                Crear función personalizada
+            </div>
+
+            <div class="card-body">
+                <form th:action="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/functions/add(
+                          projectId=${project.id},
+                          sourceTechniqueCode=${sourceTechniqueCode})}"
+                      th:object="${functionForm}"
+                      method="post">
+
+                    <div class="form-group">
+                        <label for="name" th:text="#{transformationFunction.field.name}">
+                            Nombre
+                        </label>
+                        <input id="name"
+                               type="text"
+                               class="form-control"
+                               th:field="*{name}"
+                               maxlength="120">
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('name')}"
+                             th:errors="*{name}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" th:text="#{transformationFunction.field.description}">
+                            Descripción
+                        </label>
+                        <textarea id="description"
+                                  class="form-control"
+                                  rows="3"
+                                  th:field="*{description}"
+                                  maxlength="1000"></textarea>
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('description')}"
+                             th:errors="*{description}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="intercept" th:text="#{transformationFunction.field.intercept}">
+                                Parámetro a
+                            </label>
+                            <input id="intercept"
+                                   type="number"
+                                   class="form-control"
+                                   th:field="*{intercept}"
+                                   min="0"
+                                   step="0.01">
+                            <small class="form-text text-muted"
+                                   th:text="#{transformationFunction.help.intercept}">
+                                Término fijo o esfuerzo base.
+                            </small>
+                            <div class="text-danger mt-1"
+                                 th:if="${#fields.hasErrors('intercept')}"
+                                 th:errors="*{intercept}">
+                                Error
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 form-group">
+                            <label for="slope" th:text="#{transformationFunction.field.slope}">
+                                Parámetro b
+                            </label>
+                            <input id="slope"
+                                   type="number"
+                                   class="form-control"
+                                   th:field="*{slope}"
+                                   min="0.01"
+                                   step="0.01">
+                            <small class="form-text text-muted"
+                                   th:text="#{transformationFunction.help.slope}">
+                                Esfuerzo por unidad de tamaño.
+                            </small>
+                            <div class="text-danger mt-1"
+                                 th:if="${#fields.hasErrors('slope')}"
+                                 th:errors="*{slope}">
+                                Error
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border">
+                        <span th:text="#{transformationFunction.formula.prefix}">
+                            Fórmula:
+                        </span>
+                        <strong>
+                            E = a + b × <span th:text="${analysis.sizeUnitCode}">FP</span>
+                        </strong>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit"
+                                class="btn btn-outline-primary"
+                                th:text="#{transformationFunction.custom.action.createAndUse}">
+                            Crear y usar función
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <a class="btn btn-secondary"
+           th:href="${sourceAnalysisDetailsPath}"
+           th:text="#{common.back}">
+            Volver
+        </a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

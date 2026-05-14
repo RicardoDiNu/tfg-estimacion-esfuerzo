@@ -1,59 +1,464 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/head :: head"></head>
+<head th:replace="~{fragments/head :: head}"></head>
 <body class="app-page">
 
-<nav th:replace="fragments/nav :: nav"></nav>
+<nav th:replace="~{fragments/nav :: nav}"></nav>
 
 <main class="app-content">
-    <div class="container">
-        <h1 th:text="#{project.details.title}">Detalle del proyecto de estimación</h1>
+    <div class="container-fluid fp-analysis-container">
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{project.field.name}">Nombre</div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{nav.projects}">
+                        Proyectos
+                    </a>
+                </li>
+
+                <li class="breadcrumb-item active"
+                    aria-current="page"
+                    th:text="${project.name}">
+                    Proyecto
+                </li>
+            </ol>
+        </nav>
+
+        <h1 class="mb-4" th:text="#{project.details.title}">Detalle del proyecto de estimación</h1>
+
+        <!-- RESUMEN DEL PROYECTO -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{project.details.summary.title}">Resumen del proyecto</div>
             <div class="card-body">
-                <p class="card-text" th:text="${project.name}">Nombre del proyecto</p>
+                <div class="mb-3">
+                    <a class="btn btn-outline-primary mr-2"
+                       th:if="${canManageProject}"
+                       th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='details')}"
+                       th:text="#{project.action.edit}">
+                        Editar
+                    </a>
+                    <a class="btn btn-outline-primary mr-2"
+                       th:if="${canManageProject}"
+                       th:href="@{/projects/{projectId}/memberships(projectId=${project.id})}"
+                       th:text="#{project.membership.action.manage}">
+                        Gestionar trabajadores
+                    </a>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.name}">Nombre</h6>
+                    <p class="card-text mb-0"
+                       th:text="${project.name != null and !#strings.isEmpty(project.name) ? project.name : '-'}">
+                        Nombre del proyecto
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.projectManager}">
+                        Jefe de proyecto
+                    </h6>
+
+                    <p class="card-text mb-0"
+                       th:text="${project.owner != null ? project.owner.username : '-'}">
+                        jefe
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.description}">Descripción</h6>
+                    <p class="card-text mb-0"
+                       th:text="${project.description != null and !#strings.isEmpty(project.description) ? project.description : '-'}">
+                        Descripción del proyecto
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.hourlyRate}">
+                        Coste por hora
+                    </h6>
+
+                    <p class="card-text mb-0" th:if="${project.hourlyRate != null}">
+        <span th:text="${#numbers.formatDecimal(project.hourlyRate, 1, 2)}">
+            0.00
+        </span>
+                        <span th:text="${project.currencyCode != null and !#strings.isEmpty(project.currencyCode) ? project.currencyCode : 'EUR'}">
+            EUR
+        </span>
+                        <span th:text="#{project.field.hourlyRate.unit}">
+            / hora
+        </span>
+                    </p>
+
+                    <p class="card-text mb-0 text-muted"
+                       th:unless="${project.hourlyRate != null}"
+                       th:text="#{project.field.hourlyRate.notDefined}">
+                        No definido
+                    </p>
+                </div>
+
+                <div>
+                    <h6 class="text-muted" th:text="#{project.field.createdAt}">Fecha de creación</h6>
+                    <p class="card-text mb-0"
+                       th:text="${#temporals.format(project.createdAt, 'dd/MM/yyyy HH:mm')}">
+                        16/04/2026 22:57
+                    </p>
+                </div>
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{project.field.description}">Descripción</div>
-            <div class="card-body">
-                <p class="card-text" th:text="${project.description}">Descripción del proyecto</p>
+        <!-- ANÁLISIS PF Y UCP EN DOS COLUMNAS -->
+        <div class="row">
+            <!-- ANÁLISIS PF -->
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4 h-100">
+                    <div class="card-header" th:text="#{project.details.fp.title}">Análisis PF</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary mr-2"
+                               th:if="${hasFunctionPointAnalysis or canManageProject}"
+                               th:href="@{/projects/{id}/function-points/access(id=${project.id})}"
+                               th:text="${hasFunctionPointAnalysis} ? #{project.details.fp.open} : #{project.details.fp.create}">
+                                Análisis PF
+                            </a>
+                            <a class="btn btn-outline-secondary"
+                               th:if="${!hasFunctionPointAnalysis and canManageProject}"
+                               th:href="@{/projects/{projectId}/function-points/import(projectId=${project.id})}"
+                               th:text="#{fp.import.xml.button}">
+                                Importar análisis PF desde XML
+                            </a>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="text-muted" th:text="#{project.details.fp.size}">Tamaño calculado</h6>
+
+                            <div th:if="${hasFunctionPointAnalysis}" class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointResults.adjustedFunctionPoints, 1, 2)}">0.00</strong>
+                                    <strong th:text="#{project.details.fp.sizeUnit}">PF</strong>
+                                </p>
+                                <small class="text-muted">
+                                    <span th:text="#{fp.field.ufp}">Puntos Función No Ajustados</span>:
+                                    <span th:text="${functionPointResults.unadjustedFunctionPoints}">0</span>
+                                </small>
+                            </div>
+
+                            <div th:unless="${hasFunctionPointAnalysis}"
+                                 class="alert alert-light border mb-0"
+                                 th:text="#{project.details.fp.noSize}">
+                                Todavía no hay un tamaño PF calculado.
+                            </div>
+                        </div>
+
+                        <!-- CONVERSIÓN DELPHI PF -->
+                        <div class="mb-4">
+                            <h6 class="text-muted" th:text="#{project.details.fp.delphi.title}">
+                                Conversión a esfuerzo Delphi
+                            </h6>
+
+                            <div th:if="${activeFunctionPointDelphi != null and activeFunctionPointDelphi.regressionIntercept != null}"
+                                 class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointDelphiEstimatedTotalHours, 1, 2)}">0.00</strong>
+                                    <strong th:text="#{project.details.effort.hoursUnit}">h</strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{project.details.fp.delphi.minimumModuleEffort}">Esfuerzo módulo mínimo</span>:
+                                    <span th:text="${#numbers.formatDecimal(activeFunctionPointDelphi.minimumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                                    <span th:text="#{project.details.effort.hoursUnit}">h</span>
+                                </small>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{project.details.fp.delphi.maximumModuleEffort}">Esfuerzo módulo máximo</span>:
+                                    <span th:text="${#numbers.formatDecimal(activeFunctionPointDelphi.maximumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                                    <span th:text="#{project.details.effort.hoursUnit}">h</span>
+                                </small>
+
+                                <p class="card-text mb-1"
+                                   th:if="${functionPointDelphiEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointDelphiEstimatedCost, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="${project.currencyCode}">
+                                        EUR
+                                    </strong>
+                                </p>
+
+                            </div>
+
+                            <div th:unless="${activeFunctionPointDelphi != null and activeFunctionPointDelphi.regressionIntercept != null}"
+                                 class="alert alert-light border mb-0"
+                                 th:text="#{project.details.fp.delphi.empty}">
+                                Todavía no hay una conversión Delphi finalizada disponible.
+                            </div>
+                        </div>
+
+                        <!-- CONVERSIÓN FUNCIÓN PF -->
+                        <div class="mb-4">
+                            <h6 class="text-muted"
+                                th:text="#{project.details.fp.transformation.title}">
+                                Conversión por función de transformación
+                            </h6>
+
+                            <div th:if="${!hasFunctionPointAnalysis or activeFunctionPointTransformationConversion == null}"
+                                 class="alert alert-light border mb-0"
+                                 th:text="#{project.details.fp.transformation.empty}">
+                                Todavía no hay una conversión por función de transformación para este análisis.
+                            </div>
+
+                            <div th:if="${hasFunctionPointAnalysis and activeFunctionPointTransformationConversion != null}"
+                                 class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointTransformationEstimatedHours, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="#{fp.delphi.hoursPersonUnit}">
+                                        Horas-Persona
+                                    </strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.transformation.function}">
+                Función aplicada
+            </span>:
+                                    <span th:text="${activeFunctionPointTransformationConversion.functionNameSnapshot}">
+                Función personalizada
+            </span>
+                                </small>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.transformation.formula}">
+                Fórmula
+            </span>:
+                                    <span>
+                E =
+                <span th:text="${#numbers.formatDecimal(activeFunctionPointTransformationConversion.interceptSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                +
+                <span th:text="${#numbers.formatDecimal(activeFunctionPointTransformationConversion.slopeSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                ×
+                <span th:text="${activeFunctionPointTransformationConversion.sourceSizeUnitCode}">
+                    FP
+                </span>
+            </span>
+                                </small>
+
+                                <p class="card-text mb-1"
+                                   th:if="${functionPointTransformationEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(functionPointTransformationEstimatedCost, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="${project.currencyCode}">
+                                        EUR
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANÁLISIS UCP -->
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4 h-100">
+                    <div class="card-header" th:text="#{project.details.ucp.title}">Análisis UCP</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <a class="btn btn-outline-primary mr-2"
+                               th:if="${hasUseCasePointAnalysis or canManageProject}"
+                               th:href="@{/projects/{id}/use-case-points/access(id=${project.id})}"
+                               th:text="${hasUseCasePointAnalysis} ? #{project.details.ucp.open} : #{project.details.ucp.create}">
+                                Análisis UCP
+                            </a>
+                            <a class="btn btn-outline-secondary"
+                               th:if="${!hasUseCasePointAnalysis and canManageProject}"
+                               th:href="@{/projects/{projectId}/use-case-points/import(projectId=${project.id})}"
+                               th:text="#{ucp.import.xml.button}">
+                                Importar análisis UCP desde XML
+                            </a>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="text-muted" th:text="#{project.details.ucp.size}">Tamaño calculado</h6>
+
+                            <div th:if="${hasUseCasePointAnalysis}" class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointResults.adjustedUseCasePoints, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="#{project.details.ucp.sizeUnit}">
+                                        UCP
+                                    </strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{ucp.field.uaw}">Peso de actores no ajustado</span>:
+                                    <span th:text="${useCasePointResults.unadjustedActorWeight}">0</span>
+                                </small>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{ucp.field.uucw}">Peso de casos de uso no ajustado</span>:
+                                    <span th:text="${useCasePointResults.unadjustedUseCaseWeight}">0</span>
+                                </small>
+                            </div>
+
+                            <div th:unless="${hasUseCasePointAnalysis}"
+                                 class="alert alert-light border mb-0"
+                                 th:text="#{project.details.ucp.noSize}">
+                                Todavía no hay un tamaño UCP calculado.
+                            </div>
+                        </div>
+
+                        <!-- CONVERSIÓN DELPHI UCP -->
+                        <div class="mb-4">
+                            <h6 class="text-muted" th:text="#{project.details.ucp.delphi.title}">
+                                Conversión a esfuerzo Delphi
+                            </h6>
+
+                            <div th:if="${activeUseCasePointDelphi != null and activeUseCasePointDelphi.regressionIntercept != null}"
+                                 class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointDelphiEstimatedTotalHours, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="#{project.details.effort.hoursUnit}">
+                                        h
+                                    </strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.delphi.minimumModuleEffort}">
+                Esfuerzo módulo mínimo
+            </span>:
+                                    <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.minimumModuleEstimatedEffortHours, 1, 2)}">
+                0.00
+            </span>
+                                    <span th:text="#{project.details.effort.hoursUnit}">
+                h
+            </span>
+                                </small>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.delphi.maximumModuleEffort}">
+                Esfuerzo módulo máximo
+            </span>:
+                                    <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.maximumModuleEstimatedEffortHours, 1, 2)}">
+                0.00
+            </span>
+                                    <span th:text="#{project.details.effort.hoursUnit}">
+                h
+            </span>
+                                </small>
+
+                                <p class="card-text mb-1"
+                                       th:if="${useCasePointDelphiEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointDelphiEstimatedCost, 1, 2)}">
+                0.00
+            </strong>
+                                    <strong th:text="${project.currencyCode}">
+                EUR
+            </strong>
+                                </p>
+                            </div>
+
+                            <div th:unless="${activeUseCasePointDelphi != null and activeUseCasePointDelphi.regressionIntercept != null}"
+                                 class="alert alert-light border mb-0"
+                                 th:text="#{project.details.ucp.delphi.empty}">
+                                Todavía no hay una conversión Delphi finalizada disponible para UCP.
+                            </div>
+                        </div>
+
+                        <!-- CONVERSIÓN FUNCIÓN UCP -->
+                        <div>
+                            <h6 class="text-muted" th:text="#{project.details.ucp.transformation.title}">
+                                Conversión a esfuerzo con función de transformación
+                            </h6>
+
+                            <div th:if="${activeUseCasePointTransformationConversion == null}"
+                                 class="alert alert-light border mb-0"
+                                 th:text="#{project.details.ucp.transformation.empty}">
+                                Todavía no hay una conversión mediante función de transformación disponible para UCP.
+                            </div>
+
+                            <div th:if="${activeUseCasePointTransformationConversion != null}"
+                                 class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointTransformationEstimatedHours, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="#{fp.delphi.hoursPersonUnit}">
+                                        Horas-Persona
+                                    </strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.transformation.function}">
+                Función aplicada
+            </span>:
+                                    <span th:text="${activeUseCasePointTransformationConversion.functionNameSnapshot}">
+                Función personalizada
+            </span>
+                                </small>
+
+                                <small class="text-muted d-block">
+            <span th:text="#{project.details.fp.transformation.formula}">
+                Fórmula
+            </span>:
+                                    <span>
+                E =
+                <span th:text="${#numbers.formatDecimal(activeUseCasePointTransformationConversion.interceptSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                +
+                <span th:text="${#numbers.formatDecimal(activeUseCasePointTransformationConversion.slopeSnapshot, 1, 2)}">
+                    0.00
+                </span>
+                ×
+                <span th:text="${activeUseCasePointTransformationConversion.sourceSizeUnitCode}">
+                    UCP
+                </span>
+            </span>
+                                </small>
+
+                                <p class="card-text mb-1"
+                                       th:if="${useCasePointTransformationEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointTransformationEstimatedCost, 1, 2)}">
+                0.00
+            </strong>
+                                    <strong th:text="${project.currencyCode}">
+                EUR
+            </strong>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="card mb-3">
-            <div class="card-header" th:text="#{project.field.createdAt}">Fecha de creación</div>
-            <div class="card-body">
-                <p class="card-text"
-                   th:text="${#temporals.format(project.createdAt, 'dd/MM/yyyy HH:mm')}">
-                    16/04/2026 22:57
-                </p>
-            </div>
-        </div>
-
-        <div class="mb-4">
-            <a class="btn btn-outline-secondary mr-2"
-               th:href="@{/projects/{id}/function-points/access(id=${project.id})}"
-               th:text="#{project.functionPoints.view}">Análisis PF</a>
-        </div>
-
-        <div class="mb-4">
-            <a class="btn btn-primary mr-2"
-               th:href="@{/projects/edit/{id}(id=${project.id}, returnTo='details')}"
-               th:text="#{project.action.edit}">Editar</a>
-
-            <a class="btn btn-danger mr-2"
-               th:href="@{/projects/delete/{id}(id=${project.id})}"
-               th:text="#{project.action.delete}"
-               onclick="return confirm('¿Seguro que quieres eliminar este proyecto?');">Eliminar</a>
+        <!-- ACCIONES FINALES -->
+        <div class="mt-4 mb-4">
+            <form th:if="${canManageProject}"
+                  th:action="@{/projects/delete/{id}(id=${project.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{project.confirm.delete}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{project.action.delete}">
+                    Eliminar
+                </button>
+            </form>
 
             <a class="btn btn-secondary"
                href="/projects"
-               th:text="#{project.details.back}">Volver al listado</a>
+               th:text="#{project.details.back}">
+                Volver al listado
+            </a>
         </div>
-
     </div>
 </main>
 

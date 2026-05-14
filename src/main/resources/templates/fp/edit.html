@@ -7,6 +7,21 @@
 
 <main class="app-content">
     <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}" th:text="#{fp.details.title}">Análisis PF</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editAnalysis}">Editar análisis</li>
+            </ol>
+        </nav>
+
         <h1 th:text="#{fp.edit.title}">Editar análisis PF</h1>
 
         <div class="alert alert-light border">
@@ -43,9 +58,8 @@
             </button>
 
             <a class="btn btn-secondary"
-               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}">
-                Cancelar
-            </a>
+               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
+               th:text="#{fp.edit.cancel}">Cancelar</a>
         </form>
     </div>
 </main>

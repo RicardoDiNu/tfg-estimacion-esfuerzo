@@ -4,6 +4,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+.claude
+
 ### STS ###
 .apt_generated
 .classpath
@@ -33,3 +35,8 @@ build/
 .vscode/
 
 application-local.properties
+
+# Environment variables / local secrets
+.env
+.env.*
+!.env.example

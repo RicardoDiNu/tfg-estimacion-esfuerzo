@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+  <div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb app-breadcrumb">
+            <li class="breadcrumb-item">
+                <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a th:href="@{/projects/{projectId}/use-case-points(projectId=${project.id})}" th:text="#{ucp.details.title}">Análisis UCP</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editEnvironmentalFactors}">Editar factores ambientales</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4" th:text="#{ucp.environmentalFactors.edit.title}">
+      Editar factores ambientales
+    </h1>
+
+    <div class="card mb-4">
+      <div class="card-header" th:text="#{ucp.environmentalFactors.title}">
+        Factores ambientales
+      </div>
+
+      <div class="card-body">
+        <form th:action="@{/projects/{projectId}/use-case-points/environmental-factors/edit(projectId=${project.id})}"
+              th:object="${environmentalFactorsForm}"
+              method="post">
+
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+              <tr>
+                <th th:text="#{ucp.factors.field.name}">Factor</th>
+                <th th:text="#{ucp.factors.field.weight}">Peso</th>
+                <th th:text="#{ucp.factors.field.degree}">Grado</th>
+              </tr>
+              </thead>
+
+              <tbody>
+              <tr th:each="factor, stat : ${environmentalFactorsList}">
+                <td th:text="${#messages.msg(factor.factorType.messageKey)}">
+                  Factor ambiental
+                </td>
+
+                <td th:text="${#numbers.formatDecimal(factor.factorType.weight, 1, 2)}">
+                  1.00
+                </td>
+
+                <td>
+                  <input type="hidden"
+                         th:field="*{assessments[__${stat.index}__].factorCode}">
+
+                  <input type="number"
+                         class="form-control"
+                         min="0"
+                         max="5"
+                         step="1"
+                         th:field="*{assessments[__${stat.index}__].degreeOfInfluence}">
+
+                  <div class="text-danger mt-1"
+                       th:if="${#fields.hasErrors('assessments[__${stat.index}__].degreeOfInfluence')}"
+                       th:errors="*{assessments[__${stat.index}__].degreeOfInfluence}">
+                    Error
+                  </div>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="mt-3">
+            <button type="submit"
+                    class="btn btn-primary mr-2"
+                    th:text="#{project.action.save}">
+              Guardar
+            </button>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/use-case-points(projectId=${project.id})}"
+               th:text="#{common.back}">
+              Volver
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

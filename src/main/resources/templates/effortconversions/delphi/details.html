@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container"
+         th:with="sizeUnitLabel=${#messages.msgOrNull('size.unit.' + estimation.sourceSizeUnitCode) != null ? #messages.msg('size.unit.' + estimation.sourceSizeUnitCode) : estimation.sourceSizeUnitCode}">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:if="${sourceTechniqueCode == 'FUNCTION_POINTS'}"
+                       th:href="@{/projects/{pid}/function-points(pid=${project.id})}"
+                       th:text="#{fp.details.title}">Análisis PF</a>
+                    <a th:if="${sourceTechniqueCode == 'USE_CASE_POINTS'}"
+                       th:href="@{/projects/{pid}/use-case-points(pid=${project.id})}"
+                       th:text="#{ucp.details.title}">Análisis UCP</a>
+                    <span th:if="${sourceTechniqueCode != 'FUNCTION_POINTS' and sourceTechniqueCode != 'USE_CASE_POINTS'}"
+                          th:text="#{breadcrumb.sizeAnalysis}">Análisis de tamaño</span>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.delphi}">Conversión Delphi</li>
+            </ol>
+        </nav>
+
+        <h1 th:text="#{delphi.details.title}">Detalle de la conversión Delphi</h1>
+
+        <!-- RESUMEN -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{delphi.details.summary.title}">Resumen</div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong th:text="#{delphi.field.status}">Estado</strong>:
+                    <span th:if="${!hasFinalCalibration}"
+                          class="badge badge-primary"
+                          th:text="#{delphi.status.inProgress}">
+                        En progreso
+                    </span>
+                    <span th:if="${hasFinalCalibration}"
+                          class="badge badge-success"
+                          th:text="#{delphi.status.finished}">
+                        Finalizada
+                    </span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{delphi.details.sourceTechnique}">Técnica origen</strong>:
+                    <span th:text="${#messages.msgOrNull('technique.' + estimation.sourceTechniqueCode) != null ? #messages.msg('technique.' + estimation.sourceTechniqueCode) : estimation.sourceTechniqueCode}">
+                        Puntos Función
+                    </span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{delphi.details.sourceUnit}">Unidad</strong>:
+                    <span th:text="${sizeUnitLabel}">PF</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{delphi.details.projectSize}">Tamaño del proyecto</strong>:
+                    <span th:text="${#numbers.formatDecimal(estimation.sourceProjectSizeSnapshot, 1, 2)}">0.00</span>
+                    <span th:text="${sizeUnitLabel}">PF</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{delphi.field.acceptableDeviationPercentage}">Desviación aceptable</strong>:
+                    <span th:text="${#numbers.formatDecimal(estimation.acceptableDeviationPercentage, 1, 2)}">10.00</span> %
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{delphi.field.maximumIterations}">Máximo de iteraciones</strong>:
+                    <span th:text="${estimation.maximumIterations}">2</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{delphi.field.expertCount}">Número de expertos</strong>:
+                    <span th:text="${estimation.expertCount}">3</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{delphi.field.minimumModule}">Módulo mínimo</strong>:
+                    <span th:text="${estimation.minimumModuleNameSnapshot}">M11</span>
+                    (
+                    <span th:text="${#numbers.formatDecimal(estimation.minimumModuleSizeSnapshot, 1, 2)}">4.55</span>
+                    <span th:text="${sizeUnitLabel}">PF</span>
+                    )
+                </p>
+
+                <p class="mb-0">
+                    <strong th:text="#{delphi.field.maximumModule}">Módulo máximo</strong>:
+                    <span th:text="${estimation.maximumModuleNameSnapshot}">M22</span>
+                    (
+                    <span th:text="${#numbers.formatDecimal(estimation.maximumModuleSizeSnapshot, 1, 2)}">6.50</span>
+                    <span th:text="${sizeUnitLabel}">PF</span>
+                    )
+                </p>
+            </div>
+        </div>
+
+        <!-- ITERACIONES -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{delphi.details.iterations.title}">Iteraciones</div>
+            <div class="card-body">
+                <div th:if="${estimation.iterations == null or estimation.iterations.isEmpty()}"
+                     class="alert alert-light border mb-0"
+                     th:text="#{delphi.details.iterations.empty}">
+                    Todavía no hay iteraciones registradas.
+                </div>
+
+                <div class="table-responsive"
+                     th:if="${estimation.iterations != null and !estimation.iterations.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{delphi.details.iterations.field.number}">Nº</th>
+                            <th th:text="#{delphi.details.iterations.field.minimumDeviation}">Desv. módulo mínimo</th>
+                            <th th:text="#{delphi.details.iterations.field.maximumDeviation}">Desv. módulo máximo</th>
+                            <th th:text="#{delphi.details.iterations.field.acceptedByDeviation}">Aceptada por desviación</th>
+                            <th th:text="#{delphi.details.iterations.field.acceptedAsLastIteration}">Aceptada por última iteración</th>
+                            <th class="text-right"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="iteration : ${estimation.iterations}">
+                            <td th:text="${iteration.iterationNumber}">1</td>
+                            <td th:text="${#numbers.formatDecimal(iteration.minimumModuleDeviationPercentage, 1, 2)} + ' %'">0.00 %</td>
+                            <td th:text="${#numbers.formatDecimal(iteration.maximumModuleDeviationPercentage, 1, 2)} + ' %'">0.00 %</td>
+                            <td th:text="${iteration.acceptedByDeviation ? #messages.msg('common.boolean.yes') : #messages.msg('common.boolean.no')}">No</td>
+                            <td th:text="${iteration.acceptedAsLastIteration ? #messages.msg('common.boolean.yes') : #messages.msg('common.boolean.no')}">No</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary"
+                                   th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/iterations/{iterationNumber}(
+                                    projectId=${project.id},
+                                    sourceTechniqueCode=${sourceTechniqueCode},
+                                    delphiEstimationId=${estimation.id},
+                                    iterationNumber=${iteration.iterationNumber})}"
+                                   th:text="#{project.action.details}">
+                                    Ver detalle
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3" th:if="${canAddIteration and canManageEffortConversions}">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/iterations/add(
+                        projectId=${project.id},
+                        sourceTechniqueCode=${sourceTechniqueCode},
+                        delphiEstimationId=${estimation.id})}"
+                       th:text="#{delphi.details.iterations.add}">
+                        Registrar nueva iteración
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTADO FINAL -->
+        <div class="card mb-4" th:if="${hasFinalCalibration}">
+            <div class="card-header" th:text="#{delphi.details.finalResult.title}">Resultado final de la conversión</div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong th:text="#{delphi.field.minimumModuleEffort}">Esfuerzo final módulo mínimo</strong>:
+                    <span th:text="${#numbers.formatDecimal(estimation.minimumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                    <span th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{delphi.field.maximumModuleEffort}">Esfuerzo final módulo máximo</strong>:
+                    <span th:text="${#numbers.formatDecimal(estimation.maximumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                    <span th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{delphi.details.finalResult.pointsUsed}">Puntos usados para la recta</strong>:
+                    <span>
+                        (
+                        <span th:text="${#numbers.formatDecimal(estimation.minimumModuleSizeSnapshot, 1, 2)}">0.00</span>
+                        <span th:text="${sizeUnitLabel}">PF</span>,
+                        <span th:text="${#numbers.formatDecimal(estimation.minimumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                        <span th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</span>
+                        )
+                    </span>
+                    <span th:text="#{delphi.details.finalResult.and}">y</span>
+                    <span>
+                        (
+                        <span th:text="${#numbers.formatDecimal(estimation.maximumModuleSizeSnapshot, 1, 2)}">0.00</span>
+                        <span th:text="${sizeUnitLabel}">PF</span>,
+                        <span th:text="${#numbers.formatDecimal(estimation.maximumModuleEstimatedEffortHours, 1, 2)}">0.00</span>
+                        <span th:text="#{fp.delphi.hoursPersonUnit}">H-Persona</span>
+                        )
+                    </span>
+                </p>
+            </div>
+        </div>
+
+        <!-- FUNCIÓN LINEAL -->
+        <div class="card mb-4" th:if="${hasFinalCalibration}">
+            <div class="card-header" th:text="#{delphi.details.linearFunction.title}">Función lineal resultante</div>
+            <div class="card-body">
+                <p class="mb-0">
+                    <strong th:text="#{delphi.details.linearFunction.expression}">Esfuerzo = </strong>
+                    <span th:text="${#numbers.formatDecimal(estimation.regressionIntercept, 1, 4)}">0.0000</span>
+                    +
+                    <span th:text="${#numbers.formatDecimal(estimation.regressionSlope, 1, 4)}">0.0000</span>
+                    ·
+                    <span th:text="#{delphi.details.linearFunction.size}">Tamaño</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- ESFUERZO POR MÓDULO -->
+        <div class="card mb-4" th:if="${hasFinalCalibration}">
+            <div class="card-header" th:text="#{delphi.details.moduleEffort.title}">Esfuerzo estimado por módulo</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{fp.modules.field.name}">Módulo</th>
+                            <th th:text="#{delphi.add.modules.size}">Tamaño</th>
+                            <th th:text="#{delphi.details.moduleEffort.estimatedEffort}">Esfuerzo estimado</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="moduleResult : ${moduleResults}">
+                            <td th:text="${moduleResult.moduleName}">
+                                Módulo
+                            </td>
+
+                            <td>
+                                <span th:text="${#numbers.formatDecimal(moduleResult.size, 1, 2)}">
+                                    0.00
+                                </span>
+                                <span th:text="${estimation.sourceSizeUnitCode}">
+                                    UCP
+                                </span>
+                            </td>
+
+                            <td>
+                                <span th:if="${moduleEstimatedEffortById[moduleResult.moduleId] != null}"
+                                      th:text="${#numbers.formatDecimal(moduleEstimatedEffortById[moduleResult.moduleId], 1, 2)}">
+                                    0.00
+                                </span>
+                                <span th:unless="${moduleEstimatedEffortById[moduleResult.moduleId] != null}">
+                                    -
+                                </span>
+                            </td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr class="font-weight-bold">
+                            <td colspan="2" th:text="#{fp.results.type.total}">Total</td>
+                            <td th:text="${#numbers.formatDecimal(totalEstimatedHours, 1, 2)} + ' ' + #{fp.delphi.hoursPersonUnit}">0.00 H-Persona</td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card mb-4" th:if="${totalEstimatedCost != null}">
+            <div class="card-header" th:text="#{cost.estimated}">Coste estimado</div>
+            <div class="card-body">
+                <p class="mb-0">
+                    <strong th:text="${#numbers.formatDecimal(totalEstimatedCost, 1, 2)}">0.00</strong>
+                    <strong th:text="${project.currencyCode}">EUR</strong>
+                </p>
+            </div>
+        </div>
+
+
+
+
+        <div class="mt-4">
+            <form th:if="${canManageEffortConversions}"
+                  th:action="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/{delphiEstimationId}/delete(
+                      projectId=${project.id},
+                      sourceTechniqueCode=${sourceTechniqueCode},
+                      delphiEstimationId=${estimation.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{delphi.confirm.delete}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{project.action.delete}">
+                    Eliminar
+                </button>
+            </form>
+
+            <a class="btn btn-secondary"
+               th:href="${sourceAnalysisDetailsPath}"
+               th:text="#{fp.details.back}">
+                Volver al análisis PF
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

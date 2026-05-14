@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}" th:text="#{fp.details.title}">Análisis PF</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.addModule}">Añadir módulo</li>
+            </ol>
+        </nav>
+
+        <h1 th:text="#{fp.modules.add.title}">Nuevo módulo</h1>
+        <p th:text="#{fp.modules.add.subtitle}">Introduce los datos básicos del módulo</p>
+
+        <form method="post"
+              th:action="@{/projects/{projectId}/function-points/modules/add(projectId=${project.id})}"
+              th:object="${module}">
+
+            <div class="form-group">
+                <label for="name" th:text="#{fp.modules.field.name}">Nombre del módulo</label>
+                <input type="text"
+                       class="form-control"
+                       id="name"
+                       th:field="*{name}"
+                       required>
+
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('name')}"
+                      th:errors="*{name}"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="description" th:text="#{fp.modules.field.description}">Descripción</label>
+                <textarea class="form-control"
+                          id="description"
+                          th:field="*{description}"
+                          rows="4"></textarea>
+
+                <span class="text-danger"
+                      th:if="${#fields.hasErrors('description')}"
+                      th:errors="*{description}"></span>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary mr-2"
+                    th:text="#{fp.modules.add.submit}">
+                Guardar módulo
+            </button>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/function-points(projectId=${project.id})}"
+               th:text="#{fp.modules.add.cancel}">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

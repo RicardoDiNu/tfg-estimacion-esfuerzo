@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/use-case-points(projectId=${project.id})}" th:text="#{ucp.details.title}">Análisis UCP</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editActor}">Editar actor</li>
+            </ol>
+        </nav>
+
+        <h1 class="mb-4" th:text="#{ucp.actor.edit.title}">
+            Editar actor
+        </h1>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{ucp.actors.title}">
+                Actores
+            </div>
+
+            <div class="card-body">
+                <form th:action="@{/projects/{projectId}/use-case-points/actors/{actorId}/edit(
+                          projectId=${project.id},
+                          actorId=${actor.id})}"
+                      th:object="${actorForm}"
+                      method="post">
+
+                    <div class="form-group">
+                        <label for="name" th:text="#{ucp.actor.field.name}">
+                            Nombre del actor
+                        </label>
+                        <input id="name"
+                               type="text"
+                               class="form-control"
+                               th:field="*{name}"
+                               maxlength="150">
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('name')}"
+                             th:errors="*{name}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" th:text="#{ucp.actor.field.description}">
+                            Descripción
+                        </label>
+                        <textarea id="description"
+                                  class="form-control"
+                                  rows="3"
+                                  th:field="*{description}"
+                                  maxlength="1000"></textarea>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('description')}"
+                             th:errors="*{description}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="complexity" th:text="#{ucp.field.complexity}">
+                            Complejidad
+                        </label>
+                        <select id="complexity"
+                                class="form-control"
+                                th:field="*{complexity}">
+                            <option value="" th:text="#{form.select.placeholder}">
+                                -- Selecciona una opción --
+                            </option>
+                            <option th:each="complexity : ${actorComplexities}"
+                                    th:value="${complexity}"
+                                    th:text="${#messages.msg(complexity.messageKey) + ' (' + complexity.weight + ')'}">
+                                Simple
+                            </option>
+                        </select>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('complexity')}"
+                             th:errors="*{complexity}">
+                            Error
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit"
+                                class="btn btn-primary mr-2"
+                                th:text="#{project.action.save}">
+                            Guardar
+                        </button>
+
+                        <a class="btn btn-secondary"
+                           th:href="@{/projects/{projectId}/use-case-points(projectId=${project.id})}"
+                           th:text="#{common.back}">
+                            Volver
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

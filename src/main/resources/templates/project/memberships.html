@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container-fluid fp-analysis-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.manageWorkers}">Gestión de trabajadores</li>
+            </ol>
+        </nav>
+
+        <h1 class="mb-4" th:text="#{project.membership.title}">
+            Gestión de trabajadores
+        </h1>
+
+        <!-- CONTEXTO -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{project.membership.context}">
+                Proyecto
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{project.field.name}">
+                        Nombre
+                    </h6>
+                    <p class="card-text mb-0" th:text="${project.name}">
+                        Proyecto
+                    </p>
+                </div>
+
+                <div>
+                    <h6 class="text-muted" th:text="#{project.field.description}">
+                        Descripción
+                    </h6>
+                    <p class="card-text mb-0"
+                       th:text="${project.description != null and !#strings.isEmpty(project.description) ? project.description : '-'}">
+                        Descripción
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRABAJADORES ASIGNADOS -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{project.membership.assigned.title}">
+                Trabajadores asignados
+            </div>
+
+            <div class="card-body">
+                <div th:if="${memberships == null or memberships.isEmpty()}"
+                     class="alert alert-light border mb-0"
+                     th:text="#{project.membership.assigned.empty}">
+                    Todavía no hay trabajadores asignados a este proyecto.
+                </div>
+
+                <div class="table-responsive"
+                     th:if="${memberships != null and !memberships.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{project.membership.field.worker}">
+                                Trabajador
+                            </th>
+                            <th th:text="#{project.membership.field.canEditEstimationData}">
+                                Editar datos
+                            </th>
+                            <th th:text="#{project.membership.field.canManageEffortConversions}">
+                                Gestionar conversiones
+                            </th>
+                            <th class="text-right"></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="membership : ${memberships}">
+                            <td th:text="${membership.worker.username}">
+                                trabajador
+                            </td>
+
+                            <td>
+                                <span th:if="${membership.canEditEstimationData}"
+                                      class="badge badge-success"
+                                      th:text="#{common.yes}">
+                                    Sí
+                                </span>
+                                <span th:unless="${membership.canEditEstimationData}"
+                                      class="badge badge-secondary"
+                                      th:text="#{common.no}">
+                                    No
+                                </span>
+                            </td>
+
+                            <td>
+                                <span th:if="${membership.canManageEffortConversions}"
+                                      class="badge badge-success"
+                                      th:text="#{common.yes}">
+                                    Sí
+                                </span>
+                                <span th:unless="${membership.canManageEffortConversions}"
+                                      class="badge badge-secondary"
+                                      th:text="#{common.no}">
+                                    No
+                                </span>
+                            </td>
+
+                            <td>
+                                <form th:action="@{/projects/{projectId}/memberships/{workerId}/remove(
+                                          projectId=${project.id},
+                                          workerId=${membership.worker.id})}"
+                                      method="post"
+                                      class="d-inline"
+                                      th:onsubmit="|return confirm('#{project.membership.confirm.remove}');|">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            th:text="#{project.membership.action.remove}">
+                                        Quitar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ASIGNAR / ACTUALIZAR TRABAJADOR -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{project.membership.assign.title}">
+                Asignar trabajador
+            </div>
+
+            <div class="card-body">
+                <div th:if="${availableWorkers == null or availableWorkers.isEmpty()}"
+                     class="alert alert-light border mb-0"
+                     th:text="#{project.membership.assign.empty}">
+                    No hay usuarios con rol de trabajador disponibles.
+                </div>
+
+                <form th:if="${availableWorkers != null and !availableWorkers.isEmpty()}"
+                      th:action="@{/projects/{projectId}/memberships/assign(projectId=${project.id})}"
+                      th:object="${membershipForm}"
+                      method="post">
+
+                    <div class="form-group">
+                        <label for="workerId"
+                               th:text="#{project.membership.field.worker}">
+                            Trabajador
+                        </label>
+
+                        <select id="workerId"
+                                class="form-control"
+                                th:field="*{workerId}">
+                            <option value=""
+                                    th:text="#{form.select.placeholder}">
+                                -- Selecciona una opción --
+                            </option>
+
+                            <option th:each="worker : ${availableWorkers}"
+                                    th:value="${worker.id}"
+                                    th:text="${worker.username}">
+                                trabajador
+                            </option>
+                        </select>
+
+                        <div class="text-danger mt-1"
+                             th:if="${#fields.hasErrors('workerId')}"
+                             th:errors="*{workerId}">
+                            Error
+                        </div>
+
+                        <small class="form-text text-muted"
+                               th:text="#{project.membership.help.assign}">
+                            Si el trabajador ya está asignado, se actualizarán sus permisos.
+                        </small>
+                    </div>
+
+                    <div class="form-check mb-2">
+                        <input id="canEditEstimationData"
+                               type="checkbox"
+                               class="form-check-input"
+                               th:field="*{canEditEstimationData}">
+                        <label class="form-check-label"
+                               for="canEditEstimationData"
+                               th:text="#{project.membership.field.canEditEstimationData}">
+                            Puede editar datos de estimación
+                        </label>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input id="canManageEffortConversions"
+                               type="checkbox"
+                               class="form-check-input"
+                               th:field="*{canManageEffortConversions}">
+                        <label class="form-check-label"
+                               for="canManageEffortConversions"
+                               th:text="#{project.membership.field.canManageEffortConversions}">
+                            Puede gestionar conversiones
+                        </label>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary mr-2"
+                            th:text="#{project.membership.action.assign}">
+                        Asignar trabajador
+                    </button>
+
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4 mb-4">
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}(projectId=${project.id})}"
+               th:text="#{common.back}">
+                Volver
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

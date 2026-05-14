@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container-fluid fp-analysis-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/use-case-points(projectId=${project.id})}" th:text="#{ucp.details.title}">Análisis UCP</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}(projectId=${project.id},moduleId=${module.id})}" th:text="${module.name}">Módulo</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${useCase.name}">Caso de uso</li>
+            </ol>
+        </nav>
+
+        <h1 class="mb-4" th:text="#{ucp.useCase.details.title}">
+            Detalle del caso de uso
+        </h1>
+
+        <!-- DATOS DEL CASO DE USO -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{ucp.useCase.details.data}">
+                Datos del caso de uso
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{ucp.module.field.name}">
+                        Nombre del módulo
+                    </h6>
+                    <p class="card-text mb-0" th:text="${module.name}">
+                        Módulo
+                    </p>
+                </div>
+
+                <div class="mb-3 pt-3 border-top">
+                    <h6 class="text-muted" th:text="#{ucp.useCase.field.name}">
+                        Nombre del caso de uso
+                    </h6>
+                    <p class="card-text mb-0" th:text="${useCase.name}">
+                        Caso de uso
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{ucp.useCase.field.description}">
+                        Descripción
+                    </h6>
+                    <p class="card-text mb-0"
+                       style="white-space: pre-line"
+                       th:text="${useCase.description != null and !#strings.isEmpty(useCase.description) ? useCase.description : '-'}">
+                        Descripción
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{ucp.useCase.field.actors}">
+                        Actores
+                    </h6>
+
+                    <p class="card-text mb-0">
+                        <span th:if="${useCase.actors == null or useCase.actors.isEmpty()}">-</span>
+
+                        <span th:each="actor, stat : ${useCase.actors}">
+                            <span th:text="${actor.name}">Actor</span>
+                            <span class="text-muted">
+                                (<span th:text="${#messages.msg(actor.complexity.messageKey)}">Simple</span>,
+                                <span th:text="${actor.weight}">1</span>)
+                            </span><span th:if="${!stat.last}">, </span>
+                        </span>
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{ucp.useCase.field.triggerCondition}">
+                        Condición de inicio
+                    </h6>
+                    <p class="card-text mb-0"
+                       style="white-space: pre-line"
+                       th:text="${useCase.triggerCondition != null and !#strings.isEmpty(useCase.triggerCondition) ? useCase.triggerCondition : '-'}">
+                        Condición de inicio
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{ucp.useCase.field.preconditions}">
+                        Precondiciones
+                    </h6>
+                    <p class="card-text mb-0"
+                       style="white-space: pre-line"
+                       th:text="${useCase.preconditions != null and !#strings.isEmpty(useCase.preconditions) ? useCase.preconditions : '-'}">
+                        Precondiciones
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{ucp.useCase.field.postconditions}">
+                        Postcondiciones
+                    </h6>
+                    <p class="card-text mb-0"
+                       style="white-space: pre-line"
+                       th:text="${useCase.postconditions != null and !#strings.isEmpty(useCase.postconditions) ? useCase.postconditions : '-'}">
+                        Postcondiciones
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{ucp.useCase.field.normalFlow}">
+                        Flujo normal
+                    </h6>
+                    <p class="card-text mb-0"
+                       style="white-space: pre-line"
+                       th:text="${useCase.normalFlow != null and !#strings.isEmpty(useCase.normalFlow) ? useCase.normalFlow : '-'}">
+                        Flujo normal
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="text-muted" th:text="#{ucp.useCase.field.alternativeFlows}">
+                        Flujos alternativos
+                    </h6>
+                    <p class="card-text mb-0"
+                       style="white-space: pre-line"
+                       th:text="${useCase.alternativeFlows != null and !#strings.isEmpty(useCase.alternativeFlows) ? useCase.alternativeFlows : '-'}">
+                        Flujos alternativos
+                    </p>
+                </div>
+
+                <div>
+                    <h6 class="text-muted" th:text="#{ucp.useCase.field.exceptionFlows}">
+                        Excepciones
+                    </h6>
+                    <p class="card-text mb-0"
+                       style="white-space: pre-line"
+                       th:text="${useCase.exceptionFlows != null and !#strings.isEmpty(useCase.exceptionFlows) ? useCase.exceptionFlows : '-'}">
+                        Excepciones
+                    </p>
+                </div>
+
+                <div class="mt-4">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}/use-cases/{useCaseId}/edit(
+           projectId=${project.id},
+           moduleId=${module.id},
+           useCaseId=${useCase.id})}"
+                       th:text="#{ucp.useCase.action.edit}">
+                        Editar caso de uso
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{ucp.results.title}">
+                Resultados
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-3">
+                        <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                            <h6 class="text-muted mb-2" th:text="#{ucp.useCase.field.transactionCount}">
+                                Número de transacciones
+                            </h6>
+                            <p class="card-text mb-0 fp-result-value"
+                               th:text="${useCase.transactionCount}">
+                                0
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4 mb-3">
+                        <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                            <h6 class="text-muted mb-2" th:text="#{ucp.field.complexity}">
+                                Complejidad
+                            </h6>
+                            <p class="card-text mb-0 fp-result-value"
+                               th:text="${#messages.msg(useCase.complexity.messageKey)}">
+                                Simple
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4 mb-3">
+                        <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                            <h6 class="text-muted mb-2" th:text="#{ucp.field.weight}">
+                                Peso
+                            </h6>
+                            <p class="card-text mb-0 fp-result-value"
+                               th:text="${useCase.weight}">
+                                5
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="mt-4 mb-4">
+            <form th:action="@{/projects/{projectId}/use-case-points/modules/{moduleId}/use-cases/{useCaseId}/delete(
+                      projectId=${project.id},
+                      moduleId=${module.id},
+                      useCaseId=${useCase.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{ucp.useCase.confirm.delete}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{project.action.delete}">
+                    Eliminar
+                </button>
+            </form>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}(
+                   projectId=${project.id},
+                   moduleId=${module.id})}"
+               th:text="#{common.back}">
+                Volver
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>

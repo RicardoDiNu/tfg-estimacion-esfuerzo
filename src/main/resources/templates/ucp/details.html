@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container-fluid fp-analysis-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{ucp.details.title}">Análisis UCP</li>
+            </ol>
+        </nav>
+
+        <h1 class="mb-4" th:text="#{ucp.details.title}">
+            Análisis UCP
+        </h1>
+
+        <div class="alert alert-danger"
+             th:if="${errorMessage != null}"
+             th:text="${errorMessage}">
+            No se puede completar la operación.
+        </div>
+
+        <!-- CONTEXTO -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{ucp.details.context}">
+                Contexto del análisis
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3" th:if="${canEditEstimationData == true}">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/use-case-points/edit(projectId=${project.id})}"
+                       th:text="#{ucp.details.editAnalysis}">
+                        Editar análisis
+                    </a>
+                </div>
+
+                <div class="fp-context-item mb-3">
+                    <h6 class="text-muted" th:text="#{ucp.details.project}">
+                        Proyecto
+                    </h6>
+                    <p class="card-text mb-1" th:text="${project.name}">
+                        Proyecto
+                    </p>
+                    <p class="card-text text-muted mb-0"
+                       th:if="${project.description != null and !#strings.isEmpty(project.description)}"
+                       th:text="${project.description}">
+                        Descripción
+                    </p>
+                </div>
+
+                <div class="fp-context-item pt-3 border-top">
+                    <h6 class="text-muted" th:text="#{ucp.field.systemBoundary}">
+                        Límite del sistema
+                    </h6>
+                    <p class="card-text mb-0"
+                       th:text="${analysis.systemBoundaryDescription != null and !#strings.isEmpty(analysis.systemBoundaryDescription) ? analysis.systemBoundaryDescription : '-'}">
+                        Límite del sistema
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTORES -->
+        <div class="card mb-4" id="actors-container" th:fragment="actorsSection">
+            <div class="card-header" th:text="#{ucp.actors.title}">
+                Actores
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3" th:if="${canEditEstimationData == true}">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/use-case-points/actors/add(projectId=${project.id})}"
+                       th:text="#{ucp.actor.action.add}">
+                        Añadir actor
+                    </a>
+                </div>
+
+                <div th:if="${actorsList == null or actorsList.isEmpty()}"
+                     class="alert alert-light border mb-0"
+                     th:text="#{ucp.actors.empty}">
+                    Todavía no hay actores registrados.
+                </div>
+
+                <div class="table-responsive"
+                     th:if="${actorsList != null and !actorsList.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{ucp.actor.field.name}">Nombre</th>
+                            <th th:text="#{ucp.field.complexity}">Complejidad</th>
+                            <th th:text="#{ucp.field.weight}">Peso</th>
+                            <th class="text-right"></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="actor : ${actorsList}">
+                            <td th:text="${actor.name}">Actor</td>
+                            <td th:text="${#messages.msg(actor.complexity.messageKey)}">Simple</td>
+                            <td th:text="${actor.weight}">1</td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                       th:if="${canEditEstimationData == true}"
+                                       th:href="@{/projects/{projectId}/use-case-points/actors/{actorId}/edit(
+                                           projectId=${project.id},
+                                           actorId=${actor.id})}"
+                                       th:text="#{project.action.edit}">
+                                        Editar
+                                    </a>
+
+                                    <form th:if="${canEditEstimationData == true}"
+                                          th:action="@{/projects/{projectId}/use-case-points/actors/{actorId}/delete(
+                                              projectId=${project.id},
+                                              actorId=${actor.id})}"
+                                          method="post"
+                                          class="d-inline"
+                                          th:onsubmit="|return confirm('#{ucp.actor.confirm.delete}');|">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger mb-2"
+                                                th:text="#{project.action.delete}">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-center mt-4" th:if="${actorsPage.totalPages > 1}">
+                    <ul class="pagination justify-content-center mb-0">
+
+                        <li class="page-item" th:classappend="${actorsPage.number == 0} ? 'disabled'">
+                            <a class="page-link ucp-actors-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/actors/update(
+                                   projectId=${project.id},
+                                   actorsPage=0,
+                                   modulesPage=${modulesPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=0,
+                                   modulesPage=${modulesPage.number})}"
+                               th:text="#{pagination.first}">
+                                Primera
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${actorsPage.number - 1 >= 0}">
+                            <a class="page-link ucp-actors-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/actors/update(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number - 1},
+                                   modulesPage=${modulesPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number - 1},
+                                   modulesPage=${modulesPage.number})}"
+                               th:text="${actorsPage.number}">
+                                1
+                            </a>
+                        </li>
+
+                        <li class="page-item active">
+                            <a class="page-link ucp-actors-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/actors/update(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number})}"
+                               th:text="${actorsPage.number + 1}">
+                                2
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${actorsPage.number + 1 <= actorsPage.totalPages - 1}">
+                            <a class="page-link ucp-actors-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/actors/update(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number + 1},
+                                   modulesPage=${modulesPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number + 1},
+                                   modulesPage=${modulesPage.number})}"
+                               th:text="${actorsPage.number + 2}">
+                                3
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${actorsPage.number == actorsPage.totalPages - 1} ? 'disabled'">
+                            <a class="page-link ucp-actors-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/actors/update(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.totalPages - 1},
+                                   modulesPage=${modulesPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.totalPages - 1},
+                                   modulesPage=${modulesPage.number})}"
+                               th:text="#{pagination.last}">
+                                Última
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÓDULOS -->
+        <div class="card mb-4" id="ucp-modules-container" th:fragment="modulesSection">
+            <div class="card-header" th:text="#{ucp.modules.title}">
+                Módulos del análisis UCP
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3" th:if="${canEditEstimationData == true}">
+                    <a class="btn btn-outline-primary"
+                       th:href="@{/projects/{projectId}/use-case-points/modules/add(projectId=${project.id})}"
+                       th:text="#{ucp.module.action.add}">
+                        Añadir módulo
+                    </a>
+                </div>
+
+                <div th:if="${modulesList == null or modulesList.isEmpty()}"
+                     class="alert alert-light border mb-0"
+                     th:text="#{ucp.modules.empty}">
+                    Todavía no hay módulos registrados para este análisis UCP.
+                </div>
+
+                <div class="table-responsive"
+                     th:if="${modulesList != null and !modulesList.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th th:text="#{ucp.module.field.name}">Nombre del módulo</th>
+                            <th th:text="#{ucp.field.unadjustedSize}">Tamaño no ajustado</th>
+                            <th th:text="#{ucp.field.adjustedSize}">Tamaño ajustado</th>
+                            <th class="text-right"></th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr th:each="module : ${modulesList}">
+                            <td th:text="${module.name}">Módulo</td>
+
+                            <td>
+                                <span th:text="${#numbers.formatDecimal(moduleUnadjustedSizeById[module.id], 1, 2)}">
+                                    0.00
+                                </span>
+                                <span th:text="#{project.details.ucp.sizeUnit}">
+                                    UCP
+                                </span>
+                            </td>
+
+                            <td>
+                                <span th:text="${#numbers.formatDecimal(moduleAdjustedSizeById[module.id], 1, 2)}">
+                                    0.00
+                                </span>
+                                <span th:text="#{project.details.ucp.sizeUnit}">
+                                    UCP
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a class="btn btn-sm btn-outline-primary mr-2 mb-2"
+                                       th:href="@{/projects/{projectId}/use-case-points/modules/{moduleId}(
+                                           projectId=${project.id},
+                                           moduleId=${module.id})}"
+                                       th:text="#{project.action.details}">
+                                        Ver detalle
+                                    </a>
+
+                                    <form th:if="${canEditEstimationData == true}"
+                                          th:action="@{/projects/{projectId}/use-case-points/modules/{moduleId}/delete(
+                                              projectId=${project.id},
+                                              moduleId=${module.id})}"
+                                          method="post"
+                                          class="d-inline"
+                                          th:onsubmit="|return confirm('#{ucp.module.confirm.delete}');|">
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger mb-2"
+                                                th:text="#{project.action.delete}">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-center mt-4" th:if="${modulesPage.totalPages > 1}">
+                    <ul class="pagination justify-content-center mb-0">
+
+                        <li class="page-item" th:classappend="${modulesPage.number == 0} ? 'disabled'">
+                            <a class="page-link ucp-modules-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/modules/update(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=0)}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=0)}"
+                               th:text="#{pagination.first}">
+                                Primera
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${modulesPage.number - 1 >= 0}">
+                            <a class="page-link ucp-modules-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/modules/update(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number - 1})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number - 1})}"
+                               th:text="${modulesPage.number}">
+                                1
+                            </a>
+                        </li>
+
+                        <li class="page-item active">
+                            <a class="page-link ucp-modules-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/modules/update(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number})}"
+                               th:text="${modulesPage.number + 1}">
+                                2
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:if="${modulesPage.number + 1 <= modulesPage.totalPages - 1}">
+                            <a class="page-link ucp-modules-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/modules/update(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number + 1})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.number + 1})}"
+                               th:text="${modulesPage.number + 2}">
+                                3
+                            </a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${modulesPage.number == modulesPage.totalPages - 1} ? 'disabled'">
+                            <a class="page-link ucp-modules-page-link"
+                               th:href="@{/projects/{projectId}/use-case-points/modules/update(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.totalPages - 1})}"
+                               th:attr="data-browser-url=@{/projects/{projectId}/use-case-points(
+                                   projectId=${project.id},
+                                   actorsPage=${actorsPage.number},
+                                   modulesPage=${modulesPage.totalPages - 1})}"
+                               th:text="#{pagination.last}">
+                                Última
+                            </a>
+                        </li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- FACTORES -->
+        <div class="row mb-4">
+            <div class="col-12 col-lg-6 mb-4 mb-lg-0">
+                <div class="card h-100">
+                    <div class="card-header" th:text="#{ucp.technicalFactors.title}">
+                        Factores técnicos
+                    </div>
+
+                    <div class="card-body">
+                        <div class="mb-3" th:if="${canEditEstimationData == true}">
+                            <a class="btn btn-outline-primary"
+                               th:href="@{/projects/{projectId}/use-case-points/technical-factors/edit(projectId=${project.id})}"
+                               th:text="#{project.action.edit}">
+                                Editar
+                            </a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                <tr>
+                                    <th th:text="#{ucp.factors.field.name}">Factor</th>
+                                    <th th:text="#{ucp.factors.field.weight}">Peso</th>
+                                    <th th:text="#{ucp.factors.field.degree}">Grado</th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr th:each="factor : ${technicalFactorsList}">
+                                    <td th:text="${#messages.msg(factor.factorType.messageKey)}">Factor</td>
+                                    <td th:text="${#numbers.formatDecimal(factor.factorType.weight, 1, 2)}">1.00</td>
+                                    <td th:text="${factor.degreeOfInfluence}">0</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header" th:text="#{ucp.environmentalFactors.title}">
+                        Factores ambientales
+                    </div>
+
+                    <div class="card-body">
+                        <div class="mb-3" th:if="${canEditEstimationData == true}">
+                            <a class="btn btn-outline-primary"
+                               th:href="@{/projects/{projectId}/use-case-points/environmental-factors/edit(projectId=${project.id})}"
+                               th:text="#{project.action.edit}">
+                                Editar
+                            </a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                <tr>
+                                    <th th:text="#{ucp.factors.field.name}">Factor</th>
+                                    <th th:text="#{ucp.factors.field.weight}">Peso</th>
+                                    <th th:text="#{ucp.factors.field.degree}">Grado</th>
+                                </tr>
+                                </thead>
+
+                                <tbody>
+                                <tr th:each="factor : ${environmentalFactorsList}">
+                                    <td th:text="${#messages.msg(factor.factorType.messageKey)}">Factor</td>
+                                    <td th:text="${#numbers.formatDecimal(factor.factorType.weight, 1, 2)}">1.00</td>
+                                    <td th:text="${factor.degreeOfInfluence}">0</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTADOS + CONVERSIONES -->
+        <div class="row">
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header" th:text="#{ucp.results.title}">
+                        Resultados
+                    </div>
+
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-sm-6 mb-3">
+                                <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.uaw}">UAW</h6>
+                                    <p class="card-text mb-0 fp-result-value"
+                                       th:text="${results.unadjustedActorWeight}">
+                                        0
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6 mb-3">
+                                <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.uucw}">UUCW</h6>
+                                    <p class="card-text mb-0 fp-result-value"
+                                       th:text="${results.unadjustedUseCaseWeight}">
+                                        0
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6 mb-3">
+                                <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.tcf}">TCF</h6>
+                                    <p class="card-text mb-0 fp-result-value"
+                                       th:text="${#numbers.formatDecimal(results.technicalComplexityFactor, 1, 2)}">
+                                        0.00
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6 mb-3">
+                                <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.ecf}">ECF</h6>
+                                    <p class="card-text mb-0 fp-result-value"
+                                       th:text="${#numbers.formatDecimal(results.environmentalComplexityFactor, 1, 2)}">
+                                        0.00
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="border rounded p-3 bg-light h-100 fp-result-box">
+                                    <h6 class="text-muted mb-2" th:text="#{ucp.field.ucp}">
+                                        Use Case Points
+                                    </h6>
+                                    <p class="card-text mb-0 fp-result-value">
+                                        <span th:text="${#numbers.formatDecimal(results.adjustedUseCasePoints, 1, 2)}">
+                                            0.00
+                                        </span>
+                                        <span th:text="#{project.details.ucp.sizeUnit}">
+                                            UCP
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- CONVERSIONES -->
+            <div class="col-12 col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header" th:text="#{project.details.ucp.delphi.title}">
+                        Conversión a esfuerzo Delphi
+                    </div>
+
+                    <div class="card-body">
+                        <div class="mb-3" th:if="${canManageEffortConversions == true}">
+                            <a class="btn btn-outline-primary"
+                               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/delphi/access(
+                                   projectId=${project.id},
+                                   sourceTechniqueCode=${analysis.techniqueCode})}">
+
+                                <span th:if="${activeUseCasePointDelphi == null}"
+                                      th:text="#{fp.delphi.action.start}">
+                                    Iniciar Delphi
+                                </span>
+
+                                <span th:if="${activeUseCasePointDelphi != null and activeUseCasePointDelphi.regressionIntercept == null}"
+                                      th:text="#{fp.delphi.action.continue}">
+                                    Continuar Delphi
+                                </span>
+
+                                <span th:if="${activeUseCasePointDelphi != null and activeUseCasePointDelphi.regressionIntercept != null}"
+                                      th:text="#{fp.delphi.action.details}">
+                                    Ver Delphi
+                                </span>
+                            </a>
+                        </div>
+
+                        <div th:if="${activeUseCasePointDelphi == null}"
+                             class="alert alert-light border mb-0"
+                             th:text="#{project.details.ucp.delphi.empty}">
+                            Todavía no hay una conversión Delphi finalizada disponible para UCP.
+                        </div>
+
+                        <div th:if="${activeUseCasePointDelphi != null}">
+                            <p class="mb-2">
+                                <strong th:text="#{fp.delphi.field.status}">Estado</strong>:
+                                <span th:if="${activeUseCasePointDelphi.regressionIntercept == null}"
+                                      class="badge badge-primary"
+                                      th:text="#{fp.delphi.status.inProgress}">
+                                    En progreso
+                                </span>
+                                <span th:if="${activeUseCasePointDelphi.regressionIntercept != null}"
+                                      class="badge badge-success"
+                                      th:text="#{fp.delphi.status.finished}">
+                                    Finalizada
+                                </span>
+                            </p>
+
+                            <p class="mb-2">
+                                <strong th:text="#{fp.delphi.field.iterations}">
+                                    Iteraciones registradas
+                                </strong>:
+                                <span th:text="${activeUseCasePointDelphiIterationsCount}">
+                                    0
+                                </span>
+                            </p>
+
+                            <p class="mb-2">
+                                <strong th:text="#{fp.delphi.field.maximumIterations}">
+                                    Número máximo de iteraciones
+                                </strong>:
+                                <span th:text="${activeUseCasePointDelphi.maximumIterations}">
+                                    1
+                                </span>
+                            </p>
+
+                            <p class="mb-3">
+                                <strong th:text="#{fp.delphi.field.acceptableDeviationPercentage}">
+                                    Desviación aceptable
+                                </strong>:
+                                <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.acceptableDeviationPercentage, 1, 2)}">
+                                    10.00
+                                </span>
+                                %
+                            </p>
+                        </div>
+
+                        <div th:if="${activeUseCasePointDelphi != null and activeUseCasePointDelphi.regressionIntercept != null}">
+                            <div class="border rounded p-3 bg-light">
+                                <p class="card-text mb-1">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointDelphiEstimatedTotalHours, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="#{fp.delphi.hoursPersonUnit}">
+                                        H-Persona
+                                    </strong>
+                                </p>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{fp.delphi.field.minimumModuleEffort}">
+                                        H-Persona módulo mínimo
+                                    </span>:
+                                    <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.minimumModuleEstimatedEffortHours, 1, 2)}">
+                                        0.00
+                                    </span>
+                                    <span th:text="#{fp.delphi.hoursPersonUnit}">
+                                        H-Persona
+                                    </span>
+                                </small>
+
+                                <small class="text-muted d-block">
+                                    <span th:text="#{fp.delphi.field.maximumModuleEffort}">
+                                        H-Persona módulo máximo
+                                    </span>:
+                                    <span th:text="${#numbers.formatDecimal(activeUseCasePointDelphi.maximumModuleEstimatedEffortHours, 1, 2)}">
+                                        0.00
+                                    </span>
+                                    <span th:text="#{fp.delphi.hoursPersonUnit}">
+                                        H-Persona
+                                    </span>
+                                </small>
+
+                                <p class="card-text mb-0 mt-2"
+                                   th:if="${useCasePointDelphiEstimatedCost != null}">
+                                    <strong th:text="${#numbers.formatDecimal(useCasePointDelphiEstimatedCost, 1, 2)}">
+                                        0.00
+                                    </strong>
+                                    <strong th:text="${project.currencyCode}">
+                                        EUR
+                                    </strong>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header" th:text="#{project.details.ucp.transformation.title}">
+                        Conversión a esfuerzo con función de transformación
+                    </div>
+
+                    <div class="card-body">
+                        <div class="mb-3" th:if="${canManageEffortConversions == true}">
+                            <a class="btn btn-outline-primary"
+                               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/access(
+                                   projectId=${project.id},
+                                   sourceTechniqueCode=${analysis.techniqueCode})}">
+
+                                <span th:if="${activeUseCasePointTransformationConversion == null}"
+                                      th:text="#{fp.transformation.action.start}">
+                                    Iniciar función
+                                </span>
+
+                                <span th:if="${activeUseCasePointTransformationConversion != null}"
+                                      th:text="#{fp.transformation.action.details}">
+                                    Ver función
+                                </span>
+                            </a>
+                        </div>
+
+                        <div th:if="${activeUseCasePointTransformationConversion == null}"
+                             class="alert alert-light border mb-0"
+                             th:text="#{project.details.ucp.transformation.empty}">
+                            Todavía no hay una conversión mediante función de transformación disponible para UCP.
+                        </div>
+
+                        <div th:if="${activeUseCasePointTransformationConversion != null and useCasePointTransformationEstimatedHours != null}"
+                             class="border rounded p-3 bg-light">
+                            <p class="card-text mb-1">
+                                <strong th:text="${#numbers.formatDecimal(useCasePointTransformationEstimatedHours, 1, 2)}">
+                                    0.00
+                                </strong>
+                                <strong th:text="#{fp.delphi.hoursPersonUnit}">
+                                    H-Persona
+                                </strong>
+                            </p>
+
+                            <small class="text-muted d-block">
+                                <span th:text="#{project.details.fp.transformation.function}">
+                                    Función aplicada
+                                </span>:
+                                <span th:text="${activeUseCasePointTransformationConversion.functionNameSnapshot}">
+                                    Función personalizada
+                                </span>
+                            </small>
+
+                            <small class="text-muted d-block">
+                                <span th:text="#{project.details.fp.transformation.formula}">
+                                    Fórmula
+                                </span>:
+                                <span>
+                                    E =
+                                    <span th:text="${#numbers.formatDecimal(activeUseCasePointTransformationConversion.interceptSnapshot, 1, 2)}">
+                                        0.00
+                                    </span>
+                                    +
+                                    <span th:text="${#numbers.formatDecimal(activeUseCasePointTransformationConversion.slopeSnapshot, 1, 2)}">
+                                        0.00
+                                    </span>
+                                    ×
+                                    <span th:text="${activeUseCasePointTransformationConversion.sourceSizeUnitCode}">
+                                        UCP
+                                    </span>
+                                </span>
+                            </small>
+
+                            <p class="card-text mb-0 mt-2"
+                               th:if="${useCasePointTransformationEstimatedCost != null}">
+                                <strong th:text="${#numbers.formatDecimal(useCasePointTransformationEstimatedCost, 1, 2)}">
+                                    0.00
+                                </strong>
+                                <strong th:text="${project.currencyCode}">
+                                    EUR
+                                </strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCIONES -->
+        <div class="mt-4">
+            <a class="btn btn-primary mr-2"
+               th:href="@{/projects/{projectId}/use-case-points/report/pdf(projectId=${project.id})}"
+               th:text="#{ucp.report.generate.button}">
+                Generar informe
+            </a>
+
+            <a class="btn btn-primary mr-2"
+               th:href="@{/projects/{projectId}/use-case-points/export/xml(projectId=${project.id})}"
+               th:text="#{ucp.export.xml.button}">
+                Exportar XML
+            </a>
+
+            <form th:if="${canManageProject == true}"
+                  th:action="@{/projects/{projectId}/use-case-points/delete(projectId=${project.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{ucp.confirm.deleteAnalysis}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{project.action.delete}">
+                    Eliminar análisis
+                </button>
+            </form>
+
+            <a class="btn btn-secondary"
+               th:href="@{/projects/{id}(id=${project.id})}"
+               th:text="#{ucp.details.back}">
+                Volver al proyecto
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<script th:src="@{/js/ucp-details-pagination.js}"></script>
+
+</body>
+</html>

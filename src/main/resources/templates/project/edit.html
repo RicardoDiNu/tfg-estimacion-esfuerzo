@@ -7,7 +7,19 @@
 
 <main class="app-content">
     <div class="container">
-        <h1>Editar proyecto</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.editProject}">Editar proyecto</li>
+            </ol>
+        </nav>
+
+        <h1 th:text="#{project.edit.title}">Editar proyecto</h1>
 
         <form method="post"
               th:action="@{/projects/edit/{projectId}(projectId=${project.id})}"
@@ -17,7 +29,7 @@
             <input type="hidden" name="page" th:value="${page}"/>
 
             <div class="form-group">
-                <label for="name">Nombre</label>
+                <label for="name" th:text="#{project.field.name}">Nombre</label>
                 <input type="text"
                        class="form-control"
                        id="name"
@@ -30,7 +42,7 @@
             </div>
 
             <div class="form-group">
-                <label for="description">Descripción</label>
+                <label for="description" th:text="#{project.field.description}">Descripción</label>
                 <textarea class="form-control"
                           id="description"
                           th:field="*{description}"
@@ -41,21 +53,59 @@
                       th:errors="*{description}"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary mr-2">
-                Guardar cambios
-            </button>
+            <div class="form-group">
+                <label for="hourlyRate" th:text="#{project.field.hourlyRate}">
+                    Coste por hora
+                </label>
+                <input id="hourlyRate"
+                       type="number"
+                       class="form-control"
+                       th:field="*{hourlyRate}"
+                       min="0"
+                       step="0.01">
+                <small class="form-text text-muted"
+                       th:text="#{project.help.hourlyRate}">
+                    Campo opcional. Si se indica, se calculará automáticamente el coste de las conversiones a esfuerzo.
+                </small>
+                <div class="text-danger mt-1"
+                     th:if="${#fields.hasErrors('hourlyRate')}"
+                     th:errors="*{hourlyRate}">
+                    Error
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="currencyCode" th:text="#{project.field.currencyCode}">
+                    Moneda
+                </label>
+                <input id="currencyCode"
+                       type="text"
+                       class="form-control"
+                       th:field="*{currencyCode}"
+                       maxlength="3"
+                       placeholder="EUR">
+                <small class="form-text text-muted"
+                       th:text="#{project.help.currencyCode}">
+                    Código de moneda de tres letras. Por defecto, EUR.
+                </small>
+                <div class="text-danger mt-1"
+                     th:if="${#fields.hasErrors('currencyCode')}"
+                     th:errors="*{currencyCode}">
+                    Error
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mr-2" th:text="#{project.edit.submit}">Guardar cambios</button>
 
             <a class="btn btn-secondary"
                th:if="${returnTo == 'details'}"
-               th:href="@{/projects/{projectId}(projectId=${project.id})}">
-                Cancelar
-            </a>
+               th:href="@{/projects/{projectId}(projectId=${project.id})}"
+               th:text="#{project.edit.cancel}">Cancelar</a>
 
             <a class="btn btn-secondary"
                th:unless="${returnTo == 'details'}"
-               th:href="@{/projects(page=${page})}">
-                Cancelar
-            </a>
+               th:href="@{/projects(page=${page})}"
+               th:text="#{project.edit.cancel}">Cancelar</a>
         </form>
     </div>
 </main>

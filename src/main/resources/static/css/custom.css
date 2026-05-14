@@ -134,3 +134,34 @@ body.app-page {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.app-breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.app-breadcrumb .breadcrumb-item a {
+    text-decoration: none;
+}
+
+.app-breadcrumb .breadcrumb-item.active {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.fp-weight-matrix-compact th,
+.fp-weight-matrix-compact td {
+    vertical-align: middle;
+    padding: 0.55rem 0.65rem;
+}
+
+.fp-weight-matrix-compact th:not(:first-child),
+.fp-weight-matrix-compact td:not(:first-child) {
+    width: 90px;
+}
+
+.fp-weight-matrix-compact td {
+    font-size: 0.95rem;
+}

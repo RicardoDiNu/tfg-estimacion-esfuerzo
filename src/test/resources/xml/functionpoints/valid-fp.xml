@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<functionPointAnalysisExport version="1.0">
+    <systemBoundaryDescription>Sistema de gestión de usuarios y autenticación</systemBoundaryDescription>
+    <weightMatrix>
+        <entry functionType="EI" complexity="LOW" weight="3"/>
+        <entry functionType="EI" complexity="AVERAGE" weight="4"/>
+        <entry functionType="EI" complexity="HIGH" weight="6"/>
+        <entry functionType="EO" complexity="LOW" weight="4"/>
+        <entry functionType="EO" complexity="AVERAGE" weight="5"/>
+        <entry functionType="EO" complexity="HIGH" weight="7"/>
+        <entry functionType="EQ" complexity="LOW" weight="3"/>
+        <entry functionType="EQ" complexity="AVERAGE" weight="4"/>
+        <entry functionType="EQ" complexity="HIGH" weight="6"/>
+        <entry functionType="ILF" complexity="LOW" weight="7"/>
+        <entry functionType="ILF" complexity="AVERAGE" weight="10"/>
+        <entry functionType="ILF" complexity="HIGH" weight="15"/>
+        <entry functionType="EIF" complexity="LOW" weight="5"/>
+        <entry functionType="EIF" complexity="AVERAGE" weight="7"/>
+        <entry functionType="EIF" complexity="HIGH" weight="10"/>
+    </weightMatrix>
+    <gscs>
+        <gsc type="DATA_COMMUNICATIONS" degreeOfInfluence="3"/>
+        <gsc type="DISTRIBUTED_DATA_PROCESSING" degreeOfInfluence="2"/>
+        <gsc type="PERFORMANCE" degreeOfInfluence="4"/>
+        <gsc type="HEAVILY_USED_CONFIGURATION" degreeOfInfluence="1"/>
+        <gsc type="TRANSACTION_RATE" degreeOfInfluence="3"/>
+        <gsc type="ON_LINE_DATA_ENTRY" degreeOfInfluence="5"/>
+        <gsc type="END_USER_EFFICIENCY" degreeOfInfluence="4"/>
+        <gsc type="ON_LINE_UPDATE" degreeOfInfluence="3"/>
+        <gsc type="COMPLEX_PROCESSING" degreeOfInfluence="2"/>
+        <gsc type="REUSABILITY" degreeOfInfluence="2"/>
+        <gsc type="INSTALLATION_EASE" degreeOfInfluence="1"/>
+        <gsc type="OPERATIONAL_EASE" degreeOfInfluence="2"/>
+        <gsc type="MULTIPLE_SITES" degreeOfInfluence="1"/>
+        <gsc type="FACILITATE_CHANGE" degreeOfInfluence="3"/>
+    </gscs>
+    <modules>
+        <module ref="M1">
+            <name>Módulo de usuarios</name>
+        </module>
+        <module ref="M2">
+            <name>Módulo de autenticación</name>
+        </module>
+    </modules>
+    <requirements>
+        <requirement ref="R1" moduleRef="M1">
+            <identifier>REQ-001</identifier>
+            <statement>El sistema debe permitir registrar nuevos usuarios</statement>
+        </requirement>
+        <requirement ref="R2" moduleRef="M1">
+            <identifier>REQ-002</identifier>
+            <statement>El sistema debe permitir consultar el listado de usuarios</statement>
+        </requirement>
+        <requirement ref="R3" moduleRef="M2">
+            <identifier>REQ-003</identifier>
+            <statement>El sistema debe autenticar a los usuarios mediante usuario y contraseña</statement>
+        </requirement>
+    </requirements>
+    <dataFunctions>
+        <dataFunction requirementRef="R1">
+            <name>Fichero de usuarios</name>
+            <type>ILF</type>
+            <complexity>AVERAGE</complexity>
+        </dataFunction>
+        <dataFunction requirementRef="R3">
+            <name>Fichero de sesiones externas</name>
+            <type>EIF</type>
+            <complexity>LOW</complexity>
+        </dataFunction>
+    </dataFunctions>
+    <transactionalFunctions>
+        <transactionalFunction requirementRef="R1">
+            <name>Registro de usuario</name>
+            <type>EI</type>
+            <complexity>AVERAGE</complexity>
+        </transactionalFunction>
+        <transactionalFunction requirementRef="R2">
+            <name>Listado de usuarios</name>
+            <type>EQ</type>
+            <complexity>LOW</complexity>
+        </transactionalFunction>
+        <transactionalFunction requirementRef="R3">
+            <name>Login</name>
+            <type>EI</type>
+            <complexity>LOW</complexity>
+        </transactionalFunction>
+        <transactionalFunction requirementRef="R3">
+            <name>Informe de accesos</name>
+            <type>EO</type>
+            <complexity>AVERAGE</complexity>
+        </transactionalFunction>
+    </transactionalFunctions>
+</functionPointAnalysisExport>

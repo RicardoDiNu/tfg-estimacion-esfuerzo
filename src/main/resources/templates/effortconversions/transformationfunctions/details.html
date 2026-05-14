@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page">
+
+<nav th:replace="~{fragments/nav :: nav}"></nav>
+
+<main class="app-content">
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb app-breadcrumb">
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects}" th:text="#{breadcrumb.projects}">Proyectos</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{id}(id=${project.id})}" th:text="${project.name}">Proyecto</a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:if="${sourceTechniqueCode == 'FUNCTION_POINTS'}"
+                       th:href="@{/projects/{pid}/function-points(pid=${project.id})}"
+                       th:text="#{fp.details.title}">Análisis PF</a>
+                    <a th:if="${sourceTechniqueCode == 'USE_CASE_POINTS'}"
+                       th:href="@{/projects/{pid}/use-case-points(pid=${project.id})}"
+                       th:text="#{ucp.details.title}">Análisis UCP</a>
+                    <span th:if="${sourceTechniqueCode != 'FUNCTION_POINTS' and sourceTechniqueCode != 'USE_CASE_POINTS'}"
+                          th:text="#{breadcrumb.sizeAnalysis}">Análisis de tamaño</span>
+                </li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/select(projectId=${project.id},sourceTechniqueCode=${sourceTechniqueCode})}"
+                       th:text="#{breadcrumb.selectTransformationFunction}">Seleccionar función de transformación</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="#{breadcrumb.transformationFunction}">Función de transformación</li>
+            </ol>
+        </nav>
+
+        <div class="mb-4">
+            <h1 th:text="#{transformationFunction.details.title}">
+                Conversión por función de transformación
+            </h1>
+            <p class="text-muted" th:text="#{transformationFunction.details.subtitle}">
+                Resultado calculado a partir del tamaño actual del análisis.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{transformationFunction.details.function.title}">
+                Función aplicada
+            </div>
+
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong th:text="#{transformationFunction.field.name}">Nombre</strong>:
+                    <span th:text="${conversion.functionNameSnapshot}">Función</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{transformationFunction.field.formula}">Fórmula</strong>:
+                    <span>
+                        E =
+                        <span th:text="${#numbers.formatDecimal(conversion.interceptSnapshot, 1, 2)}">0.00</span>
+                        +
+                        <span th:text="${#numbers.formatDecimal(conversion.slopeSnapshot, 1, 2)}">0.00</span>
+                        ×
+                        <span th:text="${analysis.sizeUnitCode}">FP</span>
+                    </span>
+                </p>
+
+                <p class="mb-0">
+                    <strong th:text="#{transformationFunction.field.currentSize}">
+                        Tamaño actual
+                    </strong>:
+                    <span th:text="${#numbers.formatDecimal(currentSize, 1, 2)}">0.00</span>
+                    <span th:text="${analysis.sizeUnitCode}">FP</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{transformationFunction.details.result.title}">
+                Resultado
+            </div>
+
+            <div class="card-body">
+                <strong th:text="${#numbers.formatDecimal(estimatedEffortHours, 1, 2)}">
+                    0.00
+                </strong>
+                <strong th:text="#{transformationFunction.unit.hoursPerson}">
+                    H-Persona
+                </strong>
+            </div>
+        </div>
+
+
+        <div th:if="${estimatedCost != null}" class="card mb-4">
+            <div class="card-header" th:text="#{cost.estimated}">
+                Coste estimado
+            </div>
+
+            <div class="card-body">
+                <strong th:text="${#numbers.formatDecimal(estimatedCost, 1, 2)}">0.00</strong>
+                <strong th:text="${project.currencyCode}">EUR</strong>
+            </div>
+        </div>
+
+        <div class="mt-4 mb-4">
+            <a class="btn btn-outline-primary mr-2"
+               th:if="${canManageEffortConversions}"
+               th:href="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/select(
+                   projectId=${project.id},
+                   sourceTechniqueCode=${sourceTechniqueCode})}"
+               th:text="#{transformationFunction.details.action.change}">
+                Cambiar función
+            </a>
+
+            <form th:if="${canManageEffortConversions}"
+                  th:action="@{/projects/{projectId}/size-analyses/{sourceTechniqueCode}/transformation-functions/{conversionId}/delete(
+                      projectId=${project.id},
+                      sourceTechniqueCode=${sourceTechniqueCode},
+                      conversionId=${conversion.id})}"
+                  method="post"
+                  class="d-inline"
+                  th:onsubmit="|return confirm('#{transformationFunction.confirm.deleteConversion}');|">
+                <button type="submit"
+                        class="btn btn-danger mr-2"
+                        th:text="#{common.delete}">
+                    Eliminar
+                </button>
+            </form>
+
+            <a class="btn btn-secondary"
+               th:href="${sourceAnalysisDetailsPath}"
+               th:text="#{common.back}">
+                Volver
+            </a>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+</body>
+</html>
