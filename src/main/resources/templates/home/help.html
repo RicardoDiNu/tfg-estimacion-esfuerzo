@@ -8,103 +8,507 @@
 
 <main class="app-content">
     <div class="container">
+
         <h1 class="mb-4" th:text="#{help.title}">
-            Ayuda
+            Ayuda y manual de uso
         </h1>
 
+        <!-- INTRODUCCIÓN -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.intro.title}">
+                Manual de uso de la aplicación
+            </div>
+            <div class="card-body">
+                <p th:text="#{help.intro.text1}">
+                    Esta aplicación permite crear proyectos de estimación de software y calcular su tamaño, esfuerzo y coste.
+                </p>
+                <p class="mb-0" th:text="#{help.intro.text2}">
+                    El flujo general consiste en crear un proyecto, completar un análisis de tamaño y convertir ese tamaño en esfuerzo.
+                </p>
+            </div>
+        </div>
+
+        <!-- ACCESO -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.access.title}">
+                Acceso, registro e inicio de sesión
+            </div>
+            <div class="card-body">
+                <h5 th:text="#{help.access.signup.title}">Registro público</h5>
+                <p th:text="#{help.access.signup.text1}">
+                    Desde la pantalla de registro se puede crear una nueva cuenta.
+                </p>
+                <p th:text="#{help.access.signup.text2}">
+                    Las cuentas creadas mediante registro público se crean como jefes de proyecto.
+                </p>
+                <p th:text="#{help.access.signup.text3}">
+                    Los trabajadores no se registran públicamente, sino que son creados por un administrador o jefe de proyecto.
+                </p>
+
+                <h5 th:text="#{help.access.login.title}">Inicio de sesión</h5>
+                <p class="mb-0" th:text="#{help.access.login.text}">
+                    Para trabajar con proyectos es necesario iniciar sesión con un usuario válido.
+                </p>
+            </div>
+        </div>
+
+        <!-- FLUJO GENERAL -->
         <div class="card mb-4">
             <div class="card-header" th:text="#{help.workflow.title}">
-                Flujo recomendado
+                Flujo general de uso
             </div>
-
             <div class="card-body">
                 <ol class="mb-0">
-                    <li th:text="#{help.workflow.step1}">
-                        Crear un proyecto de estimación.
-                    </li>
-                    <li th:text="#{help.workflow.step2}">
-                        Definir una técnica de tamaño: Puntos Función o UCP.
-                    </li>
-                    <li th:text="#{help.workflow.step3}">
-                        Completar los datos del análisis.
-                    </li>
-                    <li th:text="#{help.workflow.step4}">
-                        Crear una conversión a esfuerzo mediante Delphi o función de transformación.
-                    </li>
-                    <li th:text="#{help.workflow.step5}">
-                        Revisar el esfuerzo y, si existe tarifa por hora, el coste estimado.
-                    </li>
+                    <li th:text="#{help.workflow.step1}">Iniciar sesión o registrarse.</li>
+                    <li th:text="#{help.workflow.step2}">Crear un proyecto de estimación.</li>
+                    <li th:text="#{help.workflow.step3}">Configurar una tarifa horaria si se desea calcular coste.</li>
+                    <li th:text="#{help.workflow.step4}">Crear un análisis de tamaño: Puntos Función o Use Case Points.</li>
+                    <li th:text="#{help.workflow.step5}">Completar los datos del análisis.</li>
+                    <li th:text="#{help.workflow.step6}">Revisar el tamaño calculado.</li>
+                    <li th:text="#{help.workflow.step7}">Crear una conversión a esfuerzo mediante Delphi o función de transformación.</li>
+                    <li th:text="#{help.workflow.step8}">Revisar el esfuerzo y el coste estimado.</li>
+                    <li th:text="#{help.workflow.step9}">Generar informes PDF o exportar XML si es necesario.</li>
                 </ol>
             </div>
         </div>
 
+        <!-- ROLES -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.roles.title}">
+                Tipos de usuario
+            </div>
+            <div class="card-body">
+                <h5 th:text="#{help.roles.admin.title}">Administrador</h5>
+                <p th:text="#{help.roles.admin.text}">
+                    El administrador gestiona usuarios del sistema.
+                </p>
+
+                <h5 th:text="#{help.roles.manager.title}">Jefe de proyecto</h5>
+                <p th:text="#{help.roles.manager.text}">
+                    El jefe de proyecto crea proyectos, trabajadores y asigna permisos.
+                </p>
+
+                <h5 th:text="#{help.roles.worker.title}">Trabajador de proyecto</h5>
+                <p class="mb-0" th:text="#{help.roles.worker.text}">
+                    El trabajador accede a proyectos asignados según sus permisos.
+                </p>
+            </div>
+        </div>
+
+        <!-- USUARIOS -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.users.title}">
+                Gestión de usuarios
+            </div>
+            <div class="card-body">
+                <h5 th:text="#{help.users.createManager.title}">Crear un jefe de proyecto</h5>
+                <ol>
+                    <li th:text="#{help.users.createManager.step1}">Entrar con usuario administrador.</li>
+                    <li th:text="#{help.users.createManager.step2}">Ir al menú Usuarios.</li>
+                    <li th:text="#{help.users.createManager.step3}">Pulsar Crear usuario.</li>
+                    <li th:text="#{help.users.createManager.step4}">Indicar nombre de usuario, correo electrónico y contraseña.</li>
+                    <li th:text="#{help.users.createManager.step5}">Seleccionar el rol Jefe de proyecto.</li>
+                    <li th:text="#{help.users.createManager.step6}">Guardar.</li>
+                </ol>
+
+                <h5 th:text="#{help.users.createWorker.title}">Crear un trabajador</h5>
+                <p th:text="#{help.users.createWorker.text}">
+                    Un trabajador puede ser creado por un administrador o por un jefe de proyecto.
+                </p>
+                <ol>
+                    <li th:text="#{help.users.createWorker.step1}">Ir al menú Usuarios.</li>
+                    <li th:text="#{help.users.createWorker.step2}">Pulsar Crear usuario.</li>
+                    <li th:text="#{help.users.createWorker.step3}">Indicar nombre de usuario, correo electrónico y contraseña.</li>
+                    <li th:text="#{help.users.createWorker.step4}">Si entra un administrador, seleccionar el jefe asociado.</li>
+                    <li th:text="#{help.users.createWorker.step5}">Guardar.</li>
+                </ol>
+
+                <h5 th:text="#{help.users.edit.title}">Editar usuarios</h5>
+                <p th:text="#{help.users.edit.text}">
+                    Desde la lista de usuarios se pueden editar datos básicos.
+                </p>
+
+                <h5 th:text="#{help.users.delete.title}">Eliminar usuarios</h5>
+                <p class="mb-0" th:text="#{help.users.delete.text}">
+                    La eliminación solo está disponible cuando no hay información asociada que lo impida.
+                </p>
+            </div>
+        </div>
+
+        <!-- MI CUENTA -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.account.title}">
+                Mi cuenta
+            </div>
+            <div class="card-body">
+                <p th:text="#{help.account.text1}">
+                    Cada usuario puede consultar sus datos desde Mi cuenta.
+                </p>
+                <p th:text="#{help.account.text2}">
+                    Desde esta sección se puede modificar el correo electrónico y cambiar la contraseña.
+                </p>
+                <p class="mb-0" th:text="#{help.account.text3}">
+                    El nombre de usuario, rol y jefe asociado no se modifican desde la cuenta personal.
+                </p>
+            </div>
+        </div>
+
+        <!-- PROYECTOS -->
         <div class="card mb-4">
             <div class="card-header" th:text="#{help.projects.title}">
-                Proyectos
+                Proyectos de estimación
             </div>
-
             <div class="card-body">
-                <p class="mb-0" th:text="#{help.projects.text}">
-                    Cada estimación parte de un proyecto. En él se puede indicar nombre, descripción y una tarifa por hora opcional para calcular costes.
+                <p th:text="#{help.projects.text}">
+                    Un proyecto representa el sistema software que se quiere estimar.
+                </p>
+
+                <h5 th:text="#{help.projects.create.title}">Crear un proyecto</h5>
+                <ol>
+                    <li th:text="#{help.projects.create.step1}">Ir al menú Proyectos.</li>
+                    <li th:text="#{help.projects.create.step2}">Pulsar Crear proyecto.</li>
+                    <li th:text="#{help.projects.create.step3}">Introducir nombre y descripción.</li>
+                    <li th:text="#{help.projects.create.step4}">Indicar una tarifa por hora si se desea calcular coste.</li>
+                    <li th:text="#{help.projects.create.step5}">Indicar la moneda, por ejemplo EUR.</li>
+                    <li th:text="#{help.projects.create.step6}">Guardar.</li>
+                </ol>
+
+                <p class="mb-0" th:text="#{help.projects.hourlyRate}">
+                    La tarifa horaria es opcional.
                 </p>
             </div>
         </div>
 
+        <!-- PERMISOS -->
         <div class="card mb-4">
-            <div class="card-header" th:text="#{help.size.title}">
-                Técnicas de tamaño
+            <div class="card-header" th:text="#{help.memberships.title}">
+                Trabajadores y permisos en proyectos
             </div>
-
             <div class="card-body">
-                <h5 th:text="#{help.size.fp.title}">
-                    Puntos Función
-                </h5>
-                <p th:text="#{help.size.fp.text}">
-                    Permite estimar el tamaño funcional a partir de funciones de datos, funciones transaccionales y características generales del sistema.
+                <p th:text="#{help.memberships.text}">
+                    Un jefe de proyecto puede asignar trabajadores a sus proyectos.
                 </p>
 
-                <h5 th:text="#{help.size.ucp.title}">
-                    Use Case Points
+                <ol>
+                    <li th:text="#{help.memberships.step1}">Abrir el detalle del proyecto.</li>
+                    <li th:text="#{help.memberships.step2}">Pulsar Gestionar trabajadores.</li>
+                    <li th:text="#{help.memberships.step3}">Seleccionar el trabajador.</li>
+                    <li th:text="#{help.memberships.step4}">Marcar los permisos del trabajador.</li>
+                    <li th:text="#{help.memberships.step5}">Guardar la asignación.</li>
+                </ol>
+
+                <h5 th:text="#{help.memberships.editPermission.title}">
+                    Permiso para editar datos de estimación
                 </h5>
-                <p class="mb-0" th:text="#{help.size.ucp.text}">
-                    Permite estimar el tamaño a partir de actores, casos de uso, factores técnicos y factores ambientales.
+                <p th:text="#{help.memberships.editPermission.text}">
+                    Permite modificar datos internos de los análisis.
+                </p>
+
+                <h5 th:text="#{help.memberships.conversionPermission.title}">
+                    Permiso para gestionar conversiones a esfuerzo
+                </h5>
+                <p class="mb-0" th:text="#{help.memberships.conversionPermission.text}">
+                    Permite crear y gestionar Delphi y funciones de transformación.
                 </p>
             </div>
         </div>
 
+        <!-- PUNTOS FUNCIÓN -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.fp.title}">
+                Análisis de Puntos Función
+            </div>
+            <div class="card-body">
+                <p th:text="#{help.fp.text}">
+                    El análisis de Puntos Función estima el tamaño funcional del proyecto.
+                </p>
+
+                <h5 th:text="#{help.fp.steps.title}">Cómo completar un análisis PF</h5>
+                <ol>
+                    <li th:text="#{help.fp.steps.step1}">Abrir el detalle del proyecto.</li>
+                    <li th:text="#{help.fp.steps.step2}">Crear o abrir el análisis de Puntos Función.</li>
+                    <li th:text="#{help.fp.steps.step3}">Definir el límite del sistema.</li>
+                    <li th:text="#{help.fp.steps.step4}">Crear módulos funcionales.</li>
+                    <li th:text="#{help.fp.steps.step5}">Añadir requisitos de usuario dentro de cada módulo.</li>
+                    <li th:text="#{help.fp.steps.step6}">Identificar funciones de datos y transaccionales.</li>
+                    <li th:text="#{help.fp.steps.step7}">Valorar las características generales del sistema.</li>
+                    <li th:text="#{help.fp.steps.step8}">Revisar o editar la matriz de pesos.</li>
+                    <li th:text="#{help.fp.steps.step9}">Consultar los resultados.</li>
+                </ol>
+
+                <h5 th:text="#{help.fp.modules.title}">Módulos PF</h5>
+                <p th:text="#{help.fp.modules.text}">
+                    Los módulos permiten dividir el sistema en partes funcionales.
+                </p>
+
+                <h5 th:text="#{help.fp.requirements.title}">Requisitos de usuario</h5>
+                <p th:text="#{help.fp.requirements.text}">
+                    Los requisitos describen necesidades funcionales del sistema.
+                </p>
+
+                <h5 th:text="#{help.fp.dataFunctions.title}">Funciones de datos</h5>
+                <p th:text="#{help.fp.dataFunctions.text}">
+                    Las funciones de datos representan grupos lógicos de información.
+                </p>
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                        <tr>
+                            <th th:text="#{help.common.type}">Tipo</th>
+                            <th th:text="#{help.common.meaning}">Significado</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td th:text="#{help.fp.dataFunctions.ilf.title}">ILF</td>
+                            <td th:text="#{help.fp.dataFunctions.ilf.text}">Información mantenida por la aplicación.</td>
+                        </tr>
+                        <tr>
+                            <td th:text="#{help.fp.dataFunctions.eif.title}">EIF</td>
+                            <td th:text="#{help.fp.dataFunctions.eif.text}">Información usada por la aplicación pero mantenida externamente.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h5 th:text="#{help.fp.transactionalFunctions.title}">Funciones transaccionales</h5>
+                <p th:text="#{help.fp.transactionalFunctions.text}">
+                    Las funciones transaccionales representan operaciones realizadas por el sistema.
+                </p>
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                        <tr>
+                            <th th:text="#{help.common.type}">Tipo</th>
+                            <th th:text="#{help.common.meaning}">Significado</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td th:text="#{help.fp.transactionalFunctions.ei.title}">EI</td>
+                            <td th:text="#{help.fp.transactionalFunctions.ei.text}">Entrada externa.</td>
+                        </tr>
+                        <tr>
+                            <td th:text="#{help.fp.transactionalFunctions.eo.title}">EO</td>
+                            <td th:text="#{help.fp.transactionalFunctions.eo.text}">Salida externa.</td>
+                        </tr>
+                        <tr>
+                            <td th:text="#{help.fp.transactionalFunctions.eq.title}">EQ</td>
+                            <td th:text="#{help.fp.transactionalFunctions.eq.text}">Consulta externa.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h5 th:text="#{help.fp.complexity.title}">Complejidad</h5>
+                <p th:text="#{help.fp.complexity.text}">
+                    Cada función se clasifica como simple, media o compleja.
+                </p>
+
+                <h5 th:text="#{help.fp.gsc.title}">Características generales del sistema</h5>
+                <p th:text="#{help.fp.gsc.text}">
+                    Se valoran de 0 a 5 para ajustar el resultado.
+                </p>
+
+                <h5 th:text="#{help.fp.weights.title}">Matriz de pesos</h5>
+                <p th:text="#{help.fp.weights.text}">
+                    Indica el peso de cada función según tipo y complejidad.
+                </p>
+
+                <h5 th:text="#{help.fp.results.title}">Resultados PF</h5>
+                <ul class="mb-0">
+                    <li th:text="#{help.fp.results.ufp}">UFP.</li>
+                    <li th:text="#{help.fp.results.tdi}">TDI.</li>
+                    <li th:text="#{help.fp.results.vaf}">VAF.</li>
+                    <li th:text="#{help.fp.results.afp}">AFP.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- USE CASE POINTS -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.ucp.title}">
+                Análisis Use Case Points
+            </div>
+            <div class="card-body">
+                <p th:text="#{help.ucp.text}">
+                    El análisis Use Case Points estima el tamaño a partir de actores y casos de uso.
+                </p>
+
+                <h5 th:text="#{help.ucp.steps.title}">Cómo completar un análisis UCP</h5>
+                <ol>
+                    <li th:text="#{help.ucp.steps.step1}">Abrir el detalle del proyecto.</li>
+                    <li th:text="#{help.ucp.steps.step2}">Crear o abrir el análisis Use Case Points.</li>
+                    <li th:text="#{help.ucp.steps.step3}">Definir el límite del sistema.</li>
+                    <li th:text="#{help.ucp.steps.step4}">Crear actores.</li>
+                    <li th:text="#{help.ucp.steps.step5}">Crear módulos.</li>
+                    <li th:text="#{help.ucp.steps.step6}">Crear casos de uso dentro de los módulos.</li>
+                    <li th:text="#{help.ucp.steps.step7}">Asociar actores a los casos de uso.</li>
+                    <li th:text="#{help.ucp.steps.step8}">Revisar factores técnicos y ambientales.</li>
+                    <li th:text="#{help.ucp.steps.step9}">Consultar los resultados.</li>
+                </ol>
+
+                <h5 th:text="#{help.ucp.actors.title}">Actores</h5>
+                <p th:text="#{help.ucp.actors.text}">
+                    Los actores representan usuarios, sistemas externos u otras entidades.
+                </p>
+
+                <div class="table-responsive mb-3">
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                        <tr>
+                            <th th:text="#{help.common.complexity}">Complejidad</th>
+                            <th th:text="#{help.common.meaning}">Significado</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td th:text="#{help.ucp.actors.simple.title}">Simple</td>
+                            <td th:text="#{help.ucp.actors.simple.text}">Interacción sencilla.</td>
+                        </tr>
+                        <tr>
+                            <td th:text="#{help.ucp.actors.average.title}">Medio</td>
+                            <td th:text="#{help.ucp.actors.average.text}">Interacción intermedia.</td>
+                        </tr>
+                        <tr>
+                            <td th:text="#{help.ucp.actors.complex.title}">Complejo</td>
+                            <td th:text="#{help.ucp.actors.complex.text}">Interacción más completa.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p th:text="#{help.ucp.actors.delete}">
+                    No se puede eliminar un actor asociado a casos de uso.
+                </p>
+
+                <h5 th:text="#{help.ucp.modules.title}">Módulos UCP</h5>
+                <p th:text="#{help.ucp.modules.text}">
+                    Los módulos permiten organizar casos de uso.
+                </p>
+
+                <h5 th:text="#{help.ucp.useCases.title}">Casos de uso</h5>
+                <p th:text="#{help.ucp.useCases.text}">
+                    Los casos de uso describen funcionalidades del sistema.
+                </p>
+                <p th:text="#{help.ucp.useCases.fields}">
+                    Pueden incluir nombre, descripción, actores, condiciones, flujos y número de transacciones.
+                </p>
+
+                <h5 th:text="#{help.ucp.complexity.title}">Complejidad de casos de uso</h5>
+                <ul>
+                    <li th:text="#{help.ucp.complexity.simple}">1 a 3 transacciones: simple.</li>
+                    <li th:text="#{help.ucp.complexity.average}">4 a 7 transacciones: medio.</li>
+                    <li th:text="#{help.ucp.complexity.complex}">8 o más transacciones: complejo.</li>
+                </ul>
+
+                <h5 th:text="#{help.ucp.factors.title}">Factores técnicos y ambientales</h5>
+                <p th:text="#{help.ucp.factors.text}">
+                    Los factores permiten ajustar el resultado.
+                </p>
+
+                <h5 th:text="#{help.ucp.results.title}">Resultados UCP</h5>
+                <ul class="mb-0">
+                    <li th:text="#{help.ucp.results.uaw}">UAW.</li>
+                    <li th:text="#{help.ucp.results.uucw}">UUCW.</li>
+                    <li th:text="#{help.ucp.results.tcf}">TCF.</li>
+                    <li th:text="#{help.ucp.results.ecf}">ECF.</li>
+                    <li th:text="#{help.ucp.results.ucp}">UCP.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ESFUERZO -->
         <div class="card mb-4">
             <div class="card-header" th:text="#{help.effort.title}">
                 Conversión a esfuerzo
             </div>
-
             <div class="card-body">
-                <h5 th:text="#{help.effort.delphi.title}">
-                    Delphi
-                </h5>
-                <p th:text="#{help.effort.delphi.text}">
-                    Utiliza estimaciones de expertos sobre módulos de menor y mayor tamaño para obtener una función lineal de esfuerzo.
+                <p th:text="#{help.effort.text}">
+                    Después de calcular el tamaño, se puede convertir en esfuerzo.
                 </p>
 
-                <h5 th:text="#{help.effort.transformation.title}">
-                    Funciones de transformación
-                </h5>
-                <p class="mb-0" th:text="#{help.effort.transformation.text}">
-                    Permiten aplicar una fórmula lineal del tipo E = a + b × tamaño para convertir tamaño en horas-persona.
+                <h5 th:text="#{help.effort.delphi.title}">Delphi</h5>
+                <p th:text="#{help.effort.delphi.text}">
+                    Delphi usa estimaciones de expertos sobre módulos de referencia.
+                </p>
+                <ol>
+                    <li th:text="#{help.effort.delphi.step1}">Abrir un análisis PF o UCP.</li>
+                    <li th:text="#{help.effort.delphi.step2}">Pulsar Iniciar conversión Delphi.</li>
+                    <li th:text="#{help.effort.delphi.step3}">Indicar iteraciones, desviación y expertos.</li>
+                    <li th:text="#{help.effort.delphi.step4}">Registrar estimaciones de expertos.</li>
+                    <li th:text="#{help.effort.delphi.step5}">Revisar el esfuerzo final.</li>
+                </ol>
+
+                <h5 th:text="#{help.effort.transformation.title}">Funciones de transformación</h5>
+                <p th:text="#{help.effort.transformation.text}">
+                    Convierten tamaño en esfuerzo mediante una fórmula lineal.
+                </p>
+                <p class="mb-0">
+                    <code th:text="#{help.effort.transformation.formula}">
+                        Esfuerzo = a + b × tamaño
+                    </code>
                 </p>
             </div>
         </div>
 
+        <!-- COSTE -->
         <div class="card mb-4">
             <div class="card-header" th:text="#{help.cost.title}">
-                Coste
+                Coste estimado
             </div>
-
             <div class="card-body">
-                <p class="mb-0" th:text="#{help.cost.text}">
-                    Si el proyecto tiene configurada una tarifa por hora, el sistema calcula automáticamente el coste estimado multiplicando las horas-persona por dicha tarifa.
+                <p th:text="#{help.cost.text}">
+                    Si el proyecto tiene tarifa horaria, se calcula el coste.
+                </p>
+                <p class="mb-0">
+                    <code th:text="#{help.cost.formula}">
+                        Coste estimado = esfuerzo estimado × tarifa horaria
+                    </code>
                 </p>
             </div>
         </div>
+
+        <!-- XML E INFORMES -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.outputs.title}">
+                XML e informes
+            </div>
+            <div class="card-body">
+                <h5 th:text="#{help.outputs.xml.title}">Importar y exportar XML</h5>
+                <p th:text="#{help.outputs.xml.text}">
+                    La aplicación permite exportar e importar análisis PF y UCP.
+                </p>
+                <p th:text="#{help.outputs.xml.warning}">
+                    Solo se puede importar si el proyecto no tiene ya un análisis del mismo tipo.
+                </p>
+
+                <h5 th:text="#{help.outputs.reports.title}">Informes PDF</h5>
+                <p class="mb-0" th:text="#{help.outputs.reports.text}">
+                    Los informes PDF permiten guardar o compartir los resultados.
+                </p>
+            </div>
+        </div>
+
+        <!-- IDIOMA Y RECOMENDACIONES -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{help.recommendations.title}">
+                Recomendaciones de uso
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li th:text="#{help.recommendations.item1}">Crear primero la estructura general del proyecto.</li>
+                    <li th:text="#{help.recommendations.item2}">Usar módulos para dividir el sistema.</li>
+                    <li th:text="#{help.recommendations.item3}">Revisar el análisis de tamaño antes de crear conversiones.</li>
+                    <li th:text="#{help.recommendations.item4}">Configurar tarifa horaria para obtener coste.</li>
+                    <li th:text="#{help.recommendations.item5}">Generar informes PDF para documentar estimaciones.</li>
+                    <li th:text="#{help.recommendations.item6}">Exportar XML para conservar datos del análisis.</li>
+                </ul>
+            </div>
+        </div>
+
     </div>
 </main>
 

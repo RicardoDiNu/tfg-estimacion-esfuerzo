@@ -12,48 +12,108 @@
             Acerca de
         </h1>
 
+        <!-- SOBRE LA APLICACIÓN -->
         <div class="card mb-4">
             <div class="card-header" th:text="#{about.project.title}">
-                Sobre el proyecto
+                Sobre la aplicación
             </div>
 
             <div class="card-body">
                 <p th:text="#{about.project.text1}">
-                    Esta aplicación permite estimar tamaño, esfuerzo y coste de proyectos software.
+                    Esta aplicación web permite gestionar proyectos de estimación de software y calcular su tamaño, esfuerzo y coste.
                 </p>
 
-                <p class="mb-0" th:text="#{about.project.text2}">
-                    El sistema está desarrollado como Trabajo Fin de Grado.
+                <p th:text="#{about.project.text2}">
+                    El sistema reúne en una misma herramienta la gestión de proyectos, la aplicación de técnicas de estimación, la conversión a esfuerzo y la generación de resultados.
+                </p>
+
+                <p class="mb-0" th:text="#{about.project.text3}">
+                    La aplicación está desarrollada como Trabajo Fin de Grado en Ingeniería Informática del Software.
                 </p>
             </div>
         </div>
 
+        <!-- ALCANCE FUNCIONAL -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{about.scope.title}">
+                Alcance funcional
+            </div>
+
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li th:text="#{about.scope.projects}">
+                        Gestión de proyectos de estimación.
+                    </li>
+                    <li th:text="#{about.scope.users}">
+                        Gestión de usuarios, roles, trabajadores y permisos por proyecto.
+                    </li>
+                    <li th:text="#{about.scope.size}">
+                        Estimación de tamaño mediante Puntos Función y Use Case Points.
+                    </li>
+                    <li th:text="#{about.scope.effort}">
+                        Conversión de tamaño a esfuerzo mediante Delphi y funciones de transformación.
+                    </li>
+                    <li th:text="#{about.scope.cost}">
+                        Estimación de coste a partir de horas-persona y tarifa horaria.
+                    </li>
+                    <li th:text="#{about.scope.outputs}">
+                        Generación de informes PDF e importación/exportación XML.
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- TÉCNICAS INCLUIDAS -->
         <div class="card mb-4">
             <div class="card-header" th:text="#{about.features.title}">
                 Técnicas incluidas
             </div>
 
             <div class="card-body">
-                <ul class="mb-0">
+                <h5 th:text="#{about.features.size.title}">
+                    Técnicas de tamaño
+                </h5>
+                <ul>
                     <li th:text="#{about.features.fp}">
-                        Estimación de tamaño mediante Puntos Función.
+                        Puntos Función.
                     </li>
                     <li th:text="#{about.features.ucp}">
-                        Estimación de tamaño mediante Use Case Points.
+                        Use Case Points.
                     </li>
+                </ul>
+
+                <h5 th:text="#{about.features.effort.title}">
+                    Técnicas de conversión a esfuerzo
+                </h5>
+                <ul class="mb-0">
                     <li th:text="#{about.features.delphi}">
-                        Conversión de tamaño a esfuerzo mediante Delphi.
+                        Delphi.
                     </li>
                     <li th:text="#{about.features.transformation}">
-                        Conversión de tamaño a esfuerzo mediante funciones de transformación.
-                    </li>
-                    <li th:text="#{about.features.cost}">
-                        Estimación de coste a partir de horas-persona y tarifa por hora.
+                        Funciones de transformación.
                     </li>
                 </ul>
             </div>
         </div>
 
+        <!-- BASE TÉCNICA -->
+        <div class="card mb-4">
+            <div class="card-header" th:text="#{about.technical.title}">
+                Base técnica
+            </div>
+
+            <div class="card-body">
+                <p th:text="#{about.technical.text}">
+                    La aplicación está desarrollada como una aplicación web Java con Spring Boot, Thymeleaf, Spring Security, JPA/Hibernate y PostgreSQL.
+                </p>
+
+                <p class="mb-0" th:text="#{about.technical.deployment}">
+                    También puede ejecutarse mediante Docker para facilitar su puesta en marcha en otros equipos.
+                </p>
+            </div>
+        </div>
+
+        <!-- INFORMACIÓN ACADÉMICA -->
         <div class="card mb-4">
             <div class="card-header" th:text="#{about.academic.title}">
                 Información académica
@@ -61,18 +121,33 @@
 
             <div class="card-body">
                 <p class="mb-2">
+                    <strong th:text="#{about.academic.work.label}">Trabajo</strong>:
+                    <span th:text="#{about.academic.work.value}">Trabajo Fin de Grado</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{about.academic.title.label}">Título</strong>:
+                    <span th:text="#{about.academic.title.value}">Sistema para Estimación de Esfuerzos de Proyectos de Software</span>
+                </p>
+
+                <p class="mb-2">
                     <strong th:text="#{about.academic.author.label}">Autor</strong>:
                     <span th:text="#{about.academic.author.value}">Ricardo Díaz Núñez</span>
                 </p>
 
                 <p class="mb-2">
                     <strong th:text="#{about.academic.degree.label}">Titulación</strong>:
-                    <span th:text="#{about.academic.degree.value}">Ingeniería del Software</span>
+                    <span th:text="#{about.academic.degree.value}">Ingeniería Informática del Software</span>
+                </p>
+
+                <p class="mb-2">
+                    <strong th:text="#{about.academic.university.label}">Universidad</strong>:
+                    <span th:text="#{about.academic.university.value}">Universidad de Oviedo</span>
                 </p>
 
                 <p class="mb-0">
-                    <strong th:text="#{about.academic.work.label}">Trabajo</strong>:
-                    <span th:text="#{about.academic.work.value}">Trabajo Fin de Grado</span>
+                    <strong th:text="#{about.academic.email.label}">Correo</strong>:
+                    <span th:text="#{about.academic.email.value}">UO282909@uniovi.es</span>
                 </p>
             </div>
         </div>
