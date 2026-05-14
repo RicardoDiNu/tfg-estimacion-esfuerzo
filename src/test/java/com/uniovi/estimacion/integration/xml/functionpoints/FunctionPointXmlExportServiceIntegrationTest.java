@@ -7,6 +7,8 @@ import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.Data
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.FunctionPointComplexity;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunction;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.functions.TransactionalFunctionType;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicAssessment;
+import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.gscs.GeneralSystemCharacteristicType;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.modules.FunctionPointModule;
 import com.uniovi.estimacion.entities.sizeanalyses.functionpoints.requirements.UserRequirement;
 import com.uniovi.estimacion.entities.users.User;
@@ -193,6 +195,42 @@ class FunctionPointXmlExportServiceIntegrationTest extends AbstractIntegrationTe
             assertThat(imported.getValueAdjustmentFactor())
                     .isEqualTo(original.getValueAdjustmentFactor());
         }
+
+        @Test
+        @DisplayName("Exportar e importar conserva el texto personalizado de una GSC")
+        void exportThenImportPreservesGscCustomText() {
+            // given
+            String customText = "Comunicación de datos adaptada al proyecto";
+
+            FunctionPointAnalysis originalBeforeExport = fpAnalysisRepository
+                    .findByEstimationProjectId(project.getId())
+                    .orElseThrow();
+
+            findGsc(originalBeforeExport, GeneralSystemCharacteristicType.DATA_COMMUNICATIONS)
+                    .setCustomText(customText);
+
+            byte[] xmlBytes = fpXmlExportService.exportToXml(project.getId()).orElseThrow();
+            String xml = new String(xmlBytes, StandardCharsets.UTF_8);
+
+            assertThat(xml).contains("customText");
+            assertThat(xml).contains(customText);
+
+            User pm2 = createUser("pm_fp_xml_rt_custom_gsc", "pm_fp_xml_rt_custom_gsc@test.com");
+            EstimationProject targetProject = createProject("Proyecto FP RT Custom GSC", pm2);
+
+            // when
+            fpXmlImportService.importFromXml(targetProject, xmlBytes);
+
+            // then
+            FunctionPointAnalysis imported = fpAnalysisRepository
+                    .findByEstimationProjectId(targetProject.getId())
+                    .orElseThrow();
+
+            GeneralSystemCharacteristicAssessment importedGsc =
+                    findGsc(imported, GeneralSystemCharacteristicType.DATA_COMMUNICATIONS);
+
+            assertThat(importedGsc.getCustomText()).isEqualTo(customText);
+        }
     }
 
     // =========================================================
@@ -240,5 +278,16 @@ class FunctionPointXmlExportServiceIntegrationTest extends AbstractIntegrationTe
         EstimationProject project = new EstimationProject(name, null);
         project.setOwner(owner);
         return estimationProjectRepository.save(project);
+    }
+
+    private GeneralSystemCharacteristicAssessment findGsc(
+            FunctionPointAnalysis analysis,
+            GeneralSystemCharacteristicType type
+    ) {
+        return analysis.getGeneralSystemCharacteristicAssessments()
+                .stream()
+                .filter(gsc -> gsc.getCharacteristicType() == type)
+                .findFirst()
+                .orElseThrow();
     }
 }

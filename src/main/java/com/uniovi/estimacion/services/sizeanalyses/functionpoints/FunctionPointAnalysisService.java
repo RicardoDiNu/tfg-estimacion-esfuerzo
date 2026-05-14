@@ -21,10 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -96,18 +93,38 @@ public class FunctionPointAnalysisService {
         }
 
         FunctionPointAnalysis analysis = optionalAnalysis.get();
+        boolean requiresRecalculation = false;
 
         for (GeneralSystemCharacteristicAssessment existing : analysis.getGeneralSystemCharacteristicAssessments()) {
             for (GeneralSystemCharacteristicAssessment incoming : formAnalysis.getGeneralSystemCharacteristicAssessments()) {
                 if (existing.getCharacteristicType() == incoming.getCharacteristicType()) {
-                    existing.setDegreeOfInfluence(normalizeDegreeOfInfluence(incoming.getDegreeOfInfluence()));
+                    Integer newDegree = normalizeDegreeOfInfluence(incoming.getDegreeOfInfluence());
+
+                    if (!Objects.equals(existing.getDegreeOfInfluence(), newDegree)) {
+                        existing.setDegreeOfInfluence(newDegree);
+                        requiresRecalculation = true;
+                    }
+
+                    existing.setCustomText(normalizeNullableText(incoming.getCustomText()));
                     break;
                 }
             }
         }
 
-        recalculateManagedAnalysis(analysis);
+        if (requiresRecalculation) {
+            recalculateManagedAnalysis(analysis);
+        }
+
         return true;
+    }
+
+    private String normalizeNullableText(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     @Transactional
